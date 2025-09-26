@@ -39,6 +39,18 @@ const SCORE_ID_DELIMITER = '||'
 const DEFAULT_DELIMITER = '-'
 
 /**
+ * Regex used to detect canonical Scorebook IDs that should not be rewritten.
+ */
+const CANONICAL_SCORE_ID_PATTERN = /^score_[a-z0-9]+(?:[-_][a-z0-9]+)*$/i
+
+/**
+ * Determines whether a score ID is a canonical Scorebook ID.
+ */
+export function isCanonicalScoreId(scoreId: string): boolean {
+  return CANONICAL_SCORE_ID_PATTERN.test(scoreId.trim())
+}
+
+/**
  * Generates a normalized score ID from piece title and composer
  * Smart delimiter selection:
  * - Uses '-' by default for backward compatibility
@@ -316,7 +328,17 @@ export function isSameScoreWithFuzzy(
  * @returns Normalized score ID in new format
  */
 export function normalizeExistingScoreId(scoreId: string): string {
-  const parsed = parseScoreId(scoreId)
+  const trimmed = scoreId.trim()
+
+  if (!trimmed) {
+    return trimmed
+  }
+
+  if (isCanonicalScoreId(trimmed)) {
+    return trimmed
+  }
+
+  const parsed = parseScoreId(trimmed)
 
   // Treat empty composers as "Unknown"
   const effectiveComposer = parsed.composer || 'unknown'

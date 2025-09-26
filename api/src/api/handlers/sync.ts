@@ -11,7 +11,7 @@ import { Errors } from '../../utils/errors'
 import { withIdempotency } from '../../utils/idempotency'
 import {
   generateNormalizedScoreId,
-  parseScoreId,
+  normalizeExistingScoreId,
 } from '../../utils/scoreIdNormalizer'
 
 export const syncHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
@@ -229,18 +229,27 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
               transformedEntry.pieces &&
               Array.isArray(transformedEntry.pieces)
             ) {
-              // Generate normalized scoreId for each piece
+              // Normalize scoreId for each piece, preserving existing canonical IDs
               transformedEntry.pieces = transformedEntry.pieces.map(
                 (piece: any) => {
-                  if (piece && typeof piece === 'object' && piece.title) {
-                    // Generate normalized scoreId from piece title and composer
-                    const scoreId = generateNormalizedScoreId(
-                      piece.title,
-                      piece.composer
-                    )
+                  if (piece && typeof piece === 'object') {
+                    let scoreId: string | undefined
+
+                    // Check if piece already has an ID
+                    if (typeof piece.id === 'string' && piece.id.trim()) {
+                      // Preserve existing ID (including canonical IDs from Scorebook)
+                      scoreId = normalizeExistingScoreId(piece.id)
+                    } else if (piece.title) {
+                      // Only generate new ID if piece doesn't have one
+                      scoreId = generateNormalizedScoreId(
+                        piece.title,
+                        piece.composer
+                      )
+                    }
+
                     return {
                       ...piece,
-                      id: scoreId, // Add normalized scoreId to each piece
+                      id: scoreId,
                     }
                   }
                   return piece
@@ -253,10 +262,9 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
               transformedEntry.scoreId &&
               typeof transformedEntry.scoreId === 'string'
             ) {
-              const parsed = parseScoreId(transformedEntry.scoreId)
-              transformedEntry.scoreId = generateNormalizedScoreId(
-                parsed.title,
-                parsed.composer || undefined
+              // Use normalizeExistingScoreId to preserve canonical IDs
+              transformedEntry.scoreId = normalizeExistingScoreId(
+                transformedEntry.scoreId
               )
             }
 

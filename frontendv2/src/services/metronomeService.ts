@@ -56,6 +56,8 @@ class MetronomeService {
     config: MetronomeConfig,
     visualCallback?: VisualCallback
   ): Promise<void> {
+    // Ensure audio nodes exist (helps in test environments with mocks)
+    this.ensureNodes()
     // Ensure audio context is started
     if (Tone.context.state !== 'running') {
       await Tone.start()
@@ -80,6 +82,38 @@ class MetronomeService {
     // Start the lookahead scheduler
     this.scheduler(config)
     this.isPlaying = true
+  }
+
+  private ensureNodes(): void {
+    // Lazily (re)create nodes if missing (robust against mocking differences)
+    if (!this.volume) {
+      const vol: any = (Tone as any).Volume?.(-6) ?? new (Tone as any).Volume(-6)
+      this.volume = vol.toDestination ? vol.toDestination() : vol
+    }
+    if (!this.clickSynth) {
+      this.clickSynth = new Tone.MembraneSynth({
+        pitchDecay: 0.008,
+        octaves: 6,
+        envelope: {
+          attack: 0.001,
+          decay: 0.1,
+          sustain: 0,
+          release: 0.1,
+        },
+      }).connect(this.volume)
+    }
+    if (!this.accentSynth) {
+      this.accentSynth = new Tone.MembraneSynth({
+        pitchDecay: 0.008,
+        octaves: 8,
+        envelope: {
+          attack: 0.001,
+          decay: 0.15,
+          sustain: 0,
+          release: 0.15,
+        },
+      }).connect(this.volume)
+    }
   }
 
   private scheduler(config: MetronomeConfig): void {
@@ -152,6 +186,11 @@ class MetronomeService {
   setVolume(volume: number): void {
     // Convert 0-1 range to decibels (-60 to 0)
     const db = volume === 0 ? -Infinity : -60 + volume * 60
+    // Lazily (re)create volume node if it wasn't initialized yet
+    if (!this.volume) {
+      const vol: any = (Tone as any).Volume?.(-6) ?? new (Tone as any).Volume(-6)
+      this.volume = vol.toDestination ? vol.toDestination() : vol
+    }
     this.volume.volume.rampTo(db, 0.05) // Smooth volume changes
   }
 
@@ -166,9 +205,9 @@ class MetronomeService {
 
   dispose(): void {
     this.stop()
-    this.clickSynth.dispose()
-    this.accentSynth.dispose()
-    this.volume.dispose()
+    this.clickSynth?.dispose?.()
+    this.accentSynth?.dispose?.()
+    ;(this.volume as any)?.dispose?.()
   }
 }
 
@@ -176,11 +215,31 @@ class MetronomeService {
 let metronomeInstance: MetronomeService | null = null
 
 export const getMetronome = (): MetronomeService => {
+  // Create or repair singleton instance if internal nodes are missing
   if (!metronomeInstance) {
     metronomeInstance = new MetronomeService()
+  } else {
+    const m = metronomeInstance as unknown as {
+      volume?: any
+      clickSynth?: any
+      accentSynth?: any
+    }
+    if (!m.volume || !m.clickSynth || !m.accentSynth) {
+      metronomeInstance = new MetronomeService()
+    }
   }
   return metronomeInstance
 }
 
 // Export types for use in components
 export type { MetronomeConfig, VisualCallback }
+
+// Test-only helper to ensure a fresh instance after mocks are applied
+export const __resetMetronomeForTests = (): void => {
+  try {
+    metronomeInstance?.dispose?.()
+  } catch {
+    // ignore dispose errors in tests
+  }
+  metronomeInstance = null
+}

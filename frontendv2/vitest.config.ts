@@ -10,14 +10,23 @@ export default defineConfig({
     setupFiles: './src/tests/setup.ts',
     exclude: ['node_modules/**', 'tests/e2e/**', '**/*.e2e.test.ts'],
 
-    // Use forks pool for better stability with complex module graphs
+    // Use forks pool with reduced parallelism for memory efficiency
     pool: 'forks',
     poolOptions: {
       forks: {
-        maxForks: 4, // Allow parallel test execution
+        maxForks: 2, // Reduced from 4 to prevent memory exhaustion
         minForks: 1,
+        // Enable isolation to prevent state leakage between tests
+        isolate: true,
       },
     },
+
+    // Memory optimization settings
+    isolate: true, // Run each test file in isolation
+    clearMocks: true, // Clear mock call history between tests
+    restoreMocks: true, // Restore original implementations
+    unstubEnvs: true, // Restore environment variables
+    unstubGlobals: true, // Restore global stubs
 
     // Reasonable timeouts
     testTimeout: 30000,

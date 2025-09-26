@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import * as Tone from 'tone'
-import { getMetronome } from './metronomeService'
+import { getMetronome, __resetMetronomeForTests } from './metronomeService'
 
 // Mock timers
 vi.useFakeTimers()
@@ -51,7 +51,8 @@ describe('MetronomeService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.clearAllTimers()
-    // Get fresh instance for each test
+    // Ensure a fresh instance after Tone mock is applied
+    __resetMetronomeForTests()
     metronome = getMetronome()
   })
 

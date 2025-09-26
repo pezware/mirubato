@@ -13,6 +13,7 @@ import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
 import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
 import { runScoreIdNormalization } from './utils/migrations/scoreIdNormalization'
+import { repairCorruptedCanonicalIds } from './utils/migrations/repairCanonicalScoreIds'
 import { useBetaFeature } from './hooks/useBetaFeatures'
 import { TimerProvider } from './contexts/TimerContext'
 
@@ -96,6 +97,7 @@ function App() {
       // Run migrations for data consistency
       runLowercaseMigration() // Convert enum values to lowercase
       runScoreIdNormalization() // Normalize all score IDs
+      repairCorruptedCanonicalIds() // Repair corrupted canonical scoreIds
 
       // Check if user is authenticated on app load
       if (isMounted) {

@@ -2,6 +2,9 @@ import { describe, it, expect, vi } from 'vitest'
 import { app } from '../../src/index'
 
 // Mock the environment
+// Create a simple KV store mock that actually stores values
+const kvStore: Record<string, string> = {}
+
 const mockEnv = {
   DB: {
     prepare: vi.fn(() => ({
@@ -17,12 +20,19 @@ const mockEnv = {
   MAGIC_LINK_SECRET: 'test-magic-link-secret',
   GOOGLE_CLIENT_ID: 'test-google-client-id',
   MUSIC_CATALOG: {
-    get: vi.fn().mockImplementation(async key => {
-      if (key === '__health_check_test') return '{"timestamp": 123}'
-      return null
+    get: vi.fn().mockImplementation(async (key: string) => {
+      // Return the stored value if it exists
+      return kvStore[key] || null
     }),
-    put: vi.fn().mockResolvedValue(undefined),
-    delete: vi.fn().mockResolvedValue(undefined),
+    put: vi.fn().mockImplementation(async (key: string, value: string) => {
+      // Store the value
+      kvStore[key] = value
+      return undefined
+    }),
+    delete: vi.fn().mockImplementation(async (key: string) => {
+      delete kvStore[key]
+      return undefined
+    }),
     list: vi.fn().mockResolvedValue({ keys: [] }),
   },
   RATE_LIMITER: undefined,

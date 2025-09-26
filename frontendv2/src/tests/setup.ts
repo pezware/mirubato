@@ -1,20 +1,71 @@
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
-import { vi, afterEach } from 'vitest'
+import { vi, afterEach, beforeAll } from 'vitest'
 
-// Automatically cleanup after each test to prevent memory leaks
+// Silence console output in tests to reduce memory usage
+// const originalConsole = {
+//   log: console.log,
+//   warn: console.warn,
+//   info: console.info,
+//   debug: console.debug,
+// }
+
+beforeAll(() => {
+  // Reduce console output in tests
+  const isVerbose = process.env.VERBOSE_TESTS === 'true'
+  if (!isVerbose) {
+    console.log = vi.fn()
+    console.info = vi.fn()
+    console.debug = vi.fn()
+    // Keep warn and error for important messages
+  }
+})
+
+// Comprehensive cleanup after each test to prevent memory leaks
 afterEach(() => {
+  // Clean up React components
   cleanup()
-  // Clear all mocks to prevent memory leaks from retained mock data
+
+  // Clear all mocks and their history
   vi.clearAllMocks()
-  // Reset localStorage to prevent test interference
+  vi.clearAllTimers()
+
+  // Reset fake timers if they were used
+  if (vi.isFakeTimers()) {
+    vi.useRealTimers()
+  }
+
+  // Clear localStorage and sessionStorage
   localStorage.clear()
-  // Clean up store event listeners and timers via global handoff to avoid module import races
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.clear()
+  }
+
+  // Clean up store event listeners and timers via global handoff
   declare global {
     var __cleanupLogbookStore: (() => void) | undefined
+    var __cleanupRepertoireStore: (() => void) | undefined
+    var __cleanupAuthStore: (() => void) | undefined
   }
-  const storeCleanup = globalThis.__cleanupLogbookStore
-  if (typeof storeCleanup === 'function') storeCleanup()
+
+  const cleanupFunctions = [
+    globalThis.__cleanupLogbookStore,
+    globalThis.__cleanupRepertoireStore,
+    globalThis.__cleanupAuthStore,
+  ]
+
+  cleanupFunctions.forEach(cleanup => {
+    if (typeof cleanup === 'function') {
+      try {
+        cleanup()
+      } catch {
+        // Ignore cleanup errors in tests
+      }
+    }
+  })
+
+  // Clear any pending promises or microtasks
+  return new Promise(resolve => setImmediate(resolve))
 })
 
 // Mock localStorage with actual storage functionality

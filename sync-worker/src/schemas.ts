@@ -6,7 +6,6 @@
 import { z } from 'zod'
 import {
   generateNormalizedScoreId,
-  parseScoreId,
   normalizeExistingScoreId,
 } from './utils/scoreIdNormalizer'
 
@@ -243,29 +242,36 @@ export function sanitizeEntry(
     // Normalize score IDs if pieces are present
     if (validated.pieces && Array.isArray(validated.pieces)) {
       validated.pieces = validated.pieces.map((piece: any) => {
-        if (piece && typeof piece === 'object' && piece.title) {
-          // Generate normalized scoreId from piece title and composer
-          const scoreId = generateNormalizedScoreId(piece.title, piece.composer)
-          return {
-            ...piece,
-            id: scoreId, // Add normalized scoreId to each piece
-          }
+        if (!piece || typeof piece !== 'object') {
+          return piece
         }
-        return piece
+
+        const normalizedPiece = { ...piece }
+        if (typeof normalizedPiece.id === 'string' && normalizedPiece.id.trim()) {
+          normalizedPiece.id = normalizeExistingScoreId(normalizedPiece.id)
+        } else if (normalizedPiece.title) {
+          normalizedPiece.id = generateNormalizedScoreId(
+            normalizedPiece.title,
+            normalizedPiece.composer
+          )
+        }
+
+        return normalizedPiece
       })
     }
 
     // Also normalize standalone scoreId field if present
-    if (validated.scoreId && typeof validated.scoreId === 'string') {
-      const parsed = parseScoreId(validated.scoreId)
-      validated.scoreId = generateNormalizedScoreId(
-        parsed.title,
-        parsed.composer || undefined
-      )
+    if (typeof validated.scoreId === 'string' && validated.scoreId.trim()) {
+      const sanitized = normalizeExistingScoreId(validated.scoreId)
+      validated.scoreId = sanitized || undefined
     }
 
     // Normalize scoreTitle and scoreComposer if present (for backward compatibility)
-    if (validated.scoreTitle && typeof validated.scoreTitle === 'string') {
+    if (
+      !validated.scoreId &&
+      validated.scoreTitle &&
+      typeof validated.scoreTitle === 'string'
+    ) {
       const scoreComposer =
         typeof validated.scoreComposer === 'string'
           ? validated.scoreComposer

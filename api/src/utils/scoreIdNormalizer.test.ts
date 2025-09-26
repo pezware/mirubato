@@ -165,6 +165,11 @@ describe('scoreIdNormalizer', () => {
     it('should handle title only', () => {
       expect(normalizeExistingScoreId('piece')).toBe('piece-unknown')
     })
+
+    it('should leave canonical score IDs untouched', () => {
+      expect(normalizeExistingScoreId('score_abc123')).toBe('score_abc123')
+      expect(normalizeExistingScoreId(' score_XY-123 ')).toBe('score_XY-123')
+    })
   })
 
   describe('findSimilarPieces', () => {
