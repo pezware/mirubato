@@ -410,7 +410,10 @@ repertoireHandler.delete('/:scoreId/dissociate', async c => {
     const repertoireItem = (repertoireItems.results?.[0] || undefined) as
       | Record<string, unknown>
       | undefined
-    const logbookEntries = (logs.results || []) as Array<{ id: string; data: string }>
+    const logbookEntries = (logs.results || []) as Array<{
+      id: string
+      data: string
+    }>
 
     if (!repertoireItem) {
       throw Errors.NotFound('Repertoire item not found')

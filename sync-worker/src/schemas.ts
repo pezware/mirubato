@@ -247,7 +247,10 @@ export function sanitizeEntry(
         }
 
         const normalizedPiece = { ...piece }
-        if (typeof normalizedPiece.id === 'string' && normalizedPiece.id.trim()) {
+        if (
+          typeof normalizedPiece.id === 'string' &&
+          normalizedPiece.id.trim()
+        ) {
           normalizedPiece.id = normalizeExistingScoreId(normalizedPiece.id)
         } else if (normalizedPiece.title) {
           normalizedPiece.id = generateNormalizedScoreId(

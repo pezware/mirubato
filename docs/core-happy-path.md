@@ -106,16 +106,19 @@ sequenceDiagram
 ## Key Interaction Patterns
 
 ### 1. **Offline-First Architecture**
+
 - Frontend caches data locally using IndexedDB
 - WebSocket sync ensures eventual consistency
 - Service Workers handle offline mode
 
 ### 2. **Real-Time Synchronization**
+
 - WebSocket connection via Sync Worker
 - Automatic reconnection with exponential backoff
 - Conflict resolution based on timestamps
 
 ### 3. **Performance Optimizations**
+
 - KV cache for frequently accessed data (sessions, user preferences)
 - R2 CDN for sheet music files
 - D1 connection pooling for database queries

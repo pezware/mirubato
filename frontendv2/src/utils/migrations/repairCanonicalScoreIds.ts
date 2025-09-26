@@ -88,7 +88,9 @@ export function repairCorruptedCanonicalIds(): void {
 
           // Check main scoreId field
           if (repairedEntry.scoreId) {
-            const originalId = detectAndExtractCanonicalId(repairedEntry.scoreId)
+            const originalId = detectAndExtractCanonicalId(
+              repairedEntry.scoreId
+            )
             if (originalId) {
               console.log(
                 `[Migration] Repairing entry scoreId: "${repairedEntry.scoreId}" -> "${originalId}"`
@@ -103,7 +105,9 @@ export function repairCorruptedCanonicalIds(): void {
           if (repairedEntry.pieces && Array.isArray(repairedEntry.pieces)) {
             repairedEntry.pieces = repairedEntry.pieces.map(piece => {
               if (piece && piece.id) {
-                const originalId = detectAndExtractCanonicalId(piece.id as string)
+                const originalId = detectAndExtractCanonicalId(
+                  piece.id as string
+                )
                 if (originalId) {
                   console.log(
                     `[Migration] Repairing piece ID: "${piece.id}" -> "${originalId}"`
@@ -128,7 +132,9 @@ export function repairCorruptedCanonicalIds(): void {
 
         if (hasChanges) {
           localStorage.setItem(entriesKey, JSON.stringify(repairedEntries))
-          console.log(`[Migration] Repaired ${entriesRepaired} logbook entries, ${piecesRepaired} pieces`)
+          console.log(
+            `[Migration] Repaired ${entriesRepaired} logbook entries, ${piecesRepaired} pieces`
+          )
         }
       } catch (error) {
         console.error('[Migration] Failed to repair logbook entries:', error)
@@ -165,7 +171,9 @@ export function repairCorruptedCanonicalIds(): void {
 
           // Also check score_id field (backend format)
           if (repairedItem.score_id) {
-            const originalId = detectAndExtractCanonicalId(repairedItem.score_id)
+            const originalId = detectAndExtractCanonicalId(
+              repairedItem.score_id
+            )
             if (originalId) {
               console.log(
                 `[Migration] Repairing repertoire score_id: "${repairedItem.score_id}" -> "${originalId}"`
@@ -188,7 +196,9 @@ export function repairCorruptedCanonicalIds(): void {
 
         if (hasChanges) {
           localStorage.setItem(repertoireKey, JSON.stringify(repairedItems))
-          console.log(`[Migration] Repaired ${repertoireRepaired} repertoire items`)
+          console.log(
+            `[Migration] Repaired ${repertoireRepaired} repertoire items`
+          )
         }
       } catch (error) {
         console.error('[Migration] Failed to repair repertoire items:', error)
@@ -244,10 +254,15 @@ export function repairCorruptedCanonicalIds(): void {
         `[Migration] Summary: ${entriesRepaired} entries, ${piecesRepaired} pieces, ${repertoireRepaired} repertoire items`
       )
     } else {
-      console.log('[Migration] No corrupted canonical scoreIds found - data is clean')
+      console.log(
+        '[Migration] No corrupted canonical scoreIds found - data is clean'
+      )
     }
   } catch (error) {
-    console.error('[Migration] Unexpected error during canonical scoreId repair:', error)
+    console.error(
+      '[Migration] Unexpected error during canonical scoreId repair:',
+      error
+    )
     // Still mark as complete to avoid running repeatedly on error
     localStorage.setItem(REPAIR_MIGRATION_KEY, new Date().toISOString())
   }

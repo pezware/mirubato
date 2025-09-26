@@ -233,8 +233,9 @@ class MetronomeService {
     }
     if (!vol) {
       try {
-        vol = new (Tone as unknown as { Volume: new (db: number) => unknown })
-          .Volume(initialDb)
+        vol = new (
+          Tone as unknown as { Volume: new (db: number) => unknown }
+        ).Volume(initialDb)
       } catch {
         // ignore
       }
@@ -286,12 +287,15 @@ export const getMetronome = (): MetronomeService => {
   if (!metronomeInstance) {
     metronomeInstance = new MetronomeService()
   } else {
-    const m: Partial<{ volume: VolumeLike; clickSynth: SynthLike; accentSynth: SynthLike }> =
-      metronomeInstance as unknown as Partial<{
-        volume: VolumeLike
-        clickSynth: SynthLike
-        accentSynth: SynthLike
-      }>
+    const m: Partial<{
+      volume: VolumeLike
+      clickSynth: SynthLike
+      accentSynth: SynthLike
+    }> = metronomeInstance as unknown as Partial<{
+      volume: VolumeLike
+      clickSynth: SynthLike
+      accentSynth: SynthLike
+    }>
     if (!m.volume || !m.clickSynth || !m.accentSynth) {
       metronomeInstance = new MetronomeService()
     }

@@ -5,7 +5,6 @@ import { getMetronome, __resetMetronomeForTests } from './metronomeService'
 // Ensure fake timers are active for scheduler-based tests
 // (Also reinforced in beforeEach to avoid accidental resets)
 
-
 // Mock Tone.js
 vi.mock('tone', () => {
   const mockSynth = {
