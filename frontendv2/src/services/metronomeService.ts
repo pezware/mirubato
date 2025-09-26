@@ -225,7 +225,6 @@ class MetronomeService {
     let vol: unknown
     try {
       // Prefer function-call style to align with mocks
-      // @ts-expect-error - mock may implement function-call style
       vol = (Tone as unknown as { Volume?: (db: number) => unknown }).Volume?.(
         initialDb
       )
@@ -251,7 +250,6 @@ class MetronomeService {
   private createSynth(options: unknown): SynthLike {
     let synth: unknown
     try {
-      // @ts-expect-error - mock may implement function-call style
       synth = (
         Tone as unknown as { MembraneSynth?: (opts: unknown) => unknown }
       ).MembraneSynth?.(options)
