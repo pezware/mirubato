@@ -10,13 +10,26 @@ interface VisualCallback {
   onBeat?: (beatNumber: number, isAccent: boolean) => void
 }
 
+// Minimal runtime types that work for both real Tone.js and test mocks
+interface VolumeLike {
+  volume: { value: number; rampTo: (db: number, time: number) => void }
+  toDestination?: () => VolumeLike
+  dispose?: () => void
+}
+
+interface SynthLike {
+  triggerAttackRelease: (note: string, dur: string, time?: number) => void
+  connect: (dest: VolumeLike) => SynthLike | void
+  dispose?: () => void
+}
+
 class MetronomeService {
-  private clickSynth: Tone.MembraneSynth
-  private accentSynth: Tone.MembraneSynth
+  private clickSynth: SynthLike
+  private accentSynth: SynthLike
   private currentBeat: number = 0
   private beatsPerMeasure: number = 4
   private isPlaying: boolean = false
-  private volume: Tone.Volume
+  private volume: VolumeLike
   private visualCallback?: VisualCallback
   private lookaheadTime: number = 0.1 // How far ahead to schedule audio (sec)
   private scheduleInterval: number = 25 // How often to call scheduler (ms)
@@ -25,11 +38,10 @@ class MetronomeService {
   private tempo: number = 120
 
   constructor() {
-    // Create volume control
-    this.volume = new Tone.Volume(-6).toDestination()
+    // Create nodes using safe factories (work in prod and with test mocks)
+    this.volume = this.createVolume(-6)
 
-    // Create synths for normal and accent beats
-    this.clickSynth = new Tone.MembraneSynth({
+    this.clickSynth = this.createSynth({
       pitchDecay: 0.008,
       octaves: 6,
       envelope: {
@@ -38,9 +50,9 @@ class MetronomeService {
         sustain: 0,
         release: 0.1,
       },
-    }).connect(this.volume)
+    })
 
-    this.accentSynth = new Tone.MembraneSynth({
+    this.accentSynth = this.createSynth({
       pitchDecay: 0.008,
       octaves: 8,
       envelope: {
@@ -49,7 +61,7 @@ class MetronomeService {
         sustain: 0,
         release: 0.15,
       },
-    }).connect(this.volume)
+    })
   }
 
   async start(
@@ -87,11 +99,10 @@ class MetronomeService {
   private ensureNodes(): void {
     // Lazily (re)create nodes if missing (robust against mocking differences)
     if (!this.volume) {
-      const vol: any = (Tone as any).Volume?.(-6) ?? new (Tone as any).Volume(-6)
-      this.volume = vol.toDestination ? vol.toDestination() : vol
+      this.volume = this.createVolume(-6)
     }
     if (!this.clickSynth) {
-      this.clickSynth = new Tone.MembraneSynth({
+      this.clickSynth = this.createSynth({
         pitchDecay: 0.008,
         octaves: 6,
         envelope: {
@@ -100,10 +111,10 @@ class MetronomeService {
           sustain: 0,
           release: 0.1,
         },
-      }).connect(this.volume)
+      })
     }
     if (!this.accentSynth) {
-      this.accentSynth = new Tone.MembraneSynth({
+      this.accentSynth = this.createSynth({
         pitchDecay: 0.008,
         octaves: 8,
         envelope: {
@@ -112,7 +123,7 @@ class MetronomeService {
           sustain: 0,
           release: 0.15,
         },
-      }).connect(this.volume)
+      })
     }
   }
 
@@ -188,8 +199,7 @@ class MetronomeService {
     const db = volume === 0 ? -Infinity : -60 + volume * 60
     // Lazily (re)create volume node if it wasn't initialized yet
     if (!this.volume) {
-      const vol: any = (Tone as any).Volume?.(-6) ?? new (Tone as any).Volume(-6)
-      this.volume = vol.toDestination ? vol.toDestination() : vol
+      this.volume = this.createVolume(-6)
     }
     this.volume.volume.rampTo(db, 0.05) // Smooth volume changes
   }
@@ -207,7 +217,66 @@ class MetronomeService {
     this.stop()
     this.clickSynth?.dispose?.()
     this.accentSynth?.dispose?.()
-    ;(this.volume as any)?.dispose?.()
+    this.volume?.dispose?.()
+  }
+
+  // Factories that work with both real Tone.js and test mocks
+  private createVolume(initialDb: number): VolumeLike {
+    let vol: unknown
+    try {
+      // Prefer function-call style to align with mocks
+      // @ts-expect-error - mock may implement function-call style
+      vol = (Tone as unknown as { Volume?: (db: number) => unknown }).Volume?.(
+        initialDb
+      )
+    } catch {
+      // ignore
+    }
+    if (!vol) {
+      try {
+        vol = new (Tone as unknown as { Volume: new (db: number) => unknown })
+          .Volume(initialDb)
+      } catch {
+        // ignore
+      }
+    }
+    const v = vol as VolumeLike
+    if (v && typeof v.toDestination === 'function') {
+      const maybe = v.toDestination()
+      return (maybe ?? v) as VolumeLike
+    }
+    return v as VolumeLike
+  }
+
+  private createSynth(options: unknown): SynthLike {
+    let synth: unknown
+    try {
+      // @ts-expect-error - mock may implement function-call style
+      synth = (
+        Tone as unknown as { MembraneSynth?: (opts: unknown) => unknown }
+      ).MembraneSynth?.(options)
+    } catch {
+      // ignore
+    }
+    if (!synth) {
+      try {
+        synth = new (
+          Tone as unknown as { MembraneSynth: new (opts: unknown) => unknown }
+        ).MembraneSynth(options)
+      } catch {
+        // ignore
+      }
+    }
+    const s = synth as SynthLike
+    if (s && typeof s.connect === 'function' && this.volume) {
+      try {
+        const connected = s.connect(this.volume)
+        return (connected || s) as SynthLike
+      } catch {
+        // ignore
+      }
+    }
+    return s as SynthLike
   }
 }
 
@@ -219,11 +288,12 @@ export const getMetronome = (): MetronomeService => {
   if (!metronomeInstance) {
     metronomeInstance = new MetronomeService()
   } else {
-    const m = metronomeInstance as unknown as {
-      volume?: any
-      clickSynth?: any
-      accentSynth?: any
-    }
+    const m: Partial<{ volume: VolumeLike; clickSynth: SynthLike; accentSynth: SynthLike }> =
+      metronomeInstance as unknown as Partial<{
+        volume: VolumeLike
+        clickSynth: SynthLike
+        accentSynth: SynthLike
+      }>
     if (!m.volume || !m.clickSynth || !m.accentSynth) {
       metronomeInstance = new MetronomeService()
     }

@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import * as Tone from 'tone'
 import { getMetronome, __resetMetronomeForTests } from './metronomeService'
 
-// Mock timers
-vi.useFakeTimers()
+// Ensure fake timers are active for scheduler-based tests
+// (Also reinforced in beforeEach to avoid accidental resets)
+
 
 // Mock Tone.js
 vi.mock('tone', () => {
@@ -49,10 +50,14 @@ describe('MetronomeService', () => {
   let metronome: ReturnType<typeof getMetronome>
 
   beforeEach(() => {
-    vi.clearAllMocks()
-    vi.clearAllTimers()
-    // Ensure a fresh instance after Tone mock is applied
+    // Reset instance first to avoid counting its dispose against expectations
     __resetMetronomeForTests()
+    // Always use fake timers for scheduler tests
+    vi.useFakeTimers()
+    vi.clearAllTimers()
+    // Clear spies after reset to zero out counts
+    vi.clearAllMocks()
+    // Fresh instance after mocks
     metronome = getMetronome()
   })
 
