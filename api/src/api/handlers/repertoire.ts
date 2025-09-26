@@ -4,7 +4,10 @@ import { authMiddleware, validateBody, type Variables } from '../middleware'
 import { Errors } from '../../utils/errors'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
-import { normalizeExistingScoreId } from '../../utils/scoreIdNormalizer'
+import {
+  normalizeExistingScoreId,
+  isCanonicalScoreId,
+} from '../../utils/scoreIdNormalizer'
 
 // Validation schemas
 const repertoireStatusSchema = z.enum([
@@ -349,11 +352,17 @@ repertoireHandler.delete('/:scoreId', async c => {
   const rawScoreId = c.req.param('scoreId')
   const scoreId = normalizeExistingScoreId(rawScoreId)
 
+  // Support deletion of legacy corrupted IDs like "score_abc123-unknown"
+  const candidates = [scoreId]
+  if (isCanonicalScoreId(scoreId)) {
+    candidates.push(`${scoreId}-unknown`)
+  }
+
   try {
-    const result = await c.env.DB.prepare(
-      'DELETE FROM user_repertoire WHERE user_id = ? AND score_id = ?'
-    )
-      .bind(userId, scoreId)
+    const placeholders = candidates.map(() => '?').join(', ')
+    const sql = `DELETE FROM user_repertoire WHERE user_id = ? AND score_id IN (${placeholders})`
+    const result = await c.env.DB.prepare(sql)
+      .bind(userId, ...candidates)
       .run()
 
     if (result.meta.changes === 0) {
@@ -376,27 +385,32 @@ repertoireHandler.delete('/:scoreId/dissociate', async c => {
   const rawScoreId = c.req.param('scoreId')
   const scoreId = normalizeExistingScoreId(rawScoreId)
 
-  try {
-    // Start a transaction to ensure data consistency
-    const result = await c.env.DB.batch([
-      // First, get the repertoire item to extract piece metadata
-      c.env.DB.prepare(
-        'SELECT * FROM user_repertoire WHERE user_id = ? AND score_id = ?'
-      ).bind(userId, scoreId),
+  // Support dissociation for legacy corrupted IDs like "score_abc123-unknown"
+  const candidates = [scoreId]
+  if (isCanonicalScoreId(scoreId)) {
+    candidates.push(`${scoreId}-unknown`)
+  }
 
-      // Get all logbook entries that reference this scoreId
-      c.env.DB.prepare(
-        `SELECT id, data FROM sync_data 
+  try {
+    // Look up repertoire items and related logbook entries for any candidate ID
+    const repPlaceholders = candidates.map(() => '?').join(', ')
+    const repSql = `SELECT * FROM user_repertoire WHERE user_id = ? AND score_id IN (${repPlaceholders})`
+    const repertoireItems = await c.env.DB.prepare(repSql)
+      .bind(userId, ...candidates)
+      .all()
+
+    const logSql = `SELECT id, data FROM sync_data 
          WHERE user_id = ? 
          AND entity_type = 'logbook_entry' 
-         AND json_extract(data, '$.scoreId') = ?`
-      ).bind(userId, scoreId),
-    ])
+         AND json_extract(data, '$.scoreId') IN (${repPlaceholders})`
+    const logs = await c.env.DB.prepare(logSql)
+      .bind(userId, ...candidates)
+      .all()
 
-    const repertoireItem = result[0].results[0] as
+    const repertoireItem = (repertoireItems.results?.[0] || undefined) as
       | Record<string, unknown>
       | undefined
-    const logbookEntries = result[1].results as Array<{
+    const logbookEntries = (logs.results || []) as Array<{
       id: string
       data: string
     }>
@@ -432,15 +446,13 @@ repertoireHandler.delete('/:scoreId/dissociate', async c => {
       }
     }
 
-    // Prepare batch operations to update logbook entries
+    // Prepare batch operations to update logbook entries and remove repertoire item(s)
     const updateOperations = []
 
-    // Remove from repertoire
-    updateOperations.push(
-      c.env.DB.prepare(
-        'DELETE FROM user_repertoire WHERE user_id = ? AND score_id = ?'
-      ).bind(userId, scoreId)
-    )
+    // Remove any matching repertoire items (canonical or corrupted)
+    const delPlaceholders = candidates.map(() => '?').join(', ')
+    const delSql = `DELETE FROM user_repertoire WHERE user_id = ? AND score_id IN (${delPlaceholders})`
+    updateOperations.push(c.env.DB.prepare(delSql).bind(userId, ...candidates))
 
     // Update all logbook entries to remove scoreId and embed piece data
     for (const entry of logbookEntries) {

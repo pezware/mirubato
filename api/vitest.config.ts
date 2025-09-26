@@ -6,6 +6,23 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./tests/setup.ts'],
+
+    // Memory optimization settings
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        maxForks: 2, // Limit parallel execution
+        minForks: 1,
+        isolate: true,
+      },
+    },
+
+    // Cleanup settings
+    clearMocks: true,
+    restoreMocks: true,
+    unstubEnvs: true,
+    unstubGlobals: true,
+
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

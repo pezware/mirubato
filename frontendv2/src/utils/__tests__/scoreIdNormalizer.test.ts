@@ -153,6 +153,11 @@ describe('scoreIdNormalizer', () => {
       const result = normalizeExistingScoreId('just a piece title')
       expect(result).toBe('just a piece title-unknown')
     })
+
+    it('should leave canonical score IDs untouched', () => {
+      expect(normalizeExistingScoreId('score_abc123')).toBe('score_abc123')
+      expect(normalizeExistingScoreId(' score_XY-123 ')).toBe('score_XY-123')
+    })
   })
 
   describe('Backward compatibility', () => {

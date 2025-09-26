@@ -11,7 +11,7 @@ import { localEventBus, type LocalEventData } from '../services/localEventBus'
 import {
   generateNormalizedScoreId,
   isSameScore,
-  parseScoreId,
+  normalizeExistingScoreId,
 } from '../utils/scoreIdNormalizer'
 
 interface LogbookState {
@@ -228,7 +228,17 @@ function sanitizeEntryForSync(entry: LogbookEntry): LogbookEntry {
   // Normalize pieces with scoreIds
   const normalizedPieces =
     cleanEntry.pieces?.map(p => {
-      const scoreId = p.id || generateNormalizedScoreId(p.title, p.composer)
+      if (!p) {
+        return p
+      }
+
+      let scoreId: string | undefined
+      if (typeof p.id === 'string' && p.id.trim()) {
+        scoreId = normalizeExistingScoreId(p.id)
+      } else if (p.title) {
+        scoreId = generateNormalizedScoreId(p.title, p.composer)
+      }
+
       return {
         ...p,
         id: scoreId,
@@ -240,12 +250,9 @@ function sanitizeEntryForSync(entry: LogbookEntry): LogbookEntry {
 
   // Normalize standalone scoreId if present
   let normalizedScoreId = cleanEntry.scoreId
-  if (normalizedScoreId && typeof normalizedScoreId === 'string') {
-    const parsed = parseScoreId(normalizedScoreId)
-    normalizedScoreId = generateNormalizedScoreId(
-      parsed.title,
-      parsed.composer || undefined
-    )
+  if (typeof normalizedScoreId === 'string' && normalizedScoreId.trim()) {
+    const sanitized = normalizeExistingScoreId(normalizedScoreId)
+    normalizedScoreId = sanitized || undefined
   }
 
   // Normalize scoreTitle/scoreComposer if present (backward compatibility)
