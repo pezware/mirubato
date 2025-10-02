@@ -623,6 +623,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         error: null,
       })
 
+      // Clear sync markers so next login performs a full catch-up
+      try {
+        localStorage.removeItem('mirubato:lastSyncTime')
+      } catch {
+        // noop
+      }
+
       // Set back to local mode after logout
       try {
         const logbookStore = useLogbookStore.getState()
@@ -642,6 +649,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       } catch (error) {
         console.warn('Could not set local mode after logout:', error)
+      }
+
+      // Ensure WebSocket offline queue is cleared after logout to prevent cross-user leakage
+      try {
+        const { resetWebSocketSync } = await import('../services/webSocketSync')
+        resetWebSocketSync()
+      } catch (e) {
+        console.warn('Failed to reset WebSocket sync after logout:', e)
       }
     }
   },

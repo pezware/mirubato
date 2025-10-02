@@ -248,9 +248,14 @@ export class SyncCoordinator implements DurableObject {
     // Fetch recent changes from database
     if (this.env.DB) {
       try {
-        const lastSyncTime = event.lastSyncTime
-          ? new Date(event.lastSyncTime).getTime()
-          : Date.now() - 7 * 24 * 60 * 60 * 1000 // Default to last 7 days
+        // Determine baseline time safely (guard against invalid or future client clocks)
+        let lastSyncTime = Date.now() - 7 * 24 * 60 * 60 * 1000 // Default to last 7 days
+        if (event.lastSyncTime) {
+          const parsed = Date.parse(event.lastSyncTime)
+          if (Number.isFinite(parsed) && parsed <= Date.now()) {
+            lastSyncTime = parsed
+          }
+        }
 
         // Fetch logbook entries
         const entriesResults = await this.env.DB.prepare(
@@ -398,6 +403,13 @@ export class SyncCoordinator implements DurableObject {
       // Continue broadcasting even if database save fails
     }
 
+    // Normalize event timestamp to server time to avoid client clock skew issues
+    try {
+      event.timestamp = new Date().toISOString()
+    } catch {
+      // best-effort only
+    }
+
     // Broadcast to all other clients of the same user
     for (const [clientId, client] of this.clients) {
       if (clientId !== senderId && client.userId === sender.userId) {
@@ -539,6 +551,13 @@ export class SyncCoordinator implements DurableObject {
     } catch (error) {
       console.error(`❌ Failed to save repertoire change to database:`, error)
       // Continue broadcasting even if database save fails
+    }
+
+    // Normalize event timestamp to server time to avoid client clock skew issues
+    try {
+      event.timestamp = new Date().toISOString()
+    } catch {
+      // best-effort only
     }
 
     // Broadcast to all other clients of the same user
