@@ -227,16 +227,26 @@ export class WebSocketSync {
 
         // Only send SYNC_REQUEST if:
         // 1. Last sync was more than 30 seconds ago, OR
-        // 2. We have offline queued events
-        if (timeSinceLastSync > thirtySeconds || this.offlineQueue.length > 0) {
+        // 2. Last sync time appears invalid or from the future (clock skew), OR
+        // 3. We have offline queued events
+        if (
+          Number.isNaN(timeSinceLastSync) ||
+          timeSinceLastSync < 0 ||
+          timeSinceLastSync > thirtySeconds ||
+          this.offlineQueue.length > 0
+        ) {
           this.log(
             `📊 Sending SYNC_REQUEST (last sync: ${Math.round(timeSinceLastSync / 1000)}s ago)`
           )
-          this.send({
+          const payload: SyncEvent = {
             type: 'SYNC_REQUEST',
             timestamp: new Date().toISOString(),
-            lastSyncTime: lastSyncTime,
-          })
+          }
+          // Only include lastSyncTime if valid and not from the future
+          if (!Number.isNaN(timeSinceLastSync) && timeSinceLastSync >= 0) {
+            payload.lastSyncTime = lastSyncTime
+          }
+          this.send(payload)
         } else {
           this.log(
             `⏸️ Skipping SYNC_REQUEST (synced ${Math.round(timeSinceLastSync / 1000)}s ago)`
@@ -319,7 +329,14 @@ export class WebSocketSync {
     ]
 
     if (dataEvents.includes(event.type)) {
-      this.setLastSyncTime(event.timestamp)
+      // Clamp to server-now when incoming timestamp is invalid or in the future
+      const parsed = Date.parse(event.timestamp)
+      const now = Date.now()
+      const safeIso =
+        Number.isFinite(parsed) && parsed <= now
+          ? new Date(parsed).toISOString()
+          : new Date(now).toISOString()
+      this.setLastSyncTime(safeIso)
     }
 
     // Emit to event handlers
@@ -551,6 +568,12 @@ export class WebSocketSync {
     }
   }
 
+  // Expose a safe reset for auth transitions (e.g., logout)
+  public resetOfflineQueue(): void {
+    this.offlineQueue = []
+    this.clearPersistedOfflineQueue()
+  }
+
   private log(...args: unknown[]): void {
     if (this.enableLogging) {
       console.log('[WebSocketSync]', ...args)
@@ -572,6 +595,8 @@ export function getWebSocketSync(): WebSocketSync {
 
 export function resetWebSocketSync(): void {
   if (webSocketSyncInstance) {
+    // Clear any persisted events to avoid cross-user leakage after logout
+    webSocketSyncInstance.resetOfflineQueue()
     webSocketSyncInstance.disconnect()
     webSocketSyncInstance = null
   }
