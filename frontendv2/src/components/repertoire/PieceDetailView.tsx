@@ -67,7 +67,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   onStatusChange,
   onPieceUpdated,
 }) => {
-  const { t, i18n } = useTranslation(['repertoire', 'common', 'logbook'])
+  const { t, i18n } = useTranslation(['repertoire', 'common', 'logbook', 'reports'])
   const [timeFilter, setTimeFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
@@ -392,6 +392,73 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     <div className="space-y-4">
       {/* Combined Header, Stats, and Notes Card */}
       <Card padding="md">
+        {/* Top Summary Stats (aligned with Overview page) */}
+        {(() => {
+          // Compute today's total for this piece
+          const todayTotalMinutes = sessions.reduce((sum, s) => {
+            const d = new Date(s.timestamp)
+            const start = new Date()
+            start.setHours(0, 0, 0, 0)
+            const end = new Date(start)
+            end.setDate(end.getDate() + 1)
+            return d >= start && d < end ? sum + s.duration : sum
+          }, 0)
+
+          const renderTotalDuration = () => {
+            const totalMinutes = stats.totalPracticeTime
+            const totalHours = totalMinutes / 60
+            if (totalHours >= 100) {
+              const roundedHours = Math.ceil(totalHours)
+              return (
+                <>
+                  <span className="block sm:hidden">
+                    {t('reports:stats.hoursOnly', { hours: roundedHours })}
+                  </span>
+                  <span className="hidden sm:block">
+                    {formatDuration(totalMinutes)}
+                  </span>
+                </>
+              )
+            }
+            return formatDuration(totalMinutes)
+          }
+
+          return (
+            <div className="space-y-2 mb-4" data-testid="piece-summary-stats">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="bg-morandi-stone-50 rounded-lg p-2 sm:p-3 flex flex-col justify-center items-center">
+                  <p className="text-lg font-bold text-morandi-stone-900 text-center">
+                    {formatDuration(todayTotalMinutes)}
+                  </p>
+                  <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
+                    <span className="block sm:hidden">{t('reports:stats.today')}</span>
+                    <span className="hidden sm:block">{t('reports:stats.todaysPractice')}</span>
+                  </p>
+                </div>
+
+                <div className="bg-morandi-stone-100 rounded-lg p-2 sm:p-3 flex flex-col justify-center items-center">
+                  <p className="text-lg font-bold text-morandi-stone-900 text-center">
+                    {stats.sessionCount}
+                  </p>
+                  <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
+                    <span className="block sm:hidden">{t('reports:table.sessions')}</span>
+                    <span className="hidden sm:block">{t('reports:table.sessions')}</span>
+                  </p>
+                </div>
+
+                <div className="bg-morandi-rose-50 rounded-lg p-2 sm:p-3 flex flex-col justify-center items-center">
+                  <p className="text-lg font-bold text-morandi-stone-900 text-center">
+                    {renderTotalDuration()}
+                  </p>
+                  <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
+                    <span className="block sm:hidden">{t('reports:stats.total')}</span>
+                    <span className="hidden sm:block">{t('reports:totalPractice')}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
         {/* Header Section */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -418,27 +485,13 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           </div>
         </div>
 
+        
+
         {/* Divider */}
         <div className="border-t border-stone-200 my-4"></div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4">
-          <div>
-            <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
-              {t('repertoire:totalPractice')}
-            </div>
-            <div className="text-base sm:text-lg font-semibold text-stone-900">
-              {formatDuration(stats.totalPracticeTime)}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
-              {t('repertoire:sessions')}
-            </div>
-            <div className="text-base sm:text-lg font-semibold text-stone-900">
-              {stats.sessionCount}
-            </div>
-          </div>
+        {/* Current Status Only */}
+        <div className="mb-4">
           <div>
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
               {t('repertoire:status.current')}
@@ -464,14 +517,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                 <Edit2 className="w-3 h-3 opacity-60" />
               </button>
             )}
-          </div>
-          <div>
-            <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
-              {t('repertoire:avgSession')}
-            </div>
-            <div className="text-base sm:text-lg font-semibold text-stone-900">
-              {formatDuration(stats.avgSessionTime)}
-            </div>
           </div>
         </div>
 
