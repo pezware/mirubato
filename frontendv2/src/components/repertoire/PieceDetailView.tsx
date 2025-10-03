@@ -67,7 +67,12 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   onStatusChange,
   onPieceUpdated,
 }) => {
-  const { t, i18n } = useTranslation(['repertoire', 'common', 'logbook', 'reports'])
+  const { t, i18n } = useTranslation([
+    'repertoire',
+    'common',
+    'logbook',
+    'reports',
+  ])
   const [timeFilter, setTimeFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
@@ -431,8 +436,12 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                     {formatDuration(todayTotalMinutes)}
                   </p>
                   <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
-                    <span className="block sm:hidden">{t('reports:stats.today')}</span>
-                    <span className="hidden sm:block">{t('reports:stats.todaysPractice')}</span>
+                    <span className="block sm:hidden">
+                      {t('reports:stats.today')}
+                    </span>
+                    <span className="hidden sm:block">
+                      {t('reports:stats.todaysPractice')}
+                    </span>
                   </p>
                 </div>
 
@@ -441,8 +450,12 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                     {stats.sessionCount}
                   </p>
                   <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
-                    <span className="block sm:hidden">{t('reports:table.sessions')}</span>
-                    <span className="hidden sm:block">{t('reports:table.sessions')}</span>
+                    <span className="block sm:hidden">
+                      {t('reports:table.sessions')}
+                    </span>
+                    <span className="hidden sm:block">
+                      {t('reports:table.sessions')}
+                    </span>
                   </p>
                 </div>
 
@@ -451,8 +464,12 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                     {renderTotalDuration()}
                   </p>
                   <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
-                    <span className="block sm:hidden">{t('reports:stats.total')}</span>
-                    <span className="hidden sm:block">{t('reports:totalPractice')}</span>
+                    <span className="block sm:hidden">
+                      {t('reports:stats.total')}
+                    </span>
+                    <span className="hidden sm:block">
+                      {t('reports:totalPractice')}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -484,8 +501,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             />
           </div>
         </div>
-
-        
 
         {/* Divider */}
         <div className="border-t border-stone-200 my-4"></div>

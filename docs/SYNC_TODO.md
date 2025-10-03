@@ -22,11 +22,13 @@ This document tracks remaining gaps in the sync system and the plan to make mult
 Current: outbox is persisted to localStorage and deduped on entity/type.
 
 Plan:
+
 - Migrate outbox storage to IndexedDB (bigger, transactional, resilient).
 - Add `deviceId` + `clientChangeId` (UUID) per mutation event for idempotency.
 - Drain with backoff; remove on ACK (implicit by seq/token advancement or explicit server ACKs if added).
 
 Decision:
+
 - IndexedDB over localStorage
   - Pros: larger capacity, transactional writes, better performance
   - Cons: slightly higher implementation complexity
@@ -37,11 +39,13 @@ Decision:
 Problem (timestamps): susceptible to clock skew, reordering, and ambiguous boundaries.
 
 Solution (sequence tokens):
+
 - Add a monotonically increasing `seq` to the change log (or to `sync_data`).
 - Server issues `syncToken = lastSeq`; clients send `since: lastSeq` on pull/connect.
 - Server returns `changes WHERE seq > lastSeq ORDER BY seq` and a new `lastSeq`.
 
 Details:
+
 - Schema: add `seq INTEGER PRIMARY KEY AUTOINCREMENT` (or separate table), index `(user_id, seq)`.
 - Worker: `SYNC_REQUEST` accepts `lastSeq` (keep `lastSyncTime` fallback temporarily), queries by `seq`.
 - Client: store `lastSeq` instead of `lastSyncTime` once migrated; fall back to `/api/sync/pull` for first run.
@@ -49,17 +53,20 @@ Details:
 - Idempotency: record `(userId, deviceId, clientChangeId)` for exactly‑once semantics.
 
 Decision:
+
 - Sequence token over timestamps
   - Pros: deterministic ordering, immune to skew, simpler catch‑up
   - Cons: DB migration + code changes
   - Choice: Sequence token
 
 Transitional fallback (optional, Priority: Medium):
+
 - Increase default timestamp window from 7 → 30 days, and auto‑backfill once via `/api/sync/pull` if cursor is missing or stale. Remove after seq migration reaches >95% clients.
 
 ### 4. Conflict Resolution with Versions (Priority: Medium)
 
 Plan:
+
 - Server: include authoritative `version` in broadcasts and REST reads.
 - Client: prefer `version` over `updatedAt`; fall back to `updatedAt` when missing.
 - Consider field‑wise merge for notes/tags in the future (defer).
@@ -117,6 +124,7 @@ Plan:
 ## Recent Fixes
 
 October 2025
+
 - Server stamps event timestamps to avoid client clock skew
 - Client clamps future/invalid event timestamps when setting lastSync
 - Client sends SYNC_REQUEST when cursor invalid/future/old or offline queue > 0
@@ -124,6 +132,7 @@ October 2025
 - Worker ignores invalid/future `lastSyncTime` and defaults to safe window
 
 December 2024
+
 - `scoreId` mapping and sanitizer updates for repertoire items
 - ID field fallback in repertoire persistence (scoreId/score_id/id)
 - Immediate writes for repertoire sync to avoid data loss
