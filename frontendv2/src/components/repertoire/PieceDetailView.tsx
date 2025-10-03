@@ -537,7 +537,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           </div>
         </div>
 
-
         {/* Notes Section */}
         <div>
           <div className="flex items-center justify-between mb-3">
