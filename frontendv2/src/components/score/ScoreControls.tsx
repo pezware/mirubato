@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import * as Tone from 'tone'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
 import { cn } from '../../utils/cn'
@@ -135,6 +136,11 @@ export default function ScoreControls() {
 
   // Handle triple-click on metronome button
   const handleMetronomeClick = () => {
+    // Ensure audio context starts on user gesture (mobile/iPad)
+    if (Tone.context.state !== 'running') {
+      // Fire and forget; Tone.start() resolves immediately if already unlocked
+      void Tone.start()
+    }
     if (clickCount === 2) {
       setShowAdvancedMetronome(!showAdvancedMetronome)
       setClickCount(0)
