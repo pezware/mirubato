@@ -477,6 +477,8 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           )
         })()}
         {/* Header Section */}
+        {/* Divider */}
+        <div className="border-t border-stone-200 my-4"></div>
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <MusicTitleLarge className="text-stone-900">
@@ -535,8 +537,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-stone-200 my-4"></div>
 
         {/* Notes Section */}
         <div>
