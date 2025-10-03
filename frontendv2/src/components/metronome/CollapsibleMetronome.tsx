@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import * as Tone from 'tone'
 import {
   Play,
   Pause,
@@ -162,44 +163,13 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns, settings.beatsPerMeasure, isPlaying])
 
-  // Visual beat indicator
+  // Reset indicator when stopped (visual updates come from metronome callback when playing)
   useEffect(() => {
-    if (isPlaying) {
-      let nextBeatTime = Date.now()
-      let animationId: number
-      let beatCount = 0
-
-      const scheduleBeat = () => {
-        const now = Date.now()
-        const beatInterval = (60 / settings.bpm) * 1000
-
-        if (now >= nextBeatTime) {
-          setCurrentBeat(beatCount % settings.beatsPerMeasure)
-          setIsFlashing(true)
-          setTimeout(() => setIsFlashing(false), 100)
-
-          nextBeatTime += beatInterval
-          beatCount++
-
-          if (nextBeatTime < now) {
-            nextBeatTime = now + beatInterval
-          }
-        }
-
-        animationId = requestAnimationFrame(scheduleBeat)
-      }
-
-      animationId = requestAnimationFrame(scheduleBeat)
-
-      return () => {
-        if (animationId) {
-          cancelAnimationFrame(animationId)
-        }
-      }
-    } else {
+    if (!isPlaying) {
       setCurrentBeat(0)
+      setIsFlashing(false)
     }
-  }, [isPlaying, settings.bpm, settings.beatsPerMeasure])
+  }, [isPlaying])
 
   const handleTripleClick = () => {
     if (clickCount === 2) {
@@ -220,8 +190,14 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
     if (isPlaying) {
       metronome.stop()
       setIsPlaying(false)
+      setCurrentBeat(0)
+      setIsFlashing(false)
     } else {
       try {
+        // Ensure audio context starts on user gesture (mobile/iPad)
+        if (Tone.context.state !== 'running') {
+          await Tone.start()
+        }
         // Only use the beats that are within the current beats per measure
         const trimmedPatterns = {
           accent: patterns.accent.slice(0, settings.beatsPerMeasure),
@@ -231,12 +207,21 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
           triangle: patterns.triangle.slice(0, settings.beatsPerMeasure),
         }
 
-        await metronome.start({
-          tempo: settings.bpm,
-          volume: settings.volume / 100,
-          beatValue: settings.beatValue,
-          patterns: trimmedPatterns,
-        })
+        await metronome.start(
+          {
+            tempo: settings.bpm,
+            volume: settings.volume / 100,
+            beatValue: settings.beatValue,
+            patterns: trimmedPatterns,
+          },
+          {
+            onBeat: beatNumber => {
+              setCurrentBeat(beatNumber)
+              setIsFlashing(true)
+              window.setTimeout(() => setIsFlashing(false), 100)
+            },
+          }
+        )
         setIsPlaying(true)
       } catch (error) {
         console.error('Failed to start metronome:', error)
