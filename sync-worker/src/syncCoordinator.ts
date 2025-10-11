@@ -302,73 +302,69 @@ export class SyncCoordinator implements DurableObject {
     // Fetch recent changes from database
     if (this.env.DB) {
       try {
-        const {
-          count: entryMutations,
-          lastSeq: entrySeq,
-        } = await this.streamSyncData<z.infer<typeof LogbookEntrySchema>>({
-          clientId,
-          userId: client.userId,
-          entityType: 'logbook_entry',
-          eventType: 'BULK_SYNC',
-          lastSeq: requestedLastSeq,
-          fallbackSeconds: lastSyncTime / 1000,
-          rowParser: row => {
-            try {
-              const parsed = JSON.parse(row.data)
-              return sanitizeEntry(parsed)
-            } catch (error) {
-              console.error('Failed to parse logbook entry row:', error)
-              return null
-            }
-          },
-          handleDelete: (row, rowSeq) => {
-            const timestamp = new Date().toISOString()
-            this.sendToClient(clientId, {
-              type: 'ENTRY_DELETED',
-              entryId: row.entity_id,
-              timestamp,
-              seq: rowSeq,
-              lastSeq: rowSeq,
-            })
-            console.log(
-              `🗑️ Sent ENTRY_DELETED for ${row.entity_id} (seq ${rowSeq}) to ${clientId}`
-            )
-          },
-        })
+        const { count: entryMutations, lastSeq: entrySeq } =
+          await this.streamSyncData<z.infer<typeof LogbookEntrySchema>>({
+            clientId,
+            userId: client.userId,
+            entityType: 'logbook_entry',
+            eventType: 'BULK_SYNC',
+            lastSeq: requestedLastSeq,
+            fallbackSeconds: lastSyncTime / 1000,
+            rowParser: row => {
+              try {
+                const parsed = JSON.parse(row.data)
+                return sanitizeEntry(parsed)
+              } catch (error) {
+                console.error('Failed to parse logbook entry row:', error)
+                return null
+              }
+            },
+            handleDelete: (row, rowSeq) => {
+              const timestamp = new Date().toISOString()
+              this.sendToClient(clientId, {
+                type: 'ENTRY_DELETED',
+                entryId: row.entity_id,
+                timestamp,
+                seq: rowSeq,
+                lastSeq: rowSeq,
+              })
+              console.log(
+                `🗑️ Sent ENTRY_DELETED for ${row.entity_id} (seq ${rowSeq}) to ${clientId}`
+              )
+            },
+          })
 
-        const {
-          count: pieceMutations,
-          lastSeq: pieceSeq,
-        } = await this.streamSyncData<z.infer<typeof RepertoireItemSchema>>({
-          clientId,
-          userId: client.userId,
-          entityType: 'repertoire_item',
-          eventType: 'REPERTOIRE_BULK_SYNC',
-          lastSeq: Math.max(requestedLastSeq, entrySeq),
-          fallbackSeconds: lastSyncTime / 1000,
-          rowParser: row => {
-            try {
-              const parsed = JSON.parse(row.data)
-              return sanitizeRepertoireItem(parsed)
-            } catch (error) {
-              console.error('Failed to parse repertoire row:', error)
-              return null
-            }
-          },
-          handleDelete: (row, rowSeq) => {
-            const timestamp = new Date().toISOString()
-            this.sendToClient(clientId, {
-              type: 'PIECE_REMOVED',
-              scoreId: row.entity_id,
-              timestamp,
-              seq: rowSeq,
-              lastSeq: rowSeq,
-            })
-            console.log(
-              `🗑️ Sent PIECE_REMOVED for ${row.entity_id} (seq ${rowSeq}) to ${clientId}`
-            )
-          },
-        })
+        const { count: pieceMutations, lastSeq: pieceSeq } =
+          await this.streamSyncData<z.infer<typeof RepertoireItemSchema>>({
+            clientId,
+            userId: client.userId,
+            entityType: 'repertoire_item',
+            eventType: 'REPERTOIRE_BULK_SYNC',
+            lastSeq: Math.max(requestedLastSeq, entrySeq),
+            fallbackSeconds: lastSyncTime / 1000,
+            rowParser: row => {
+              try {
+                const parsed = JSON.parse(row.data)
+                return sanitizeRepertoireItem(parsed)
+              } catch (error) {
+                console.error('Failed to parse repertoire row:', error)
+                return null
+              }
+            },
+            handleDelete: (row, rowSeq) => {
+              const timestamp = new Date().toISOString()
+              this.sendToClient(clientId, {
+                type: 'PIECE_REMOVED',
+                scoreId: row.entity_id,
+                timestamp,
+                seq: rowSeq,
+                lastSeq: rowSeq,
+              })
+              console.log(
+                `🗑️ Sent PIECE_REMOVED for ${row.entity_id} (seq ${rowSeq}) to ${clientId}`
+              )
+            },
+          })
 
         const highestSeq = Math.max(requestedLastSeq, entrySeq, pieceSeq)
 
