@@ -302,43 +302,73 @@ export class SyncCoordinator implements DurableObject {
     // Fetch recent changes from database
     if (this.env.DB) {
       try {
-        const { count: entriesSent, lastSeq: entrySeq } =
-          await this.streamSyncData<z.infer<typeof LogbookEntrySchema>>({
-            clientId,
-            userId: client.userId,
-            entityType: 'logbook_entry',
-            eventType: 'BULK_SYNC',
-            lastSeq: requestedLastSeq,
-            fallbackSeconds: lastSyncTime / 1000,
-            rowParser: row => {
-              try {
-                const parsed = JSON.parse(row.data)
-                return sanitizeEntry(parsed)
-              } catch (error) {
-                console.error('Failed to parse logbook entry row:', error)
-                return null
-              }
-            },
-          })
+        const {
+          count: entryMutations,
+          lastSeq: entrySeq,
+        } = await this.streamSyncData<z.infer<typeof LogbookEntrySchema>>({
+          clientId,
+          userId: client.userId,
+          entityType: 'logbook_entry',
+          eventType: 'BULK_SYNC',
+          lastSeq: requestedLastSeq,
+          fallbackSeconds: lastSyncTime / 1000,
+          rowParser: row => {
+            try {
+              const parsed = JSON.parse(row.data)
+              return sanitizeEntry(parsed)
+            } catch (error) {
+              console.error('Failed to parse logbook entry row:', error)
+              return null
+            }
+          },
+          handleDelete: (row, rowSeq) => {
+            const timestamp = new Date().toISOString()
+            this.sendToClient(clientId, {
+              type: 'ENTRY_DELETED',
+              entryId: row.entity_id,
+              timestamp,
+              seq: rowSeq,
+              lastSeq: rowSeq,
+            })
+            console.log(
+              `🗑️ Sent ENTRY_DELETED for ${row.entity_id} (seq ${rowSeq}) to ${clientId}`
+            )
+          },
+        })
 
-        const { count: piecesSent, lastSeq: pieceSeq } =
-          await this.streamSyncData<z.infer<typeof RepertoireItemSchema>>({
-            clientId,
-            userId: client.userId,
-            entityType: 'repertoire_item',
-            eventType: 'REPERTOIRE_BULK_SYNC',
-            lastSeq: Math.max(requestedLastSeq, entrySeq),
-            fallbackSeconds: lastSyncTime / 1000,
-            rowParser: row => {
-              try {
-                const parsed = JSON.parse(row.data)
-                return sanitizeRepertoireItem(parsed)
-              } catch (error) {
-                console.error('Failed to parse repertoire row:', error)
-                return null
-              }
-            },
-          })
+        const {
+          count: pieceMutations,
+          lastSeq: pieceSeq,
+        } = await this.streamSyncData<z.infer<typeof RepertoireItemSchema>>({
+          clientId,
+          userId: client.userId,
+          entityType: 'repertoire_item',
+          eventType: 'REPERTOIRE_BULK_SYNC',
+          lastSeq: Math.max(requestedLastSeq, entrySeq),
+          fallbackSeconds: lastSyncTime / 1000,
+          rowParser: row => {
+            try {
+              const parsed = JSON.parse(row.data)
+              return sanitizeRepertoireItem(parsed)
+            } catch (error) {
+              console.error('Failed to parse repertoire row:', error)
+              return null
+            }
+          },
+          handleDelete: (row, rowSeq) => {
+            const timestamp = new Date().toISOString()
+            this.sendToClient(clientId, {
+              type: 'PIECE_REMOVED',
+              scoreId: row.entity_id,
+              timestamp,
+              seq: rowSeq,
+              lastSeq: rowSeq,
+            })
+            console.log(
+              `🗑️ Sent PIECE_REMOVED for ${row.entity_id} (seq ${rowSeq}) to ${clientId}`
+            )
+          },
+        })
 
         const highestSeq = Math.max(requestedLastSeq, entrySeq, pieceSeq)
 
@@ -346,7 +376,7 @@ export class SyncCoordinator implements DurableObject {
           type: 'SYNC_RESPONSE',
           timestamp: new Date().toISOString(),
           message:
-            entriesSent === 0 && piecesSent === 0
+            entryMutations === 0 && pieceMutations === 0
               ? 'No new data to sync'
               : 'Sync complete',
           lastSeq: highestSeq,
@@ -380,6 +410,7 @@ export class SyncCoordinator implements DurableObject {
     lastSeq: number
     fallbackSeconds: number
     rowParser: (row: any) => T | null
+    handleDelete?: (row: any, seq: number) => void
   }): Promise<{ count: number; lastSeq: number }> {
     if (!this.env.DB) {
       return { count: 0, lastSeq: options.lastSeq }
@@ -404,11 +435,10 @@ export class SyncCoordinator implements DurableObject {
     while (true) {
       const query = await this.env.DB.prepare(
         `
-        SELECT entity_id, data, seq
+        SELECT entity_id, data, seq, deleted_at
         FROM sync_data
         WHERE user_id = ?
           AND entity_type = ?
-          AND deleted_at IS NULL
           AND seq > ?
         ORDER BY seq ASC
         LIMIT ?
@@ -423,13 +453,12 @@ export class SyncCoordinator implements DurableObject {
         usedFallback = true
         const fallbackQuery = await this.env.DB.prepare(
           `
-          SELECT entity_id, data, seq
+          SELECT entity_id, data, seq, deleted_at
           FROM sync_data
           WHERE user_id = ?
             AND entity_type = ?
-            AND deleted_at IS NULL
             AND datetime(updated_at) > datetime(?, 'unixepoch', 'subsec')
-          ORDER BY datetime(updated_at) ASC, entity_id ASC
+          ORDER BY seq ASC
           LIMIT ?
         `
         )
@@ -447,17 +476,33 @@ export class SyncCoordinator implements DurableObject {
       let chunkMaxSeq = cursorSeq
 
       for (const row of rows) {
-        const parsed = rowParser(row)
-        if (!parsed) continue
-
         const rowSeq =
           typeof row.seq === 'number' && Number.isFinite(row.seq)
             ? row.seq
-            : null
-        if (rowSeq !== null) {
-          chunkMaxSeq = Math.max(chunkMaxSeq, rowSeq)
+            : cursorSeq
+        chunkMaxSeq = Math.max(chunkMaxSeq, rowSeq)
+        if (row.deleted_at) {
+          if (options.handleDelete) {
+            try {
+              options.handleDelete(row, rowSeq)
+            } catch (error) {
+              console.error(
+                `Failed to handle deletion for ${row.entity_id}:`,
+                error
+              )
+            }
+          } else {
+            console.warn(
+              `Deletion encountered for ${row.entity_id} without handler`
+            )
+          }
+          totalSent += 1
+          highestSeq = Math.max(highestSeq, rowSeq)
+          continue
         }
 
+        const parsed = rowParser(row)
+        if (!parsed) continue
         payload.push(parsed)
       }
 
