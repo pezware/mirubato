@@ -241,7 +241,6 @@ class PatternMetronomeService {
     // This allows the callback to be updated dynamically without Transport issues
     if (this.visualCallback?.onBeat) {
       const beatNumber = this.currentBeat
-      const callback = this.visualCallback
       const delayMs = (time - Tone.Transport.seconds) * 1000
 
       // Use setTimeout instead of Tone.Draw.schedule to avoid Transport timeline issues
