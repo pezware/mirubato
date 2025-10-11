@@ -237,12 +237,20 @@ class PatternMetronomeService {
       layersToPlay.triangle = true
     }
 
-    // Schedule visual feedback in perfect sync with audio
+    // Schedule visual feedback using setTimeout for better callback management
+    // This allows the callback to be updated dynamically without Transport issues
     if (this.visualCallback?.onBeat) {
       const beatNumber = this.currentBeat
-      Tone.Draw.schedule(() => {
-        this.visualCallback!.onBeat!(beatNumber, layersToPlay)
-      }, time)
+      // Clamp to 0 to handle floating-point precision issues where delayMs might be tiny negative
+      const delayMs = Math.max(0, (time - Tone.Transport.seconds) * 1000)
+
+      // Use setTimeout instead of Tone.Draw.schedule to avoid Transport timeline issues
+      setTimeout(() => {
+        // Use the current callback reference, not a captured one
+        if (this.visualCallback?.onBeat && this.isPlaying) {
+          this.visualCallback.onBeat(beatNumber, layersToPlay)
+        }
+      }, delayMs)
     }
   }
 
@@ -319,6 +327,10 @@ class PatternMetronomeService {
   setPatterns(patterns: PatternConfig['patterns']): void {
     this.patterns = patterns
     this.beatsPerMeasure = patterns.accent.length
+  }
+
+  setVisualCallback(callback?: VisualCallback): void {
+    this.visualCallback = callback
   }
 
   getIsPlaying(): boolean {

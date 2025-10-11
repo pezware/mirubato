@@ -241,6 +241,15 @@ const Toolbox: React.FC = () => {
         triangle: patterns.triangle.slice(0, settings.beatsPerMeasure),
       }
       metronome.setPatterns(trimmedPatterns)
+
+      // Re-register the visual callback to ensure beat highlighting works
+      metronome.setVisualCallback({
+        onBeat: beatNumber => {
+          setCurrentBeat(beatNumber)
+          setIsFlashing(true)
+          window.setTimeout(() => setIsFlashing(false), 100)
+        },
+      })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns, settings.beatsPerMeasure, isPlaying])
@@ -339,9 +348,23 @@ const Toolbox: React.FC = () => {
     setSelectedPresetId('')
   }
 
-  const loadPattern = (patternId: string) => {
+  const loadPattern = async (patternId: string) => {
     const pattern = commonPatterns.find(p => p.id === patternId)
     if (pattern) {
+      // Store whether metronome was playing
+      const wasPlaying = isPlaying
+
+      // Stop metronome if playing to ensure clean state
+      if (wasPlaying) {
+        metronome.stop()
+        setIsPlaying(false)
+        setCurrentBeat(0)
+        setIsFlashing(false)
+        // Reset timer when stopping
+        setMetronomeElapsedTime(0)
+        setMetronomeStartTime(null)
+      }
+
       updateSettings({
         selectedPattern: patternId,
         beatsPerMeasure: pattern.beats,
@@ -374,6 +397,48 @@ const Toolbox: React.FC = () => {
 
       // Reset preset selection when switching to built-in pattern
       setSelectedPresetId('')
+
+      // Restart metronome if it was playing
+      if (wasPlaying) {
+        try {
+          // Ensure audio context is running
+          if (Tone.context.state !== 'running') {
+            await Tone.start()
+          }
+
+          const trimmedPatterns = {
+            accent: paddedPattern.accent.slice(0, pattern.beats),
+            click: paddedPattern.click.slice(0, pattern.beats),
+            woodblock: paddedPattern.woodblock.slice(0, pattern.beats),
+            shaker: paddedPattern.shaker.slice(0, pattern.beats),
+            triangle: paddedPattern.triangle.slice(0, pattern.beats),
+          }
+
+          await metronome.start(
+            {
+              tempo: settings.bpm,
+              volume: settings.volume / 100,
+              beatValue: pattern.value,
+              patterns: trimmedPatterns,
+            },
+            {
+              onBeat: beatNumber => {
+                setCurrentBeat(beatNumber)
+                setIsFlashing(true)
+                window.setTimeout(() => setIsFlashing(false), 100)
+              },
+            }
+          )
+          setIsPlaying(true)
+          // Restart timer when metronome starts
+          setMetronomeStartTime(Date.now())
+        } catch (error) {
+          console.error(
+            'Failed to restart metronome after pattern change:',
+            error
+          )
+        }
+      }
     }
   }
 
