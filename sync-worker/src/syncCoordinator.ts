@@ -65,27 +65,27 @@ export class SyncCoordinator implements DurableObject {
       throw new Error('Database not configured for sequence generation')
     }
 
-    const updated = await this.env.DB.prepare(
+    const updated = (await this.env.DB.prepare(
       `
       UPDATE sync_sequence
       SET current_value = current_value + 1
       WHERE id = 1
       RETURNING current_value
     `
-    ).first() as { current_value: number } | null
+    ).first()) as { current_value: number } | null
 
     if (updated && typeof updated.current_value === 'number') {
       return updated.current_value
     }
 
-    const initialized = await this.env.DB.prepare(
+    const initialized = (await this.env.DB.prepare(
       `
       INSERT INTO sync_sequence (id, current_value)
       VALUES (1, 1)
       ON CONFLICT(id) DO UPDATE SET current_value = current_value + 1
       RETURNING current_value
     `
-    ).first() as { current_value: number } | null
+    ).first()) as { current_value: number } | null
 
     if (!initialized || typeof initialized.current_value !== 'number') {
       throw new Error('Failed to allocate sync sequence value')
