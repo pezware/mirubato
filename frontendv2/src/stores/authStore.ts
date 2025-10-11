@@ -282,6 +282,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Clear lastSyncTime to force full sync on WebSocket connection
       localStorage.removeItem('mirubato:lastSyncTime')
+      localStorage.removeItem('mirubato:lastSeq')
 
       // Set to online mode and trigger sync after successful authentication
       try {
@@ -402,6 +403,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Clear lastSyncTime to force full sync on WebSocket connection
       localStorage.removeItem('mirubato:lastSyncTime')
+      localStorage.removeItem('mirubato:lastSeq')
 
       // Set to online mode and sync logbook after successful Google login
       try {
@@ -626,6 +628,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Clear sync markers so next login performs a full catch-up
       try {
         localStorage.removeItem('mirubato:lastSyncTime')
+        localStorage.removeItem('mirubato:lastSeq')
       } catch {
         // noop
       }
@@ -693,6 +696,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         // Clear lastSyncTime to force full sync on WebSocket connection
         localStorage.removeItem('mirubato:lastSyncTime')
+        localStorage.removeItem('mirubato:lastSeq')
 
         // Set to online mode when authenticated
         try {

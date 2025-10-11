@@ -15,6 +15,40 @@ export function generateId(prefix?: string): string {
 export class DatabaseHelpers {
   constructor(private db: D1Database) {}
 
+  private async getNextSequence(): Promise<number> {
+    const updated = await this.db
+      .prepare(
+        `
+        UPDATE sync_sequence
+        SET current_value = current_value + 1
+        WHERE id = 1
+        RETURNING current_value
+      `
+      )
+      .first<{ current_value: number }>()
+
+    if (updated && typeof updated.current_value === 'number') {
+      return updated.current_value
+    }
+
+    const initialized = await this.db
+      .prepare(
+        `
+        INSERT INTO sync_sequence (id, current_value)
+        VALUES (1, 1)
+        ON CONFLICT(id) DO UPDATE SET current_value = current_value + 1
+        RETURNING current_value
+      `
+      )
+      .first<{ current_value: number }>()
+
+    if (!initialized || typeof initialized.current_value !== 'number') {
+      throw new Error('Failed to allocate sync sequence value')
+    }
+
+    return initialized.current_value
+  }
+
   /**
    * Find user by email
    */
@@ -179,6 +213,8 @@ export class DatabaseHelpers {
         .first<{ id: string; version: number }>()
 
       if (existing) {
+        const seq = await this.getNextSequence()
+
         // Update existing record
         await this.db
           .prepare(
@@ -189,7 +225,8 @@ export class DatabaseHelpers {
                 version = version + 1,
                 updated_at = CURRENT_TIMESTAMP,
                 deleted_at = ?,
-                device_id = ?
+                device_id = ?,
+                seq = ?
             WHERE user_id = ? AND entity_type = ? AND entity_id = ?
           `
           )
@@ -198,6 +235,7 @@ export class DatabaseHelpers {
             data.checksum,
             deletedAt,
             data.deviceId || null,
+            seq,
             data.userId,
             data.entityType,
             data.entityId
@@ -210,13 +248,14 @@ export class DatabaseHelpers {
           action: 'updated',
         }
       } else {
+        const seq = await this.getNextSequence()
         // Insert new record
         const id = generateId('sync')
         await this.db
           .prepare(
             `
-            INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version, deleted_at, device_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version, deleted_at, device_id, seq)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `
           )
           .bind(
@@ -228,7 +267,8 @@ export class DatabaseHelpers {
             data.checksum,
             data.version || 1,
             deletedAt,
-            data.deviceId || null
+            data.deviceId || null,
+            seq
           )
           .run()
 

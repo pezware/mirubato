@@ -162,8 +162,15 @@ describe('Comprehensive Undefined Value Handling', () => {
       const mockFirst = vi.fn().mockResolvedValue(null)
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
+      const sequenceFirst = vi.fn().mockResolvedValue({ current_value: 1 })
 
       mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('sync_sequence')) {
+          return {
+            bind: mockBind,
+            first: sequenceFirst
+          }
+        }
         if (sql.includes('SELECT')) {
           return { bind: mockBind, first: mockFirst }
         }
@@ -228,8 +235,15 @@ describe('Comprehensive Undefined Value Handling', () => {
       const mockFirst = vi.fn().mockResolvedValue(null)
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
+      const sequenceFirst = vi.fn().mockResolvedValue({ current_value: 1 })
 
       mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('sync_sequence')) {
+          return {
+            bind: mockBind,
+            first: sequenceFirst
+          }
+        }
         if (sql.includes('SELECT')) {
           return { bind: mockBind, first: mockFirst }
         }

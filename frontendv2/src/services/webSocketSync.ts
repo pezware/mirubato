@@ -17,6 +17,7 @@ export interface SyncEvent {
     | 'BULK_SYNC'
     | 'REPERTOIRE_BULK_SYNC'
     | 'SYNC_REQUEST'
+    | 'SYNC_RESPONSE'
     | 'CONFLICT_DETECTED'
   userId?: string
   timestamp: string
@@ -27,6 +28,10 @@ export interface SyncEvent {
   pieces?: unknown[] // RepertoireItem[]
   scoreId?: string
   lastSyncTime?: string
+  lastSeq?: number
+  seq?: number
+  message?: string
+  error?: string
 }
 
 export interface WebSocketSyncOptions {
@@ -39,6 +44,8 @@ export interface WebSocketSyncOptions {
 
 export type SyncEventHandler = (event: SyncEvent) => void
 export type WebSocketFactory = (url: string) => WebSocket
+
+const LAST_SEQ_KEY = 'mirubato:lastSeq'
 
 export class WebSocketSync {
   private ws: WebSocket | null = null
@@ -224,6 +231,7 @@ export class WebSocketSync {
         const lastSyncDate = new Date(lastSyncTime)
         const timeSinceLastSync = Date.now() - lastSyncDate.getTime()
         const thirtySeconds = 30 * 1000
+        const lastSeq = this.getLastSeq()
 
         // Only send SYNC_REQUEST if:
         // 1. Last sync was more than 30 seconds ago, OR
@@ -236,7 +244,7 @@ export class WebSocketSync {
           this.offlineQueue.length > 0
         ) {
           this.log(
-            `📊 Sending SYNC_REQUEST (last sync: ${Math.round(timeSinceLastSync / 1000)}s ago)`
+            `📊 Sending SYNC_REQUEST (last sync: ${Math.round(timeSinceLastSync / 1000)}s ago, lastSeq=${lastSeq})`
           )
           const payload: SyncEvent = {
             type: 'SYNC_REQUEST',
@@ -246,10 +254,13 @@ export class WebSocketSync {
           if (!Number.isNaN(timeSinceLastSync) && timeSinceLastSync >= 0) {
             payload.lastSyncTime = lastSyncTime
           }
+          if (lastSeq > 0) {
+            payload.lastSeq = lastSeq
+          }
           this.send(payload)
         } else {
           this.log(
-            `⏸️ Skipping SYNC_REQUEST (synced ${Math.round(timeSinceLastSync / 1000)}s ago)`
+            `⏸️ Skipping SYNC_REQUEST (synced ${Math.round(timeSinceLastSync / 1000)}s ago, lastSeq=${lastSeq})`
           )
         }
 
@@ -313,6 +324,7 @@ export class WebSocketSync {
 
   private handleIncomingSync(event: SyncEvent): void {
     this.log('📥 Received sync event:', event.type)
+    this.maybeUpdateLastSeq(event)
 
     // Only update last sync time for data-carrying events
     // Skip control messages like WELCOME, PONG to avoid missing catch-up syncs
@@ -439,6 +451,46 @@ export class WebSocketSync {
 
   private setLastSyncTime(timestamp: string): void {
     localStorage.setItem('mirubato:lastSyncTime', timestamp)
+  }
+
+  private getLastSeq(): number {
+    const raw = localStorage.getItem(LAST_SEQ_KEY)
+    if (!raw) return 0
+    const parsed = Number.parseInt(raw, 10)
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
+  }
+
+  private setLastSeq(seq: number): void {
+    if (!Number.isFinite(seq) || seq < 0) {
+      return
+    }
+    const current = this.getLastSeq()
+    if (seq <= current) {
+      return
+    }
+    localStorage.setItem(LAST_SEQ_KEY, String(seq))
+  }
+
+  private maybeUpdateLastSeq(event: SyncEvent): void {
+    const candidates: number[] = []
+
+    if (typeof event.seq === 'number' && Number.isFinite(event.seq)) {
+      candidates.push(event.seq)
+    }
+
+    if (
+      typeof event.lastSeq === 'number' &&
+      Number.isFinite(event.lastSeq)
+    ) {
+      candidates.push(event.lastSeq)
+    }
+
+    if (candidates.length === 0) {
+      return
+    }
+
+    const highest = Math.max(...candidates)
+    this.setLastSeq(highest)
   }
 
   // --- Offline queue persistence helpers ---

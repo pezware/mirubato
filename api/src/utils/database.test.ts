@@ -150,8 +150,18 @@ describe('DatabaseHelpers', () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
       const mockFirst = vi.fn().mockResolvedValue(null) // No existing record
+      const nextSequenceValue = 101
+      const sequenceFirst = vi
+        .fn()
+        .mockResolvedValue({ current_value: nextSequenceValue })
 
       mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('sync_sequence')) {
+          return {
+            bind: mockBind,
+            first: sequenceFirst,
+          } as unknown as D1PreparedStatement
+        }
         if (sql.includes('SELECT')) {
           return {
             bind: mockBind,
@@ -195,7 +205,8 @@ describe('DatabaseHelpers', () => {
         'checksum-789',
         1,
         null, // deleted_at
-        null // device_id
+        null, // device_id
+        nextSequenceValue
       )
       expect(mockRun).toHaveBeenCalled()
     })
@@ -214,8 +225,18 @@ describe('DatabaseHelpers', () => {
           return Promise.resolve({ id: 'existing-id', version: 1 })
         }
       })
+      const nextSequenceValue = 202
+      const sequenceFirst = vi
+        .fn()
+        .mockResolvedValue({ current_value: nextSequenceValue })
 
       mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('sync_sequence')) {
+          return {
+            bind: mockBind,
+            first: sequenceFirst,
+          } as unknown as D1PreparedStatement
+        }
         if (sql.includes('SELECT')) {
           return {
             bind: mockBind,
@@ -266,6 +287,7 @@ describe('DatabaseHelpers', () => {
         return {
           bind: vi.fn().mockReturnThis(),
           run: vi.fn().mockRejectedValue(dbError),
+          first: vi.fn().mockRejectedValue(dbError),
         } as unknown as D1PreparedStatement
       })
 

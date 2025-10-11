@@ -13,6 +13,8 @@ import {
 } from './schemas'
 import { z } from 'zod'
 
+const BULK_SYNC_CHUNK_SIZE = 250
+
 export interface SyncEvent {
   type:
     | 'ENTRY_CREATED'
@@ -35,6 +37,10 @@ export interface SyncEvent {
   pieces?: any[] // RepertoireItem[]
   scoreId?: string
   lastSyncTime?: string
+  lastSeq?: number
+  seq?: number
+  message?: string
+  error?: string
 }
 
 export interface ClientInfo {
@@ -52,6 +58,40 @@ export class SyncCoordinator implements DurableObject {
   constructor(state: DurableObjectState, env: any) {
     this.storage = state.storage
     this.env = env
+  }
+
+  private async getNextSequence(): Promise<number> {
+    if (!this.env.DB) {
+      throw new Error('Database not configured for sequence generation')
+    }
+
+    const updated = await this.env.DB.prepare(
+      `
+      UPDATE sync_sequence
+      SET current_value = current_value + 1
+      WHERE id = 1
+      RETURNING current_value
+    `
+    ).first<{ current_value: number }>()
+
+    if (updated && typeof updated.current_value === 'number') {
+      return updated.current_value
+    }
+
+    const initialized = await this.env.DB.prepare(
+      `
+      INSERT INTO sync_sequence (id, current_value)
+      VALUES (1, 1)
+      ON CONFLICT(id) DO UPDATE SET current_value = current_value + 1
+      RETURNING current_value
+    `
+    ).first<{ current_value: number }>()
+
+    if (!initialized || typeof initialized.current_value !== 'number') {
+      throw new Error('Failed to allocate sync sequence value')
+    }
+
+    return initialized.current_value
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -241,115 +281,80 @@ export class SyncCoordinator implements DurableObject {
     const client = this.clients.get(clientId)
     if (!client) return
 
+    const requestedLastSeq =
+      typeof event.lastSeq === 'number' && event.lastSeq >= 0
+        ? event.lastSeq
+        : 0
+
     console.log(
-      `🔄 Sync request from ${clientId}, lastSyncTime: ${event.lastSyncTime}`
+      `🔄 Sync request from ${clientId}, lastSeq: ${requestedLastSeq}, lastSyncTime: ${event.lastSyncTime}`
     )
+
+    // Determine baseline time safely (guard against invalid or future client clocks)
+    let lastSyncTime = Date.now() - 7 * 24 * 60 * 60 * 1000 // Default to last 7 days
+    if (event.lastSyncTime) {
+      const parsed = Date.parse(event.lastSyncTime)
+      if (Number.isFinite(parsed) && parsed <= Date.now()) {
+        lastSyncTime = parsed
+      }
+    }
 
     // Fetch recent changes from database
     if (this.env.DB) {
       try {
-        // Determine baseline time safely (guard against invalid or future client clocks)
-        let lastSyncTime = Date.now() - 7 * 24 * 60 * 60 * 1000 // Default to last 7 days
-        if (event.lastSyncTime) {
-          const parsed = Date.parse(event.lastSyncTime)
-          if (Number.isFinite(parsed) && parsed <= Date.now()) {
-            lastSyncTime = parsed
-          }
-        }
+        const { count: entriesSent, lastSeq: entrySeq } =
+          await this.streamSyncData<
+          z.infer<typeof LogbookEntrySchema>
+        >({
+          clientId,
+          userId: client.userId,
+          entityType: 'logbook_entry',
+          eventType: 'BULK_SYNC',
+          lastSeq: requestedLastSeq,
+          fallbackSeconds: lastSyncTime / 1000,
+          rowParser: row => {
+            try {
+              const parsed = JSON.parse(row.data)
+              return sanitizeEntry(parsed)
+            } catch (error) {
+              console.error('Failed to parse logbook entry row:', error)
+              return null
+            }
+          },
+        })
 
-        // Fetch logbook entries
-        const entriesResults = await this.env.DB.prepare(
-          `
-          SELECT entity_id, data, updated_at 
-          FROM sync_data 
-          WHERE user_id = ? 
-            AND entity_type = 'logbook_entry'
-            AND datetime(updated_at) > datetime(?, 'unixepoch', 'subsec')
-            AND deleted_at IS NULL
-          ORDER BY updated_at DESC
-          LIMIT 100
-        `
-        )
-          .bind(client.userId, lastSyncTime / 1000) // Convert to seconds for SQLite
-          .all()
+        const { count: piecesSent, lastSeq: pieceSeq } =
+          await this.streamSyncData<
+          z.infer<typeof RepertoireItemSchema>
+        >({
+          clientId,
+          userId: client.userId,
+          entityType: 'repertoire_item',
+          eventType: 'REPERTOIRE_BULK_SYNC',
+          lastSeq: Math.max(requestedLastSeq, entrySeq),
+          fallbackSeconds: lastSyncTime / 1000,
+          rowParser: row => {
+            try {
+              const parsed = JSON.parse(row.data)
+              return sanitizeRepertoireItem(parsed)
+            } catch (error) {
+              console.error('Failed to parse repertoire row:', error)
+              return null
+            }
+          },
+        })
 
-        // Send logbook entries if any
-        if (entriesResults.results && entriesResults.results.length > 0) {
-          const entries = entriesResults.results
-            .map((row: any) => {
-              try {
-                return JSON.parse(row.data)
-              } catch {
-                return null
-              }
-            })
-            .filter(Boolean)
+        const highestSeq = Math.max(requestedLastSeq, entrySeq, pieceSeq)
 
-          if (entries.length > 0) {
-            // Send bulk sync event with recent entries
-            this.sendToClient(clientId, {
-              type: 'BULK_SYNC',
-              entries,
-              timestamp: new Date().toISOString(),
-            })
-            console.log(`📦 Sent ${entries.length} entries to ${clientId}`)
-          }
-        }
-
-        // Fetch repertoire items
-        const repertoireResults = await this.env.DB.prepare(
-          `
-          SELECT entity_id, data, updated_at 
-          FROM sync_data 
-          WHERE user_id = ? 
-            AND entity_type = 'repertoire_item'
-            AND datetime(updated_at) > datetime(?, 'unixepoch', 'subsec')
-            AND deleted_at IS NULL
-          ORDER BY updated_at DESC
-          LIMIT 100
-        `
-        )
-          .bind(client.userId, lastSyncTime / 1000) // Convert to seconds for SQLite
-          .all()
-
-        // Send repertoire items if any
-        if (repertoireResults.results && repertoireResults.results.length > 0) {
-          const pieces = repertoireResults.results
-            .map((row: any) => {
-              try {
-                const rawData = JSON.parse(row.data)
-                // Sanitize each piece to ensure scoreId/score_id mapping
-                return sanitizeRepertoireItem(rawData)
-              } catch {
-                return null
-              }
-            })
-            .filter(Boolean) // Remove nulls from failed sanitization
-
-          if (pieces.length > 0) {
-            // Send repertoire bulk sync event with sanitized data
-            this.sendToClient(clientId, {
-              type: 'REPERTOIRE_BULK_SYNC',
-              pieces,
-              timestamp: new Date().toISOString(),
-            })
-            console.log(
-              `🎵 Sent ${pieces.length} repertoire pieces to ${clientId}`
-            )
-          }
-        }
-
-        // If no data was sent, send a response
-        if (
-          (!entriesResults.results || entriesResults.results.length === 0) &&
-          (!repertoireResults.results || repertoireResults.results.length === 0)
-        ) {
-          this.sendToClient(clientId, {
-            type: 'SYNC_RESPONSE',
-            timestamp: new Date().toISOString(),
-            message: 'No new data to sync',
-          })
-        }
+        this.sendToClient(clientId, {
+          type: 'SYNC_RESPONSE',
+          timestamp: new Date().toISOString(),
+          message:
+            entriesSent === 0 && piecesSent === 0
+              ? 'No new data to sync'
+              : 'Sync complete',
+          lastSeq: highestSeq,
+        })
       } catch (error) {
         console.error('Failed to fetch sync data:', error)
         // Fallback response on error
@@ -357,6 +362,7 @@ export class SyncCoordinator implements DurableObject {
           type: 'SYNC_RESPONSE',
           timestamp: new Date().toISOString(),
           message: 'Error fetching sync data',
+          lastSeq: requestedLastSeq,
         })
       }
     } else {
@@ -365,8 +371,144 @@ export class SyncCoordinator implements DurableObject {
         type: 'SYNC_RESPONSE',
         timestamp: new Date().toISOString(),
         message: 'Sync not available',
+        lastSeq: requestedLastSeq,
       })
     }
+  }
+
+  private async streamSyncData<T>(options: {
+    clientId: string
+    userId: string
+    entityType: 'logbook_entry' | 'repertoire_item'
+    eventType: 'BULK_SYNC' | 'REPERTOIRE_BULK_SYNC'
+    lastSeq: number
+    fallbackSeconds: number
+    rowParser: (row: any) => T | null
+  }): Promise<{ count: number; lastSeq: number }> {
+    if (!this.env.DB) {
+      return { count: 0, lastSeq: options.lastSeq }
+    }
+
+    const {
+      clientId,
+      userId,
+      entityType,
+      eventType,
+      lastSeq,
+      fallbackSeconds,
+      rowParser,
+    } = options
+
+    let cursorSeq = Math.max(0, lastSeq)
+    let totalSent = 0
+    let chunkIndex = 0
+    let highestSeq = cursorSeq
+    let usedFallback = false
+
+    while (true) {
+      const query = await this.env.DB.prepare(
+        `
+        SELECT entity_id, data, seq
+        FROM sync_data
+        WHERE user_id = ?
+          AND entity_type = ?
+          AND deleted_at IS NULL
+          AND seq > ?
+        ORDER BY seq ASC
+        LIMIT ?
+      `
+      )
+        .bind(userId, entityType, cursorSeq, BULK_SYNC_CHUNK_SIZE)
+        .all()
+
+      let rows = (query.results as Array<any>) || []
+
+      if (rows.length === 0 && !usedFallback && cursorSeq === lastSeq) {
+        usedFallback = true
+        const fallbackQuery = await this.env.DB.prepare(
+          `
+          SELECT entity_id, data, seq
+          FROM sync_data
+          WHERE user_id = ?
+            AND entity_type = ?
+            AND deleted_at IS NULL
+            AND datetime(updated_at) > datetime(?, 'unixepoch', 'subsec')
+          ORDER BY datetime(updated_at) ASC, entity_id ASC
+          LIMIT ?
+        `
+        )
+          .bind(userId, entityType, fallbackSeconds, BULK_SYNC_CHUNK_SIZE)
+          .all()
+
+        rows = (fallbackQuery.results as Array<any>) || []
+      }
+
+      if (rows.length === 0) {
+        break
+      }
+
+      const payload: T[] = []
+      let chunkMaxSeq = cursorSeq
+
+      for (const row of rows) {
+        const parsed = rowParser(row)
+        if (!parsed) continue
+
+        const rowSeq =
+          typeof row.seq === 'number' && Number.isFinite(row.seq)
+            ? row.seq
+            : null
+        if (rowSeq !== null) {
+          chunkMaxSeq = Math.max(chunkMaxSeq, rowSeq)
+        }
+
+        payload.push(parsed)
+      }
+
+      if (payload.length > 0) {
+        const timestamp = new Date().toISOString()
+        if (eventType === 'BULK_SYNC') {
+          this.sendToClient(clientId, {
+            type: 'BULK_SYNC',
+            entries: payload,
+            timestamp,
+            lastSeq: chunkMaxSeq,
+          })
+          console.log(
+            `📦 Sent ${payload.length} entries (chunk ${chunkIndex}) to ${clientId} (seq ≤ ${chunkMaxSeq})`
+          )
+        } else {
+          this.sendToClient(clientId, {
+            type: 'REPERTOIRE_BULK_SYNC',
+            pieces: payload,
+            timestamp,
+            lastSeq: chunkMaxSeq,
+          })
+          console.log(
+            `🎵 Sent ${payload.length} repertoire pieces (chunk ${chunkIndex}) to ${clientId} (seq ≤ ${chunkMaxSeq})`
+          )
+        }
+
+        totalSent += payload.length
+        highestSeq = Math.max(highestSeq, chunkMaxSeq)
+      }
+
+      if (chunkMaxSeq === cursorSeq) {
+        console.warn(
+          `⚠️ Sync chunk did not advance sequence cursor for ${entityType}; stopping to avoid loop`
+        )
+        break
+      }
+
+      cursorSeq = chunkMaxSeq
+      chunkIndex += 1
+
+      if (rows.length < BULK_SYNC_CHUNK_SIZE) {
+        break
+      }
+    }
+
+    return { count: totalSent, lastSeq: highestSeq }
   }
 
   private async handleEntryChange(
@@ -395,9 +537,10 @@ export class SyncCoordinator implements DurableObject {
       `📤 Broadcasting ${event.type} from ${senderId} to ${this.clients.size - 1} other clients`
     )
 
+    let sequence: number | null = null
     // Save to database for persistence and recovery
     try {
-      await this.saveEntryToDatabase(event, sender.userId)
+      sequence = await this.saveEntryToDatabase(event, sender.userId)
     } catch (error) {
       console.error(`❌ Failed to save entry to database:`, error)
       // Continue broadcasting even if database save fails
@@ -408,6 +551,16 @@ export class SyncCoordinator implements DurableObject {
       event.timestamp = new Date().toISOString()
     } catch {
       // best-effort only
+    }
+
+    if (typeof sequence === 'number') {
+      event.seq = sequence
+      this.sendToClient(senderId, {
+        type: 'SYNC_RESPONSE',
+        timestamp: new Date().toISOString(),
+        message: 'Mutation applied',
+        lastSeq: sequence,
+      })
     }
 
     // Broadcast to all other clients of the same user
@@ -421,36 +574,38 @@ export class SyncCoordinator implements DurableObject {
   private async saveEntryToDatabase(
     event: SyncEvent,
     userId: string
-  ): Promise<void> {
+  ): Promise<number | null> {
     if (!this.env.DB) {
       console.warn('⚠️ Database not configured, skipping persistence')
-      return
+      return null
     }
 
     try {
       if (event.type === 'ENTRY_CREATED' || event.type === 'ENTRY_UPDATED') {
         const entry = event.entry as any
-        if (!entry) return
+        if (!entry) return null
 
         // Ensure user_id is set
         if (!entry.user_id) {
           entry.user_id = userId
         }
 
+        const seq = await this.getNextSequence()
         // Save to sync_data table
         await this.env.DB.prepare(
           `
           INSERT INTO sync_data (
-            id, user_id, entity_type, entity_id, data, 
-            checksum, device_id, version, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            id, user_id, entity_type, entity_id, data,
+            checksum, device_id, version, updated_at, seq
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
           ON CONFLICT (user_id, entity_type, entity_id) 
           DO UPDATE SET 
             data = excluded.data,
             checksum = excluded.checksum,
             device_id = excluded.device_id,
             updated_at = CURRENT_TIMESTAMP,
-            version = sync_data.version + 1
+            version = sync_data.version + 1,
+            seq = excluded.seq
         `
         )
           .bind(
@@ -461,38 +616,47 @@ export class SyncCoordinator implements DurableObject {
             JSON.stringify(entry),
             await this.calculateChecksum(entry),
             entry.device_id || 'sync-worker',
-            1
+            1,
+            seq
           )
           .run()
 
         console.log(`✅ Saved entry ${entry.id} to database`)
 
         // Update sync_metadata
-        await this.updateSyncMetadata(userId)
+        await this.updateSyncMetadata(userId, seq)
+        return seq
       } else if (event.type === 'ENTRY_DELETED') {
         const entryId = event.entryId
-        if (!entryId) return
+        if (!entryId) return null
+
+        const seq = await this.getNextSequence()
 
         // Mark as deleted in sync_data
         await this.env.DB.prepare(
           `
           UPDATE sync_data 
-          SET deleted_at = ?
+          SET deleted_at = CURRENT_TIMESTAMP,
+              updated_at = CURRENT_TIMESTAMP,
+              seq = ?
           WHERE user_id = ? AND entity_type = ? AND entity_id = ?
         `
         )
-          .bind(new Date().toISOString(), userId, 'logbook_entry', entryId)
+          .bind(seq, userId, 'logbook_entry', entryId)
           .run()
 
         console.log(`✅ Marked entry ${entryId} as deleted in database`)
 
         // Update sync_metadata
-        await this.updateSyncMetadata(userId)
+        await this.updateSyncMetadata(userId, seq)
+        return seq
       }
     } catch (error) {
       console.error('Database operation failed:', error)
       throw error
     }
+
+    return null
   }
 
   private async calculateChecksum(data: any): Promise<string> {
@@ -545,9 +709,10 @@ export class SyncCoordinator implements DurableObject {
       `🎵 Broadcasting ${event.type} from ${senderId} to ${this.clients.size - 1} other clients`
     )
 
+    let sequence: number | null = null
     // Save repertoire changes to database for persistence
     try {
-      await this.saveRepertoireToDatabase(event, sender.userId)
+      sequence = await this.saveRepertoireToDatabase(event, sender.userId)
     } catch (error) {
       console.error(`❌ Failed to save repertoire change to database:`, error)
       // Continue broadcasting even if database save fails
@@ -560,6 +725,16 @@ export class SyncCoordinator implements DurableObject {
       // best-effort only
     }
 
+    if (typeof sequence === 'number') {
+      event.seq = sequence
+      this.sendToClient(senderId, {
+        type: 'SYNC_RESPONSE',
+        timestamp: new Date().toISOString(),
+        message: 'Mutation applied',
+        lastSeq: sequence,
+      })
+    }
+
     // Broadcast to all other clients of the same user
     for (const [clientId, client] of this.clients) {
       if (clientId !== senderId && client.userId === sender.userId) {
@@ -568,7 +743,10 @@ export class SyncCoordinator implements DurableObject {
     }
   }
 
-  private async updateSyncMetadata(userId: string): Promise<void> {
+  private async updateSyncMetadata(
+    userId: string,
+    lastSeq?: number
+  ): Promise<void> {
     if (!this.env.DB) return
 
     try {
@@ -581,7 +759,10 @@ export class SyncCoordinator implements DurableObject {
       }
 
       // Generate sync token based on current timestamp
-      const syncToken = `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const syncToken =
+        typeof lastSeq === 'number'
+          ? `seq_${lastSeq}`
+          : `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
       // Update sync_metadata table
       await this.env.DB.prepare(
@@ -608,12 +789,12 @@ export class SyncCoordinator implements DurableObject {
   private async saveRepertoireToDatabase(
     event: SyncEvent,
     userId: string
-  ): Promise<void> {
+  ): Promise<number | null> {
     if (!this.env.DB) {
       console.warn(
         '⚠️ Database not configured, skipping repertoire persistence'
       )
-      return
+      return null
     }
 
     try {
@@ -652,37 +833,45 @@ export class SyncCoordinator implements DurableObject {
 
       if (!entityId) {
         console.error('❌ No entity ID found for repertoire event')
-        return
+        return null
       }
 
       if (isDelete) {
+        const seq = await this.getNextSequence()
         // Mark as deleted in sync_data
         await this.env.DB.prepare(
           `
           UPDATE sync_data 
-          SET deleted_at = CURRENT_TIMESTAMP
+          SET deleted_at = CURRENT_TIMESTAMP,
+              updated_at = CURRENT_TIMESTAMP,
+              seq = ?
           WHERE user_id = ? AND entity_type = ? AND entity_id = ?
         `
         )
-          .bind(userId, entityType, entityId)
+          .bind(seq, userId, entityType, entityId)
           .run()
 
         console.log(`✅ Marked repertoire item ${entityId} as deleted`)
+
+        await this.updateSyncMetadata(userId, seq)
+        return seq
       } else {
+        const seq = await this.getNextSequence()
         // Insert or update repertoire item
         await this.env.DB.prepare(
           `
           INSERT INTO sync_data (
             id, user_id, entity_type, entity_id, data, 
-            checksum, device_id, version, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            checksum, device_id, version, updated_at, seq
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
           ON CONFLICT (user_id, entity_type, entity_id) 
           DO UPDATE SET 
             data = excluded.data,
             checksum = excluded.checksum,
             device_id = excluded.device_id,
             updated_at = CURRENT_TIMESTAMP,
-            version = sync_data.version + 1
+            version = sync_data.version + 1,
+            seq = excluded.seq
         `
         )
           .bind(
@@ -693,19 +882,23 @@ export class SyncCoordinator implements DurableObject {
             JSON.stringify(data),
             await this.calculateChecksum(data),
             data.device_id || 'sync-worker',
-            1
+            1,
+            seq
           )
           .run()
 
         console.log(`✅ Saved repertoire item ${entityId} to database`)
 
         // Update sync_metadata
-        await this.updateSyncMetadata(userId)
+        await this.updateSyncMetadata(userId, seq)
+        return seq
       }
     } catch (error) {
       console.error('Repertoire database operation failed:', error)
       throw error
     }
+
+    return null
   }
 
   private sendToClient(clientId: string, data: any): void {
