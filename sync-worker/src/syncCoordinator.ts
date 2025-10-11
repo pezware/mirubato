@@ -72,7 +72,7 @@ export class SyncCoordinator implements DurableObject {
       WHERE id = 1
       RETURNING current_value
     `
-    ).first<{ current_value: number }>()
+    ).first() as { current_value: number } | null
 
     if (updated && typeof updated.current_value === 'number') {
       return updated.current_value
@@ -85,7 +85,7 @@ export class SyncCoordinator implements DurableObject {
       ON CONFLICT(id) DO UPDATE SET current_value = current_value + 1
       RETURNING current_value
     `
-    ).first<{ current_value: number }>()
+    ).first() as { current_value: number } | null
 
     if (!initialized || typeof initialized.current_value !== 'number') {
       throw new Error('Failed to allocate sync sequence value')
@@ -824,7 +824,7 @@ export class SyncCoordinator implements DurableObject {
           break
         default:
           console.warn(`⚠️ Unknown repertoire event type: ${event.type}`)
-          return
+          return null
       }
 
       if (!entityId) {
