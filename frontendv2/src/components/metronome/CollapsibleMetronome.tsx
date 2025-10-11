@@ -162,7 +162,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
 
       // Re-register the visual callback to ensure beat highlighting works
       metronome.setVisualCallback({
-        onBeat: (beatNumber) => {
+        onBeat: beatNumber => {
           setCurrentBeat(beatNumber)
           setIsFlashing(true)
           window.setTimeout(() => setIsFlashing(false), 100)
@@ -329,7 +329,10 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
           )
           setIsPlaying(true)
         } catch (error) {
-          console.error('Failed to restart metronome after pattern change:', error)
+          console.error(
+            'Failed to restart metronome after pattern change:',
+            error
+          )
         }
       }
     }
