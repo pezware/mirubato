@@ -16,24 +16,23 @@ const LogbookEntryType = z.enum([
   'lesson',
   'masterclass',
   'rehearsal',
+  'technique',
+  'status_change',
   'other',
 ])
 
-const InstrumentType = z.enum([
-  'piano',
-  'violin',
-  'guitar',
-  'voice',
-  'flute',
-  'clarinet',
-  'saxophone',
-  'trumpet',
-  'cello',
-  'drums',
-  'other',
-])
+const InstrumentType = z
+  .string()
+  .min(1)
+  .transform(value => value.toLowerCase())
 
-const MoodType = z.enum(['frustrated', 'neutral', 'satisfied', 'proud'])
+const MoodType = z.enum([
+  'frustrated',
+  'neutral',
+  'satisfied',
+  'excited',
+  'proud',
+])
 
 // Piece schema for nested objects
 const PieceSchema = z.object({
@@ -121,18 +120,21 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
     entry: LogbookEntrySchema,
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
+    seq: z.number().int().nonnegative().optional(),
   }),
   z.object({
     type: z.literal('ENTRY_UPDATED'),
     entry: LogbookEntrySchema,
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
+    seq: z.number().int().nonnegative().optional(),
   }),
   z.object({
     type: z.literal('ENTRY_DELETED'),
     entryId: z.string(),
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
+    seq: z.number().int().nonnegative().optional(),
   }),
   // Piece events
   z.object({
@@ -140,12 +142,14 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
     piece: RepertoireItemSchema,
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
+    seq: z.number().int().nonnegative().optional(),
   }),
   z.object({
     type: z.literal('PIECE_UPDATED'),
     piece: RepertoireItemSchema,
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
+    seq: z.number().int().nonnegative().optional(),
   }),
   z.object({
     type: z.literal('PIECE_REMOVED'),
@@ -153,6 +157,7 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
     piece: RepertoireItemSchema.optional(), // Make piece optional for removal
+    seq: z.number().int().nonnegative().optional(),
   }),
   z.object({
     type: z.literal('PIECE_DISSOCIATED'),
@@ -160,6 +165,7 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
     piece: RepertoireItemSchema.optional(), // Make piece optional for dissociation
+    seq: z.number().int().nonnegative().optional(),
   }),
   // Bulk sync events
   z.object({
@@ -167,12 +173,14 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
     entries: z.array(LogbookEntrySchema),
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
+    lastSeq: z.number().int().nonnegative().optional(),
   }),
   z.object({
     type: z.literal('REPERTOIRE_BULK_SYNC'),
     pieces: z.array(RepertoireItemSchema),
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
+    lastSeq: z.number().int().nonnegative().optional(),
   }),
   // Control events
   z.object({
@@ -180,6 +188,7 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
     lastSyncTime: z.string().datetime().optional(),
     timestamp: z.string().datetime(),
     userId: z.string().optional(),
+    lastSeq: z.number().int().nonnegative().optional(),
   }),
   z.object({
     type: z.literal('PING'),
@@ -202,11 +211,30 @@ export const ResponseEventSchema = z.discriminatedUnion('type', [
     type: z.literal('SYNC_RESPONSE'),
     message: z.string(),
     timestamp: z.string().datetime(),
+    lastSeq: z.number().int().nonnegative().optional(),
   }),
   z.object({
     type: z.literal('ERROR'),
     error: z.string(),
     timestamp: z.string().datetime(),
+  }),
+  z.object({
+    type: z.literal('ENTRY_CREATED'),
+    entry: LogbookEntrySchema,
+    timestamp: z.string().datetime(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    type: z.literal('ENTRY_UPDATED'),
+    entry: LogbookEntrySchema,
+    timestamp: z.string().datetime(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    type: z.literal('ENTRY_DELETED'),
+    entryId: z.string(),
+    timestamp: z.string().datetime(),
+    seq: z.number().int().nonnegative().optional(),
   }),
 ])
 

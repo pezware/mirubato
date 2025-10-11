@@ -100,8 +100,14 @@ piecesHandler.put('/update-name', authMiddleware, async c => {
 
           const updateStmt = c.env.DB.prepare(
             `
+            WITH next_seq AS (
+              UPDATE sync_sequence
+              SET current_value = current_value + 1
+              WHERE id = 1
+              RETURNING current_value
+            )
             UPDATE sync_data
-            SET data = ?, updated_at = ?
+            SET data = ?, updated_at = ?, seq = (SELECT current_value FROM next_seq)
             WHERE id = ? AND user_id = ?
           `
           ).bind(

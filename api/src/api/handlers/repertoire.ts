@@ -481,7 +481,17 @@ repertoireHandler.delete('/:scoreId/dissociate', async c => {
 
       updateOperations.push(
         c.env.DB.prepare(
-          'UPDATE sync_data SET data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+          `
+          WITH next_seq AS (
+            UPDATE sync_sequence
+            SET current_value = current_value + 1
+            WHERE id = 1
+            RETURNING current_value
+          )
+          UPDATE sync_data
+          SET data = ?, updated_at = CURRENT_TIMESTAMP, seq = (SELECT current_value FROM next_seq)
+          WHERE id = ?
+        `
         ).bind(JSON.stringify(entryData), entry.id)
       )
     }

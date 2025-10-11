@@ -75,8 +75,15 @@ describe('D1 Type Error Prevention', () => {
       const mockFirst = vi.fn().mockResolvedValue(null) // No existing record
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
+      const sequenceFirst = vi.fn().mockResolvedValue({ current_value: 1 })
 
       mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('sync_sequence')) {
+          return {
+            bind: mockBind,
+            first: sequenceFirst,
+          }
+        }
         if (sql.includes('SELECT')) {
           return { bind: mockBind, first: mockFirst }
         }
@@ -140,8 +147,15 @@ describe('D1 Type Error Prevention', () => {
       })
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
+      const sequenceFirst = vi.fn().mockResolvedValue({ current_value: 2 })
 
       mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('sync_sequence')) {
+          return {
+            bind: mockBind,
+            first: sequenceFirst,
+          }
+        }
         if (sql.includes('SELECT')) {
           return { bind: mockBind, first: mockFirst }
         }
@@ -208,8 +222,15 @@ describe('D1 Type Error Prevention', () => {
       })
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
+      const sequenceFirst = vi.fn().mockResolvedValue({ current_value: 3 })
 
       mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('sync_sequence')) {
+          return {
+            bind: mockBind,
+            first: sequenceFirst,
+          }
+        }
         if (sql.includes('SELECT')) {
           return { bind: mockBind, first: mockFirst }
         }
