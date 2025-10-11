@@ -252,7 +252,7 @@ const Toolbox: React.FC = () => {
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patterns, settings.beatsPerMeasure])
+  }, [patterns, settings.beatsPerMeasure, isPlaying])
 
   // Reset indicator when stopped (visual updates come from metronome callback when playing)
   useEffect(() => {
