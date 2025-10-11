@@ -478,10 +478,7 @@ export class WebSocketSync {
       candidates.push(event.seq)
     }
 
-    if (
-      typeof event.lastSeq === 'number' &&
-      Number.isFinite(event.lastSeq)
-    ) {
+    if (typeof event.lastSeq === 'number' && Number.isFinite(event.lastSeq)) {
       candidates.push(event.lastSeq)
     }
 

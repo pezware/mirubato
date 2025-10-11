@@ -168,7 +168,7 @@ describe('Comprehensive Undefined Value Handling', () => {
         if (sql.includes('sync_sequence')) {
           return {
             bind: mockBind,
-            first: sequenceFirst
+            first: sequenceFirst,
           }
         }
         if (sql.includes('SELECT')) {
@@ -241,7 +241,7 @@ describe('Comprehensive Undefined Value Handling', () => {
         if (sql.includes('sync_sequence')) {
           return {
             bind: mockBind,
-            first: sequenceFirst
+            first: sequenceFirst,
           }
         }
         if (sql.includes('SELECT')) {

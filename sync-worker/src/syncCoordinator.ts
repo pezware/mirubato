@@ -303,46 +303,42 @@ export class SyncCoordinator implements DurableObject {
     if (this.env.DB) {
       try {
         const { count: entriesSent, lastSeq: entrySeq } =
-          await this.streamSyncData<
-          z.infer<typeof LogbookEntrySchema>
-        >({
-          clientId,
-          userId: client.userId,
-          entityType: 'logbook_entry',
-          eventType: 'BULK_SYNC',
-          lastSeq: requestedLastSeq,
-          fallbackSeconds: lastSyncTime / 1000,
-          rowParser: row => {
-            try {
-              const parsed = JSON.parse(row.data)
-              return sanitizeEntry(parsed)
-            } catch (error) {
-              console.error('Failed to parse logbook entry row:', error)
-              return null
-            }
-          },
-        })
+          await this.streamSyncData<z.infer<typeof LogbookEntrySchema>>({
+            clientId,
+            userId: client.userId,
+            entityType: 'logbook_entry',
+            eventType: 'BULK_SYNC',
+            lastSeq: requestedLastSeq,
+            fallbackSeconds: lastSyncTime / 1000,
+            rowParser: row => {
+              try {
+                const parsed = JSON.parse(row.data)
+                return sanitizeEntry(parsed)
+              } catch (error) {
+                console.error('Failed to parse logbook entry row:', error)
+                return null
+              }
+            },
+          })
 
         const { count: piecesSent, lastSeq: pieceSeq } =
-          await this.streamSyncData<
-          z.infer<typeof RepertoireItemSchema>
-        >({
-          clientId,
-          userId: client.userId,
-          entityType: 'repertoire_item',
-          eventType: 'REPERTOIRE_BULK_SYNC',
-          lastSeq: Math.max(requestedLastSeq, entrySeq),
-          fallbackSeconds: lastSyncTime / 1000,
-          rowParser: row => {
-            try {
-              const parsed = JSON.parse(row.data)
-              return sanitizeRepertoireItem(parsed)
-            } catch (error) {
-              console.error('Failed to parse repertoire row:', error)
-              return null
-            }
-          },
-        })
+          await this.streamSyncData<z.infer<typeof RepertoireItemSchema>>({
+            clientId,
+            userId: client.userId,
+            entityType: 'repertoire_item',
+            eventType: 'REPERTOIRE_BULK_SYNC',
+            lastSeq: Math.max(requestedLastSeq, entrySeq),
+            fallbackSeconds: lastSyncTime / 1000,
+            rowParser: row => {
+              try {
+                const parsed = JSON.parse(row.data)
+                return sanitizeRepertoireItem(parsed)
+              } catch (error) {
+                console.error('Failed to parse repertoire row:', error)
+                return null
+              }
+            },
+          })
 
         const highestSeq = Math.max(requestedLastSeq, entrySeq, pieceSeq)
 

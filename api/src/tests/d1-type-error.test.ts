@@ -81,7 +81,7 @@ describe('D1 Type Error Prevention', () => {
         if (sql.includes('sync_sequence')) {
           return {
             bind: mockBind,
-            first: sequenceFirst
+            first: sequenceFirst,
           }
         }
         if (sql.includes('SELECT')) {
@@ -153,7 +153,7 @@ describe('D1 Type Error Prevention', () => {
         if (sql.includes('sync_sequence')) {
           return {
             bind: mockBind,
-            first: sequenceFirst
+            first: sequenceFirst,
           }
         }
         if (sql.includes('SELECT')) {
@@ -228,7 +228,7 @@ describe('D1 Type Error Prevention', () => {
         if (sql.includes('sync_sequence')) {
           return {
             bind: mockBind,
-            first: sequenceFirst
+            first: sequenceFirst,
           }
         }
         if (sql.includes('SELECT')) {
