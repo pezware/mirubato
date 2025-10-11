@@ -321,6 +321,10 @@ class PatternMetronomeService {
     this.beatsPerMeasure = patterns.accent.length
   }
 
+  setVisualCallback(callback?: VisualCallback): void {
+    this.visualCallback = callback
+  }
+
   getIsPlaying(): boolean {
     return this.isPlaying
   }
