@@ -170,7 +170,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patterns, settings.beatsPerMeasure, isPlaying])
+  }, [patterns, settings.beatsPerMeasure])
 
   // Reset indicator when stopped (visual updates come from metronome callback when playing)
   useEffect(() => {

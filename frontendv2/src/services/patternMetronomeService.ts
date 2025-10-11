@@ -237,12 +237,22 @@ class PatternMetronomeService {
       layersToPlay.triangle = true
     }
 
-    // Schedule visual feedback in perfect sync with audio
+    // Schedule visual feedback using setTimeout for better callback management
+    // This allows the callback to be updated dynamically without Transport issues
     if (this.visualCallback?.onBeat) {
       const beatNumber = this.currentBeat
-      Tone.Draw.schedule(() => {
-        this.visualCallback!.onBeat!(beatNumber, layersToPlay)
-      }, time)
+      const callback = this.visualCallback
+      const delayMs = (time - Tone.Transport.seconds) * 1000
+
+      // Use setTimeout instead of Tone.Draw.schedule to avoid Transport timeline issues
+      if (delayMs >= 0) {
+        setTimeout(() => {
+          // Use the current callback reference, not a captured one
+          if (this.visualCallback?.onBeat && this.isPlaying) {
+            this.visualCallback.onBeat(beatNumber, layersToPlay)
+          }
+        }, delayMs)
+      }
     }
   }
 
