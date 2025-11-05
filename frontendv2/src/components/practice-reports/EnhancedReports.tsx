@@ -6,11 +6,13 @@ import { useEnhancedAnalytics } from '../../hooks/useEnhancedAnalytics'
 import { LoadingSkeleton } from '../ui/Loading'
 import { ReportsTabs, ReportView } from './ReportsTabs'
 import { LogbookEntry } from '../../api/logbook'
+import { usePlanningStore } from '../../stores/planningStore'
 
 // Lazy load view components (except DataView for immediate response)
 const OverviewView = lazy(() => import('./views/OverviewView'))
 const RepertoireView = lazy(() => import('../repertoire/RepertoireView'))
 const ManualEntryForm = lazy(() => import('../ManualEntryForm'))
+const PlanningView = lazy(() => import('../practice-planning/PlanningView'))
 
 // Regular import for DataView to fix double-click issue
 import DataView from './views/DataView'
@@ -33,6 +35,17 @@ export default function EnhancedReports({
     undefined
   )
 
+  // Planning store
+  const plans = usePlanningStore(state => state.plans)
+  const occurrences = usePlanningStore(state => state.occurrences)
+  const isPlanningLoading = usePlanningStore(state => state.isLoading)
+  const planningError = usePlanningStore(state => state.error)
+  const planningLoaded = usePlanningStore(state => state.hasLoaded)
+  const loadPlanningData = usePlanningStore(state => state.loadPlanningData)
+  const getNextOccurrenceForPlan = usePlanningStore(
+    state => state.getNextOccurrenceForPlan
+  )
+
   // Handle URL parameters and navigation state
   useEffect(() => {
     const tab = searchParams.get('tab')
@@ -52,6 +65,8 @@ export default function EnhancedReports({
       else if (location.state && 'editEntry' in location.state) {
         setEditEntry(location.state.editEntry as LogbookEntry)
       }
+    } else if (tab === 'planning') {
+      setReportView('planning')
     } else if (tab === 'repertoire') {
       setReportView('repertoire')
     } else if (tab === 'data') {
@@ -61,6 +76,14 @@ export default function EnhancedReports({
       setReportView('overview')
     }
   }, [searchParams, location.state, entries])
+
+  useEffect(() => {
+    if (reportView === 'planning' && !planningLoaded && !isPlanningLoading) {
+      loadPlanningData().catch(() => {
+        // errors handled in store
+      })
+    }
+  }, [reportView, planningLoaded, isPlanningLoading, loadPlanningData])
 
   // Update URL when tab changes with navigation guards
   const handleViewChange = (view: ReportView) => {
@@ -179,6 +202,17 @@ export default function EnhancedReports({
         return <RepertoireView analytics={analytics} />
       case 'data':
         return <DataView analytics={analytics} />
+      case 'planning':
+        return (
+          <PlanningView
+            plans={plans}
+            occurrences={occurrences}
+            isLoading={isPlanningLoading}
+            error={planningError}
+            onReload={loadPlanningData}
+            getNextOccurrenceForPlan={getNextOccurrenceForPlan}
+          />
+        )
       case 'newEntry':
         return (
           <ManualEntryForm

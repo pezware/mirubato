@@ -345,10 +345,32 @@
     "new": "New",
     "newEntry": "Add Entry",
     "overview": "Overview",
+    "planning": "Planning",
     "pieces": "Pieces",
     "progress": "Progress Insights",
     "repertoire": "Pieces",
     "table": "Table"
+  },
+  "planningView": {
+    "checkIn": "Check In",
+    "durationLabel": "Duration",
+    "emptyState": {
+      "createPlan": "Create Plan",
+      "description": "Create a practice plan or adopt a template to schedule future sessions.",
+      "title": "No active plans"
+    },
+    "error": "Unable to load practice plans",
+    "flexibilityLabel": "Flexibility",
+    "nextSession": "Next session",
+    "noUpcoming": "No upcoming session",
+    "retry": "Retry",
+    "scheduledSessions_one": "{{count}} scheduled session",
+    "scheduledSessions_other": "{{count}} scheduled sessions",
+    "segmentCount_one": "{{count}} segment",
+    "segmentCount_other": "{{count}} segments",
+    "segmentsLabel": "Segments",
+    "upcoming": "Upcoming",
+    "viewPlan": "Open Plan"
   },
   "techniqueFocus": "Technique Focus",
   "techniquesPracticed": "Techniques Practiced",

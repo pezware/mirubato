@@ -37,6 +37,8 @@ syncHandler.post('/pull', async c => {
     // Transform sync data to user-friendly format
     const entries = []
     const goals = []
+    const practicePlans = []
+    const planOccurrences = []
 
     // Handle the results properly
     const results = (syncData as { results?: unknown[] }).results || []
@@ -69,6 +71,10 @@ syncHandler.post('/pull', async c => {
             data.instrument = data.instrument.toLowerCase()
           }
           goals.push(data)
+        } else if (item.entity_type === 'practice_plan') {
+          practicePlans.push(data)
+        } else if (item.entity_type === 'plan_occurrence') {
+          planOccurrences.push(data)
         }
       } catch (parseError) {
         // Error: Failed to parse sync data
@@ -81,6 +87,8 @@ syncHandler.post('/pull', async c => {
     return c.json({
       entries,
       goals,
+      practicePlans,
+      planOccurrences,
       syncToken,
       timestamp: new Date().toISOString(),
     })
@@ -96,7 +104,12 @@ syncHandler.post('/pull', async c => {
 syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   const userId = c.get('userId') as string
   const { changes } = c.get('validatedBody') as {
-    changes: { entries?: unknown[]; goals?: unknown[] }
+    changes: {
+      entries?: unknown[]
+      goals?: unknown[]
+      practicePlans?: unknown[]
+      planOccurrences?: unknown[]
+    }
   }
   const db = new DatabaseHelpers(c.env.DB)
 
@@ -117,6 +130,8 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   //   console.log('[Sync Push] Received changes:', {
   //     entriesCount: changes.entries?.length || 0,
   //     goalsCount: changes.goals?.length || 0,
+  //     practicePlansCount: changes.practicePlans?.length || 0,
+  //     planOccurrencesCount: changes.planOccurrences?.length || 0,
   //   })
   //   if (changes.entries && changes.entries.length > 0) {
   //     console.log(
@@ -140,6 +155,8 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       entriesProcessed: 0,
       duplicatesPrevented: 0,
       goalsProcessed: 0,
+      practicePlansProcessed: 0,
+      planOccurrencesProcessed: 0,
     }
 
     // Process entries
@@ -327,6 +344,120 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       }
     }
 
+    // Process practice plans
+    if (changes.practicePlans && changes.practicePlans.length > 0) {
+      for (const plan of changes.practicePlans as Array<{
+        id: string
+        [key: string]: unknown
+      }>) {
+        try {
+          const transformedPlan = { ...plan }
+
+          if (!transformedPlan.user_id) {
+            transformedPlan.user_id = userId
+          }
+
+          const timestampFields = transformedPlan as {
+            createdAt?: string
+            created_at?: string
+            updatedAt?: string
+            updated_at?: string
+          }
+
+          if (timestampFields.createdAt && !timestampFields.created_at) {
+            timestampFields.created_at = timestampFields.createdAt
+          }
+
+          if (timestampFields.updatedAt && !timestampFields.updated_at) {
+            timestampFields.updated_at = timestampFields.updatedAt
+          }
+
+          const checksum = await calculateChecksum(transformedPlan)
+
+          await db.upsertSyncData({
+            userId,
+            entityType: 'practice_plan',
+            entityId: transformedPlan.id as string,
+            data: transformedPlan,
+            checksum,
+            deviceId,
+          })
+
+          stats.practicePlansProcessed++
+        } catch (planError) {
+          conflicts.push({
+            entityId: plan.id,
+            entityType: 'practice_plan',
+            reason:
+              planError instanceof Error ? planError.message : 'Unknown error',
+          })
+        }
+      }
+    }
+
+    // Process plan occurrences
+    if (changes.planOccurrences && changes.planOccurrences.length > 0) {
+      for (const occurrence of changes.planOccurrences as Array<{
+        id: string
+        planId?: string
+        [key: string]: unknown
+      }>) {
+        try {
+          const transformedOccurrence = { ...occurrence }
+
+          if (!transformedOccurrence.user_id) {
+            transformedOccurrence.user_id = userId
+          }
+
+          const planLinkFields = transformedOccurrence as {
+            planId?: string
+            plan_id?: string
+          }
+
+          if (planLinkFields.planId && !planLinkFields.plan_id) {
+            planLinkFields.plan_id = planLinkFields.planId
+          }
+
+          const timestampFields = transformedOccurrence as {
+            createdAt?: string
+            created_at?: string
+            updatedAt?: string
+            updated_at?: string
+          }
+
+          if (timestampFields.createdAt && !timestampFields.created_at) {
+            timestampFields.created_at = timestampFields.createdAt
+          }
+
+          if (timestampFields.updatedAt && !timestampFields.updated_at) {
+            timestampFields.updated_at = timestampFields.updatedAt
+          }
+
+          const checksum = await calculateChecksum(transformedOccurrence)
+
+          await db.upsertSyncData({
+            userId,
+            entityType: 'plan_occurrence',
+            entityId: transformedOccurrence.id as string,
+            data: transformedOccurrence,
+            checksum,
+            deviceId,
+          })
+
+          stats.planOccurrencesProcessed++
+        } catch (occurrenceError) {
+          conflicts.push({
+            entityId: occurrence.id,
+            entityType: 'plan_occurrence',
+            reason:
+              occurrenceError instanceof Error
+                ? occurrenceError.message
+                : 'Unknown error',
+          })
+        }
+      }
+    }
+
     // Process goals
     if (changes.goals && changes.goals.length > 0) {
       for (const goal of changes.goals as Array<{
@@ -364,13 +495,21 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
     await db.updateSyncMetadata(userId, newSyncToken)
 
     // Log sync event if we have the tracking
-    if (deviceId && stats.entriesProcessed > 0) {
+    if (
+      deviceId &&
+      (stats.entriesProcessed > 0 ||
+        stats.practicePlansProcessed > 0 ||
+        stats.planOccurrencesProcessed > 0 ||
+        stats.goalsProcessed > 0)
+    ) {
       // console.log('[Sync Push] Sync completed:', {
       //   userId,
       //   deviceId,
       //   entriesProcessed: stats.entriesProcessed,
       //   duplicatesPrevented: stats.duplicatesPrevented,
       //   goalsProcessed: stats.goalsProcessed,
+      //   practicePlansProcessed: stats.practicePlansProcessed,
+      //   planOccurrencesProcessed: stats.planOccurrencesProcessed,
       // })
     }
 
@@ -382,6 +521,8 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
         entriesProcessed: stats.entriesProcessed,
         duplicatesPrevented: stats.duplicatesPrevented,
         goalsProcessed: stats.goalsProcessed,
+        practicePlansProcessed: stats.practicePlansProcessed,
+        planOccurrencesProcessed: stats.planOccurrencesProcessed,
       },
     }
   }
@@ -423,6 +564,8 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       deviceId,
       entriesCount: changes.entries?.length || 0,
       goalsCount: changes.goals?.length || 0,
+      practicePlansCount: changes.practicePlans?.length || 0,
+      planOccurrencesCount: changes.planOccurrences?.length || 0,
       // Add first entry details for debugging
       firstEntry: changes.entries?.[0]
         ? {
