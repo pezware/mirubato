@@ -48,13 +48,14 @@ Introduce structured planning layers on top of the existing logbook so musicians
 
 ### Data Model
 
-| Entity | Key Fields | Notes |
-| ------ | ---------- | ----- |
-| `practice_plan` | `id`, `title`, `description`, `type` (`bootcamp`, `course`, `custom`), `focusAreas[]`, `techniques[]`, `pieceRefs[]` (`scoreId`, `title`, `composer`), `schedule` (definition), `ownerId`, `visibility` (`private`, `shared`, `template`), `status` (`active`, `archived`), `createdAt`, `updatedAt` | Lives in `sync_data`, versioned like logbook entries. |
-| `plan_occurrence` | `id`, `planId`, `scheduledStart`, `scheduledEnd`, `flexWindow` (`daily`, `weekly`, custom range), `recurrenceKey`, `status` (`scheduled`, `completed`, `skipped`, `expired`), `logEntryId`, `notes`, `reminderState` | Either nested under `practice_plan.occurrences[]` for near-term windows or stored as separate sync entities for easier incremental updates. |
-| `plan_template` (Phase 3) | Same as plan, plus `templateVersion`, `authorId`, `tags`, `estimatedDurationDays`, `publisherMetadata` | Only available once tutor tooling is enabled. |
+| Entity                    | Key Fields                                                                                                                                                                                                                                                                                           | Notes                                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `practice_plan`           | `id`, `title`, `description`, `type` (`bootcamp`, `course`, `custom`), `focusAreas[]`, `techniques[]`, `pieceRefs[]` (`scoreId`, `title`, `composer`), `schedule` (definition), `ownerId`, `visibility` (`private`, `shared`, `template`), `status` (`active`, `archived`), `createdAt`, `updatedAt` | Lives in `sync_data`, versioned like logbook entries.                                                                                       |
+| `plan_occurrence`         | `id`, `planId`, `scheduledStart`, `scheduledEnd`, `flexWindow` (`daily`, `weekly`, custom range), `recurrenceKey`, `status` (`scheduled`, `completed`, `skipped`, `expired`), `logEntryId`, `notes`, `reminderState`                                                                                 | Either nested under `practice_plan.occurrences[]` for near-term windows or stored as separate sync entities for easier incremental updates. |
+| `plan_template` (Phase 3) | Same as plan, plus `templateVersion`, `authorId`, `tags`, `estimatedDurationDays`, `publisherMetadata`                                                                                                                                                                                               | Only available once tutor tooling is enabled.                                                                                               |
 
 **Schedule definition** (JSON):
+
 ```json
 {
   "kind": "recurring",
@@ -66,6 +67,7 @@ Introduce structured planning layers on top of the existing logbook so musicians
   "endDate": "2025-06-30"
 }
 ```
+
 Single sessions use `{"kind":"single","target":"2025-04-12T10:00:00Z","durationMinutes":30}`.
 
 ### Integrations & Dependencies
@@ -131,4 +133,3 @@ Single sessions use `{"kind":"single","target":"2025-04-12T10:00:00Z","durationM
 ---
 
 Last updated: 2025-03-17 | Version 1.7.6
-
