@@ -460,8 +460,8 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     const resolvedDuration =
       durationMinutes && durationMinutes > 0
         ? Math.round(durationMinutes)
-        : existingPlan.schedule.durationMinutes ??
-          (segmentDurationTotal > 0 ? segmentDurationTotal : undefined)
+        : (existingPlan.schedule.durationMinutes ??
+          (segmentDurationTotal > 0 ? segmentDurationTotal : undefined))
 
     const updatedPlan: PracticePlan = {
       ...existingPlan,
