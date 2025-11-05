@@ -3,8 +3,12 @@
   "autocomplete": {
     "offline": "Hors ligne - affichage de votre historique"
   },
+  "clickEntryInList": "Cliquez sur une entrée dans la liste pour voir tous les détails",
   "continueToLogbook": "Continuer vers le journal",
+  "dateAndTime": "Date et heure",
+  "duration": "Durée",
   "empty": "Aucune entrée de pratique. Commencez à suivre votre parcours musical !",
+  "emptyDescription": "Commencez à enregistrer vos séances de pratique pour suivre vos progrès.",
   "entry": {
     "addEntry": "Ajouter une entrée",
     "addFirstEntry": "Ajouter votre première entrée",
@@ -60,6 +64,7 @@
     },
     "updateEntry": "Mettre à jour l'entrée"
   },
+  "entryDetails": "Détails de l'entrée",
   "filters": {
     "allTime": "Tout le temps",
     "last30Days": "30 derniers jours",
@@ -67,6 +72,7 @@
     "lastMonth": "Mois dernier",
     "thisMonth": "Ce mois-ci"
   },
+  "instrument": "Instrument",
   "linkedScore": "Partition liée",
   "loading": "Chargement de vos sessions de pratique...",
   "mood": {
@@ -76,12 +82,17 @@
     "satisfied": "Satisfait"
   },
   "noResults": "Aucune entrée ne correspond à votre recherche.",
+  "notes": "Notes",
   "openLogbook": "Ouvrir le journal",
+  "pieces": "Pièces",
   "searchPlaceholder": "Rechercher des entrées...",
+  "selectEntryToView": "Sélectionnez une entrée pour voir les détails",
   "syncStatus": {
     "localOnly": "Stockage local",
     "synced": "Synchronisé"
   },
+  "tags": "Étiquettes",
+  "techniques": "Techniques",
   "timeline": {
     "month": "{{month}}",
     "week": "Semaine {{number}}",
@@ -121,17 +132,6 @@
     "visualOnly": "Notification visuelle uniquement"
   },
   "title": "Journal",
-  "viewScore": "Voir la partition",
-  "emptyDescription": "Commencez à enregistrer vos séances de pratique pour suivre vos progrès.",
-  "selectEntryToView": "Sélectionnez une entrée pour voir les détails",
-  "clickEntryInList": "Cliquez sur une entrée dans la liste pour voir tous les détails",
-  "entryDetails": "Détails de l'entrée",
-  "dateAndTime": "Date et heure",
-  "duration": "Durée",
   "type": "Type",
-  "instrument": "Instrument",
-  "techniques": "Techniques",
-  "notes": "Notes",
-  "tags": "Étiquettes",
-  "pieces": "Pièces"
+  "viewScore": "Voir la partition"
 }

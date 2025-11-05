@@ -3,8 +3,12 @@
   "autocomplete": {
     "offline": "离线模式 - 显示您的历史记录"
   },
+  "clickEntryInList": "点击列表中的条目以查看完整详细信息",
   "continueToLogbook": "继续至练习日志",
+  "dateAndTime": "日期与时间",
+  "duration": "时长",
   "empty": "尚无练习记录。开始记录您的音乐之旅吧！",
+  "emptyDescription": "开始记录您的练习以追踪进度。",
   "entry": {
     "addEntry": "添加记录",
     "addFirstEntry": "添加您的第一条记录",
@@ -60,6 +64,7 @@
     },
     "updateEntry": "更新记录"
   },
+  "entryDetails": "条目详情",
   "filters": {
     "allTime": "全部时间",
     "last30Days": "最近 30 天",
@@ -67,6 +72,7 @@
     "lastMonth": "上个月",
     "thisMonth": "本月"
   },
+  "instrument": "乐器",
   "linkedScore": "关联的乐谱",
   "loading": "正在加载您的练习记录...",
   "mood": {
@@ -76,12 +82,17 @@
     "satisfied": "满意"
   },
   "noResults": "没有符合搜索条件的记录。",
+  "notes": "笔记",
   "openLogbook": "打开练习日志",
+  "pieces": "曲目",
   "searchPlaceholder": "搜索记录...",
+  "selectEntryToView": "选择一个条目以查看详细信息",
   "syncStatus": {
     "localOnly": "本地存储",
     "synced": "已同步"
   },
+  "tags": "标签",
+  "techniques": "技巧",
   "timeline": {
     "month": "{{month}}",
     "week": "第 {{number}} 周",
@@ -121,17 +132,6 @@
     "visualOnly": "仅视觉通知"
   },
   "title": "练习日志",
-  "viewScore": "查看乐谱",
-  "emptyDescription": "开始记录您的练习以追踪进度。",
-  "selectEntryToView": "选择一个条目以查看详细信息",
-  "clickEntryInList": "点击列表中的条目以查看完整详细信息",
-  "entryDetails": "条目详情",
-  "dateAndTime": "日期与时间",
-  "duration": "时长",
   "type": "类型",
-  "instrument": "乐器",
-  "techniques": "技巧",
-  "notes": "笔记",
-  "tags": "标签",
-  "pieces": "曲目"
+  "viewScore": "查看乐谱"
 }

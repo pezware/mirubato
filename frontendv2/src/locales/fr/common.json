@@ -147,6 +147,7 @@
     "september": "Septembre"
   },
   "more": "Plus",
+  "moreOptions": "Plus d'options",
   "music": {
     "lesson": "Leçon",
     "notes": {
@@ -308,6 +309,5 @@
     "list": "Liste"
   },
   "warning": "Avertissement",
-  "yes": "Oui",
-  "moreOptions": "Plus d'options"
+  "yes": "Oui"
 }
