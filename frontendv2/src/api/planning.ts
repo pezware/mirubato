@@ -109,6 +109,10 @@ const normalizeOccurrence = (occurrence: PlanOccurrence): PlanOccurrence => ({
   metrics: occurrence.metrics ?? undefined,
 })
 
+const sanitize = <T>(value: T): T => {
+  return JSON.parse(JSON.stringify(value)) as T
+}
+
 export const planningApi = {
   getPlanningData: async () => {
     const response = await apiClient.post<{
@@ -126,6 +130,30 @@ export const planningApi = {
         normalizeOccurrence
       ),
       syncToken: response.data.syncToken,
+    }
+  },
+
+  createPlan: async (plan: PracticePlan, occurrences: PlanOccurrence[]) => {
+    const payloadPlan = sanitize(plan)
+    const payloadOccurrences = occurrences.map(sanitize)
+
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          practicePlans: [payloadPlan],
+          planOccurrences: payloadOccurrences,
+        },
+      }
+    )
+
+    if (!response.data.success) {
+      throw new Error('Failed to create practice plan')
+    }
+
+    return {
+      plan: payloadPlan,
+      occurrences: payloadOccurrences,
     }
   },
 }

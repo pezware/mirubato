@@ -1,9 +1,35 @@
 import { create } from 'zustand'
+import { nanoid } from 'nanoid'
 import {
   planningApi,
   type PracticePlan,
   type PlanOccurrence,
 } from '../api/planning'
+
+export interface PlanSegmentDraft {
+  label: string
+  durationMinutes?: number
+  instructions?: string
+  techniques?: string[]
+}
+
+export interface CreatePlanDraft {
+  title: string
+  description?: string
+  schedule: {
+    kind?: 'single' | 'recurring'
+    startDate: string
+    timeOfDay?: string
+    durationMinutes?: number
+    flexibility: 'fixed' | 'same-day' | 'anytime'
+    endDate?: string | null
+  }
+  segments: PlanSegmentDraft[]
+  reflectionPrompts?: string[]
+  focusAreas?: string[]
+  techniques?: string[]
+  type?: PracticePlan['type']
+}
 
 interface PlanningState {
   plansMap: Map<string, PracticePlan>
@@ -14,6 +40,10 @@ interface PlanningState {
   plans: PracticePlan[]
   occurrences: PlanOccurrence[]
   loadPlanningData: () => Promise<void>
+  createPlan: (draft: CreatePlanDraft) => Promise<{
+    plan: PracticePlan
+    occurrence: PlanOccurrence
+  }>
   getOccurrencesForPlan: (planId: string) => PlanOccurrence[]
   getNextOccurrenceForPlan: (planId: string) => PlanOccurrence | undefined
 }
@@ -59,6 +89,29 @@ const toSortedOccurrences = (
       : Number.MAX_SAFE_INTEGER
     return aTime - bTime
   })
+}
+
+const combineDateAndTime = (date: string, time?: string): string | null => {
+  if (!date) return null
+  const safeTime = time && time.trim() ? time.trim() : '00:00'
+  const normalizedTime = safeTime.length === 5 ? `${safeTime}:00` : safeTime
+  const iso = new Date(`${date}T${normalizedTime}`)
+  if (Number.isNaN(iso.getTime())) {
+    return null
+  }
+  return iso.toISOString()
+}
+
+const addMinutes = (iso: string, minutes?: number): string | undefined => {
+  if (!iso || !minutes || Number.isNaN(minutes)) return undefined
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return undefined
+  date.setMinutes(date.getMinutes() + minutes)
+  return date.toISOString()
+}
+
+const sanitizeForStorage = <T>(value: T): T => {
+  return JSON.parse(JSON.stringify(value)) as T
 }
 
 export const usePlanningStore = create<PlanningState>((set, get) => ({
@@ -124,6 +177,160 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
         isLoading: false,
         hasLoaded: true,
       })
+    }
+  },
+
+  createPlan: async draft => {
+    const { plansMap, occurrencesMap } = get()
+
+    const nowIso = new Date().toISOString()
+    const planId = `plan_${nanoid()}`
+    const occurrenceId = `plan_occ_${nanoid()}`
+
+    const scheduledStart = combineDateAndTime(
+      draft.schedule.startDate,
+      draft.schedule.timeOfDay
+    )
+
+    if (!scheduledStart) {
+      throw new Error('Invalid schedule')
+    }
+
+    const durationMinutes = draft.schedule.durationMinutes
+    const scheduledEnd = addMinutes(scheduledStart, durationMinutes)
+
+    const cleanSegments = draft.segments
+      .map(segment => ({
+        label: segment.label.trim(),
+        durationMinutes:
+          segment.durationMinutes && segment.durationMinutes > 0
+            ? Math.round(segment.durationMinutes)
+            : undefined,
+        instructions: segment.instructions?.trim() || undefined,
+        techniques: segment.techniques
+          ?.map(tech => tech.trim())
+          .filter(Boolean),
+      }))
+      .filter(segment => segment.label.length > 0)
+      .map((segment, index) => ({
+        id: `${occurrenceId}_segment_${index + 1}`,
+        ...segment,
+      }))
+
+    if (cleanSegments.length === 0) {
+      throw new Error('At least one segment is required')
+    }
+
+    const reflectionPrompts = draft.reflectionPrompts
+      ?.map(prompt => prompt.trim())
+      .filter(Boolean)
+      .slice(0, 10)
+
+    const focusAreas = draft.focusAreas
+      ?.map(area => area.trim())
+      .filter(Boolean)
+
+    const planTechniques = draft.techniques
+      ?.map(tech => tech.trim())
+      .filter(Boolean)
+
+    const scheduleKind = draft.schedule.kind ?? 'single'
+
+    const plan: PracticePlan = {
+      id: planId,
+      title: draft.title.trim(),
+      description: draft.description?.trim() || null,
+      type: draft.type ?? 'custom',
+      focusAreas: focusAreas && focusAreas.length > 0 ? focusAreas : [],
+      techniques:
+        planTechniques && planTechniques.length > 0 ? planTechniques : [],
+      pieceRefs: [],
+      schedule: {
+        kind: scheduleKind,
+        durationMinutes:
+          durationMinutes && durationMinutes > 0
+            ? Math.round(durationMinutes)
+            : undefined,
+        timeOfDay: draft.schedule.timeOfDay,
+        flexibility: draft.schedule.flexibility,
+        startDate: draft.schedule.startDate,
+        endDate: draft.schedule.endDate ?? null,
+        target: scheduleKind === 'single' ? scheduledStart : undefined,
+        metadata: {
+          segmentsCount: cleanSegments.length,
+        },
+      },
+      visibility: 'private',
+      status: 'active',
+      ownerId: undefined,
+      templateVersion: undefined,
+      tags: [],
+      metadata: {},
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      archivedAt: null,
+    }
+
+    const occurrence: PlanOccurrence = {
+      id: occurrenceId,
+      planId,
+      scheduledStart,
+      scheduledEnd,
+      flexWindow: draft.schedule.flexibility,
+      recurrenceKey: scheduleKind === 'recurring' ? scheduledStart : undefined,
+      segments: cleanSegments,
+      targets: {},
+      reflectionPrompts,
+      status: 'scheduled',
+      logEntryId: null,
+      checkIn: undefined,
+      notes: null,
+      reminderState: undefined,
+      metrics: {},
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    }
+
+    const sanitizedPlan = sanitizeForStorage(plan)
+    const sanitizedOccurrences = [sanitizeForStorage(occurrence)]
+
+    try {
+      await planningApi.createPlan(sanitizedPlan, sanitizedOccurrences)
+
+      const nextPlansMap = new Map(plansMap)
+      const nextOccurrencesMap = new Map(occurrencesMap)
+
+      nextPlansMap.set(sanitizedPlan.id, sanitizedPlan)
+      sanitizedOccurrences.forEach(occ => {
+        nextOccurrencesMap.set(occ.id, occ)
+      })
+
+      const nextPlansList = toSortedPlans(nextPlansMap)
+      const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+      writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+      writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+
+      set({
+        plansMap: nextPlansMap,
+        occurrencesMap: nextOccurrencesMap,
+        plans: nextPlansList,
+        occurrences: nextOccurrencesList,
+        hasLoaded: true,
+        error: null,
+      })
+
+      return {
+        plan: sanitizedPlan,
+        occurrence: sanitizedOccurrences[0],
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to create practice plan'
+      console.error('[Planning] Failed to create plan:', error)
+      throw error instanceof Error ? error : new Error(message)
     }
   },
 

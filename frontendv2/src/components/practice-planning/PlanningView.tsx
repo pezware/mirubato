@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Button,
@@ -11,6 +11,8 @@ import {
   Typography,
 } from '@/components/ui'
 import type { PracticePlan, PlanOccurrence } from '@/api/planning'
+import PlanEditorModal from './PlanEditorModal'
+import { usePlanningStore, type CreatePlanDraft } from '@/stores/planningStore'
 
 interface PlanningViewProps {
   plans: PracticePlan[]
@@ -55,6 +57,11 @@ const PlanningView = ({
   getNextOccurrenceForPlan,
 }: PlanningViewProps) => {
   const { t, i18n } = useTranslation(['reports', 'common'])
+  const createPlan = usePlanningStore(state => state.createPlan)
+
+  const [isEditorOpen, setIsEditorOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [editorError, setEditorError] = useState<string | null>(null)
 
   const occurrencesByPlan = useMemo(() => {
     const map = new Map<string, PlanOccurrence[]>()
@@ -79,6 +86,44 @@ const PlanningView = ({
 
     return map
   }, [occurrences])
+
+  const handleModalClose = () => {
+    if (isSaving) return
+    setEditorError(null)
+    setIsEditorOpen(false)
+  }
+
+  const handleCreatePlan = async (draft: CreatePlanDraft) => {
+    setEditorError(null)
+    setIsSaving(true)
+    try {
+      await createPlan(draft)
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : t('reports:planningEditor.genericError', 'Something went wrong')
+      setEditorError(message)
+      throw err
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const openEditor = () => {
+    setEditorError(null)
+    setIsEditorOpen(true)
+  }
+
+  const editorModal = (
+    <PlanEditorModal
+      isOpen={isEditorOpen}
+      onClose={handleModalClose}
+      onSubmit={handleCreatePlan}
+      isSubmitting={isSaving}
+      error={editorError}
+    />
+  )
 
   if (isLoading && plans.length === 0) {
     return (
@@ -125,17 +170,35 @@ const PlanningView = ({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button disabled>
+            <Button onClick={openEditor}>
               {t('reports:planningView.emptyState.createPlan')}
             </Button>
           </CardContent>
         </Card>
+        {editorModal}
       </div>
     )
   }
 
   return (
     <div className="p-3 sm:p-4 space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <Typography variant="h2">
+            {t('reports:planningView.heading', 'Practice planning')}
+          </Typography>
+          <Typography variant="body" className="text-muted-foreground">
+            {t(
+              'reports:planningView.headingDescription',
+              'Schedule upcoming sessions and track progress as you go.'
+            )}
+          </Typography>
+        </div>
+        <Button onClick={openEditor}>
+          {t('reports:planningView.createPlan', 'Create plan')}
+        </Button>
+      </div>
+
       {plans.map(plan => {
         const nextOccurrence = getNextOccurrenceForPlan(plan.id)
         const allOccurrences = occurrencesByPlan.get(plan.id) ?? []
@@ -271,6 +334,8 @@ const PlanningView = ({
           </Card>
         )
       })}
+
+      {editorModal}
     </div>
   )
 }

@@ -353,6 +353,7 @@
   },
   "planningView": {
     "checkIn": "Check In",
+    "createPlan": "Create plan",
     "durationLabel": "Duration",
     "emptyState": {
       "createPlan": "Create Plan",
@@ -361,6 +362,8 @@
     },
     "error": "Unable to load practice plans",
     "flexibilityLabel": "Flexibility",
+    "heading": "Practice planning",
+    "headingDescription": "Schedule upcoming sessions and track progress as you go.",
     "nextSession": "Next session",
     "noUpcoming": "No upcoming session",
     "retry": "Retry",
@@ -371,6 +374,46 @@
     "segmentsLabel": "Segments",
     "upcoming": "Upcoming",
     "viewPlan": "Open Plan"
+  },
+  "planningEditor": {
+    "title": "New Practice Plan",
+    "basicInfo": "Basic details",
+    "planTitle": "Plan title",
+    "description": "Description",
+    "descriptionPlaceholder": "What is the goal of this plan?",
+    "schedule": "Schedule",
+    "startDate": "Start date",
+    "startTime": "Start time",
+    "duration": "Duration (minutes)",
+    "flexibility": "Flexibility",
+    "flexibilityPlaceholder": "Choose flexibility",
+    "flexibilityOptions": {
+      "fixed": "Fixed time",
+      "sameDay": "Same day",
+      "anytime": "Anytime"
+    },
+    "segments": "Segments",
+    "addSegment": "Add segment",
+    "segmentLabel": "Segment {{index}}",
+    "segmentName": "Name",
+    "segmentDuration": "Duration (minutes)",
+    "segmentTechniques": "Techniques (comma separated)",
+    "techniquesPlaceholder": "e.g. slow practice, rhythm accents",
+    "segmentInstructions": "Instructions",
+    "segmentInstructionsPlaceholder": "Describe what to focus on during this segment",
+    "removeSegment": "Remove",
+    "reflectionPrompts": "Reflection prompts",
+    "promptHelper": "Use prompts to guide post-practice reflections.",
+    "addPrompt": "Add prompt",
+    "removePrompt": "Remove",
+    "cancel": "Cancel",
+    "createPlan": "Create plan",
+    "validation": {
+      "titleRequired": "Plan title is required",
+      "dateRequired": "Start date is required",
+      "segmentRequired": "Each segment needs a name"
+    },
+    "genericError": "Something went wrong"
   },
   "techniqueFocus": "Technique Focus",
   "techniquesPracticed": "Techniques Practiced",
