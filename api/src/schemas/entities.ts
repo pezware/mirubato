@@ -193,6 +193,7 @@ export const PracticePlanSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   archivedAt: z.string().nullable().optional(),
+  deletedAt: z.string().nullable().optional(),
 })
 
 export const PlanOccurrenceStatus = z.enum([
@@ -221,6 +222,7 @@ export const PlanOccurrenceSchema = z.object({
   metrics: PlanMetricsSchema,
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  deletedAt: z.string().nullable().optional(),
 })
 
 export const PartialPracticePlanSchema = PracticePlanSchema.partial().required({

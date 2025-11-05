@@ -12,6 +12,7 @@ import {
 } from '@/components/ui'
 import type { PracticePlan, PlanOccurrence } from '@/api/planning'
 import PlanEditorModal from './PlanEditorModal'
+import PlanCheckInModal from './PlanCheckInModal'
 import { usePlanningStore, type CreatePlanDraft } from '@/stores/planningStore'
 
 interface PlanningViewProps {
@@ -43,10 +44,8 @@ const formatTimeOnly = (value?: string | null, locale?: string) => {
   }).format(date)
 }
 
-const getSegmentCount = (
-  _plan: PracticePlan,
-  nextOccurrence?: PlanOccurrence
-) => nextOccurrence?.segments?.length ?? 0
+const getSegmentCount = (occurrence?: PlanOccurrence) =>
+  occurrence?.segments?.length ?? 0
 
 const PlanningView = ({
   plans,
@@ -58,10 +57,22 @@ const PlanningView = ({
 }: PlanningViewProps) => {
   const { t, i18n } = useTranslation(['reports', 'common'])
   const createPlan = usePlanningStore(state => state.createPlan)
+  const updatePlan = usePlanningStore(state => state.updatePlan)
+  const deletePlan = usePlanningStore(state => state.deletePlan)
+  const completeOccurrence = usePlanningStore(state => state.completeOccurrence)
 
   const [isEditorOpen, setIsEditorOpen] = useState(false)
+  const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create')
+  const [editorInitial, setEditorInitial] = useState<{
+    plan: PracticePlan
+    occurrence?: PlanOccurrence
+  } | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [editorError, setEditorError] = useState<string | null>(null)
+  const [activeCheckIn, setActiveCheckIn] = useState<{
+    plan: PracticePlan
+    occurrence: PlanOccurrence
+  } | null>(null)
 
   const occurrencesByPlan = useMemo(() => {
     const map = new Map<string, PlanOccurrence[]>()
@@ -89,15 +100,21 @@ const PlanningView = ({
 
   const handleModalClose = () => {
     if (isSaving) return
-    setEditorError(null)
     setIsEditorOpen(false)
+    setEditorMode('create')
+    setEditorInitial(null)
+    setEditorError(null)
   }
 
-  const handleCreatePlan = async (draft: CreatePlanDraft) => {
+  const handleSubmitPlan = async (draft: CreatePlanDraft) => {
     setEditorError(null)
     setIsSaving(true)
     try {
-      await createPlan(draft)
+      if (editorMode === 'edit') {
+        await updatePlan(draft)
+      } else {
+        await createPlan(draft)
+      }
     } catch (err) {
       const message =
         err instanceof Error
@@ -110,20 +127,51 @@ const PlanningView = ({
     }
   }
 
-  const openEditor = () => {
+  const handleDeletePlan = async () => {
+    if (!editorInitial) return
+    setEditorError(null)
+    setIsSaving(true)
+    try {
+      await deletePlan(editorInitial.plan.id)
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : t('reports:planningEditor.genericError', 'Something went wrong')
+      setEditorError(message)
+      throw err
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCheckInComplete = async (input: {
+    occurrenceId: string
+    logEntryId: string
+    responses: Record<string, string>
+    metrics?: Record<string, unknown>
+  }) => {
+    await completeOccurrence(input.occurrenceId, {
+      logEntryId: input.logEntryId,
+      responses: input.responses,
+      metrics: input.metrics,
+    })
+    setActiveCheckIn(null)
+  }
+
+  const openCreateModal = () => {
+    setEditorMode('create')
+    setEditorInitial(null)
     setEditorError(null)
     setIsEditorOpen(true)
   }
 
-  const editorModal = (
-    <PlanEditorModal
-      isOpen={isEditorOpen}
-      onClose={handleModalClose}
-      onSubmit={handleCreatePlan}
-      isSubmitting={isSaving}
-      error={editorError}
-    />
-  )
+  const openEditModal = (plan: PracticePlan, occurrence?: PlanOccurrence) => {
+    setEditorMode('edit')
+    setEditorInitial({ plan, occurrence })
+    setEditorError(null)
+    setIsEditorOpen(true)
+  }
 
   if (isLoading && plans.length === 0) {
     return (
@@ -159,6 +207,29 @@ const PlanningView = ({
     )
   }
 
+  const editorModal = (
+    <PlanEditorModal
+      isOpen={isEditorOpen}
+      onClose={handleModalClose}
+      onSubmit={handleSubmitPlan}
+      isSubmitting={isSaving}
+      error={editorError}
+      mode={editorMode}
+      initialPlan={editorInitial}
+      onDelete={editorMode === 'edit' ? handleDeletePlan : undefined}
+    />
+  )
+
+  const checkInModal = activeCheckIn ? (
+    <PlanCheckInModal
+      isOpen={Boolean(activeCheckIn)}
+      onClose={() => setActiveCheckIn(null)}
+      plan={activeCheckIn.plan}
+      occurrence={activeCheckIn.occurrence}
+      onComplete={handleCheckInComplete}
+    />
+  ) : null
+
   if (!isLoading && plans.length === 0) {
     return (
       <div className="p-3 sm:p-4">
@@ -170,12 +241,13 @@ const PlanningView = ({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={openEditor}>
+            <Button onClick={openCreateModal}>
               {t('reports:planningView.emptyState.createPlan')}
             </Button>
           </CardContent>
         </Card>
         {editorModal}
+        {checkInModal}
       </div>
     )
   }
@@ -194,7 +266,7 @@ const PlanningView = ({
             )}
           </Typography>
         </div>
-        <Button onClick={openEditor}>
+        <Button onClick={openCreateModal}>
           {t('reports:planningView.createPlan', 'Create plan')}
         </Button>
       </div>
@@ -202,14 +274,15 @@ const PlanningView = ({
       {plans.map(plan => {
         const nextOccurrence = getNextOccurrenceForPlan(plan.id)
         const allOccurrences = occurrencesByPlan.get(plan.id) ?? []
-        const segmentCount = getSegmentCount(plan, nextOccurrence)
+        const primaryOccurrence = nextOccurrence ?? allOccurrences[0]
+        const segmentCount = getSegmentCount(primaryOccurrence)
 
         const startTime = formatDateTime(
-          nextOccurrence?.scheduledStart,
+          primaryOccurrence?.scheduledStart,
           i18n.language
         )
         const timeOfDay = formatTimeOnly(
-          nextOccurrence?.scheduledStart,
+          primaryOccurrence?.scheduledStart,
           i18n.language
         )
 
@@ -227,12 +300,21 @@ const PlanningView = ({
                     </CardDescription>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="secondary" disabled>
-                    {t('reports:planningView.viewPlan', 'Open Plan')}
-                  </Button>
-                  <Button disabled>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => {
+                      if (!primaryOccurrence) return
+                      setActiveCheckIn({ plan, occurrence: primaryOccurrence })
+                    }}
+                    disabled={!primaryOccurrence}
+                  >
                     {t('reports:planningView.checkIn', 'Check In')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => openEditModal(plan, primaryOccurrence)}
+                  >
+                    {t('reports:planningView.editPlan', 'Edit plan')}
                   </Button>
                 </div>
               </div>
@@ -277,14 +359,14 @@ const PlanningView = ({
                 )}
               </div>
 
-              {nextOccurrence && nextOccurrence.segments && (
+              {primaryOccurrence && primaryOccurrence.segments && (
                 <div className="space-y-2">
                   <Typography variant="h4">
                     {t('reports:planningView.nextSession')}
                     {timeOfDay ? ` · ${timeOfDay}` : ''}
                   </Typography>
                   <ul className="space-y-2">
-                    {nextOccurrence.segments.map(segment => (
+                    {primaryOccurrence.segments.map(segment => (
                       <li
                         key={segment.id ?? segment.label}
                         className="rounded-md border border-border bg-muted/30 p-3"
@@ -336,6 +418,7 @@ const PlanningView = ({
       })}
 
       {editorModal}
+      {checkInModal}
     </div>
   )
 }

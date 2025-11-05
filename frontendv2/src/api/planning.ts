@@ -61,6 +61,7 @@ export interface PracticePlan {
   createdAt: string
   updatedAt: string
   archivedAt?: string | null
+  deletedAt?: string | null
 }
 
 export type PlanOccurrenceStatus =
@@ -88,6 +89,7 @@ export interface PlanOccurrence {
   metrics?: Record<string, unknown>
   createdAt?: string
   updatedAt?: string
+  deletedAt?: string | null
 }
 
 const normalizePlan = (plan: PracticePlan): PracticePlan => ({
@@ -155,5 +157,77 @@ export const planningApi = {
       plan: payloadPlan,
       occurrences: payloadOccurrences,
     }
+  },
+
+  updatePlan: async (plan: PracticePlan, occurrences: PlanOccurrence[]) => {
+    const payloadPlan = sanitize(plan)
+    const payloadOccurrences = occurrences.map(sanitize)
+
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          practicePlans: [payloadPlan],
+          planOccurrences: payloadOccurrences,
+        },
+      }
+    )
+
+    if (!response.data.success) {
+      throw new Error('Failed to update practice plan')
+    }
+
+    return {
+      plan: payloadPlan,
+      occurrences: payloadOccurrences,
+    }
+  },
+
+  deletePlan: async (plan: PracticePlan, occurrences: PlanOccurrence[]) => {
+    const timestamp = new Date().toISOString()
+    const payloadPlan = sanitize({
+      ...plan,
+      deletedAt: timestamp,
+    })
+
+    const payloadOccurrences = occurrences.map(occurrence =>
+      sanitize({
+        ...occurrence,
+        deletedAt: timestamp,
+      })
+    )
+
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          practicePlans: [payloadPlan],
+          planOccurrences: payloadOccurrences,
+        },
+      }
+    )
+
+    if (!response.data.success) {
+      throw new Error('Failed to delete practice plan')
+    }
+  },
+
+  updateOccurrence: async (occurrence: PlanOccurrence) => {
+    const payloadOccurrence = sanitize(occurrence)
+
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          planOccurrences: [payloadOccurrence],
+        },
+      }
+    )
+
+    if (!response.data.success) {
+      throw new Error('Failed to update plan occurrence')
+    }
+
+    return payloadOccurrence
   },
 }

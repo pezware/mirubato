@@ -357,6 +357,18 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             transformedPlan.user_id = userId
           }
 
+          if (transformedPlan.deletedAt) {
+            await db.softDeleteSyncData(
+              userId,
+              'practice_plan',
+              transformedPlan.id as string,
+              transformedPlan.deletedAt as string
+            )
+
+            stats.practicePlansProcessed++
+            continue
+          }
+
           const timestampFields = transformedPlan as {
             createdAt?: string
             created_at?: string
@@ -416,6 +428,18 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
 
           if (planLinkFields.planId && !planLinkFields.plan_id) {
             planLinkFields.plan_id = planLinkFields.planId
+          }
+
+          if (transformedOccurrence.deletedAt) {
+            await db.softDeleteSyncData(
+              userId,
+              'plan_occurrence',
+              transformedOccurrence.id as string,
+              transformedOccurrence.deletedAt as string
+            )
+
+            stats.planOccurrencesProcessed++
+            continue
           }
 
           const timestampFields = transformedOccurrence as {

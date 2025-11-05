@@ -8,6 +8,20 @@
     "topPieces": "Top Pieces",
     "topComposers": "Top Composers"
   },
+  "planningCheckIn": {
+    "title": "Check in and log practice",
+    "upcomingSession": "Next session details",
+    "actualDuration": "Actual duration (minutes)",
+    "notes": "Notes",
+    "notesPlaceholder": "What stood out about this session?",
+    "reflection": "Reflection",
+    "noPrompts": "No prompts configured for this session.",
+    "promptPlaceholder": "Add your thoughts here",
+    "cancel": "Cancel",
+    "complete": "Check off",
+    "genericError": "Unable to complete check-in",
+    "defaultNote": "Logged from practice plan"
+  },
   "applyGroupingToSeeData": "Apply grouping to see data in table format",
   "average": "avg",
   "averageSessionDuration": "Average Session Duration",
@@ -373,10 +387,12 @@
     "segmentCount_other": "{{count}} segments",
     "segmentsLabel": "Segments",
     "upcoming": "Upcoming",
+    "editPlan": "Edit plan",
     "viewPlan": "Open Plan"
   },
   "planningEditor": {
     "title": "New Practice Plan",
+    "editTitle": "Edit practice plan",
     "basicInfo": "Basic details",
     "planTitle": "Plan title",
     "description": "Description",
@@ -408,6 +424,9 @@
     "removePrompt": "Remove",
     "cancel": "Cancel",
     "createPlan": "Create plan",
+    "updatePlan": "Save changes",
+    "deletePlan": "Delete plan",
+    "deleteConfirmation": "Are you sure you want to delete this plan?",
     "validation": {
       "titleRequired": "Plan title is required",
       "dateRequired": "Start date is required",

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { nanoid } from 'nanoid'
 import {
@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@/components/ui'
 import type { CreatePlanDraft } from '@/stores/planningStore'
+import type { PracticePlan, PlanOccurrence } from '@/api/planning'
 
 interface PlanEditorModalProps {
   isOpen: boolean
@@ -19,6 +20,12 @@ interface PlanEditorModalProps {
   onSubmit: (draft: CreatePlanDraft) => Promise<void>
   isSubmitting?: boolean
   error?: string | null
+  mode?: 'create' | 'edit'
+  initialPlan?: {
+    plan: PracticePlan
+    occurrence?: PlanOccurrence
+  } | null
+  onDelete?: () => Promise<void> | void
 }
 
 interface SegmentState {
@@ -47,18 +54,39 @@ const createEmptyPrompt = (): PromptState => ({
   value: '',
 })
 
+const toLocalDate = (value?: string | null): string => {
+  if (!value) return new Date().toISOString().slice(0, 10)
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString().slice(0, 10)
+  }
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+const toLocalTime = (value?: string | null): string => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
 export function PlanEditorModal({
   isOpen,
   onClose,
   onSubmit,
   isSubmitting = false,
   error,
+  mode = 'create',
+  initialPlan = null,
+  onDelete,
 }: PlanEditorModalProps) {
   const { t } = useTranslation(['reports', 'common'])
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [startDate, setStartDate] = useState(() =>
+  const [startDate, setStartDate] = useState(
     new Date().toISOString().slice(0, 10)
   )
   const [startTime, setStartTime] = useState('')
@@ -71,6 +99,10 @@ export function PlanEditorModal({
   ])
   const [prompts, setPrompts] = useState<PromptState[]>([])
   const [formError, setFormError] = useState<string | null>(null)
+  const [editingIds, setEditingIds] = useState<{
+    planId?: string
+    occurrenceId?: string
+  } | null>(null)
 
   const flexibilityOptions = useMemo(
     () => [
@@ -109,7 +141,70 @@ export function PlanEditorModal({
     setSegments([createEmptySegment()])
     setPrompts([])
     setFormError(null)
+    setEditingIds(null)
   }
+
+  const hydrateFromPlan = (plan: PracticePlan, occurrence?: PlanOccurrence) => {
+    setEditingIds({ planId: plan.id, occurrenceId: occurrence?.id })
+    setTitle(plan.title)
+    setDescription(plan.description ?? '')
+
+    if (occurrence?.scheduledStart) {
+      setStartDate(toLocalDate(occurrence.scheduledStart))
+      setStartTime(toLocalTime(occurrence.scheduledStart))
+    } else {
+      setStartDate(
+        plan.schedule.startDate ?? new Date().toISOString().slice(0, 10)
+      )
+      setStartTime(plan.schedule.timeOfDay ?? '')
+    }
+
+    const durationValue =
+      plan.schedule.durationMinutes ??
+      occurrence?.segments?.reduce(
+        (sum, segment) => sum + (segment.durationMinutes ?? 0),
+        0
+      )
+
+    setDurationMinutes(durationValue ? String(durationValue) : '')
+    setFlexibility(plan.schedule.flexibility ?? 'anytime')
+
+    const segmentStates = occurrence?.segments?.map(segment => ({
+      id: segment.id ?? nanoid(),
+      label: segment.label,
+      durationMinutes: segment.durationMinutes
+        ? String(segment.durationMinutes)
+        : '',
+      instructions: segment.instructions ?? '',
+      techniques: (segment.techniques ?? []).join(', '),
+    }))
+
+    setSegments(
+      segmentStates && segmentStates.length > 0
+        ? segmentStates
+        : [createEmptySegment()]
+    )
+
+    const promptStates = occurrence?.reflectionPrompts?.map(prompt => ({
+      id: nanoid(),
+      value: prompt,
+    }))
+    setPrompts(promptStates ?? [])
+    setFormError(null)
+  }
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    if (mode === 'edit' && initialPlan) {
+      hydrateFromPlan(initialPlan.plan, initialPlan.occurrence)
+    } else if (mode === 'create') {
+      resetForm()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, mode, initialPlan?.plan.id, initialPlan?.occurrence?.id])
 
   const handleClose = () => {
     if (isSubmitting) return
@@ -199,6 +294,7 @@ export function PlanEditorModal({
     }
 
     const parsedSegments = preparedSegments.map(segment => ({
+      id: segment.id,
       label: segment.label,
       durationMinutes: segment.durationMinutes
         ? Number.parseInt(segment.durationMinutes, 10) || undefined
@@ -219,17 +315,29 @@ export function PlanEditorModal({
       : undefined
 
     return {
+      planId: editingIds?.planId,
+      occurrenceId: editingIds?.occurrenceId,
       title: trimmedTitle,
       description: description.trim() || undefined,
       schedule: {
-        kind: 'single',
+        kind:
+          mode === 'edit'
+            ? (initialPlan?.plan.schedule.kind ?? 'single')
+            : 'single',
         startDate,
         timeOfDay: startTime || undefined,
         durationMinutes: parsedDuration,
         flexibility,
+        endDate:
+          mode === 'edit'
+            ? (initialPlan?.plan.schedule.endDate ?? null)
+            : undefined,
       },
       segments: parsedSegments,
       reflectionPrompts: preparedPrompts,
+      focusAreas: mode === 'edit' ? initialPlan?.plan.focusAreas : undefined,
+      techniques: mode === 'edit' ? initialPlan?.plan.techniques : undefined,
+      type: mode === 'edit' ? initialPlan?.plan.type : undefined,
     }
   }
 
@@ -241,7 +349,9 @@ export function PlanEditorModal({
 
     try {
       await onSubmit(draft)
-      resetForm()
+      if (mode === 'create') {
+        resetForm()
+      }
       onClose()
     } catch (submitError) {
       const message =
@@ -252,11 +362,40 @@ export function PlanEditorModal({
     }
   }
 
+  const handleDelete = async () => {
+    if (!onDelete || !editingIds?.planId || isSubmitting) {
+      return
+    }
+    const confirmed = window.confirm(
+      t(
+        'reports:planningEditor.deleteConfirmation',
+        'Are you sure you want to delete this plan?'
+      )
+    )
+    if (!confirmed) return
+
+    try {
+      await onDelete()
+      resetForm()
+      onClose()
+    } catch (deleteError) {
+      const message =
+        deleteError instanceof Error
+          ? deleteError.message
+          : t('reports:planningEditor.genericError', 'Something went wrong')
+      setFormError(message)
+    }
+  }
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={t('reports:planningEditor.title', 'New Practice Plan')}
+      title={
+        mode === 'edit'
+          ? t('reports:planningEditor.editTitle', 'Edit practice plan')
+          : t('reports:planningEditor.title', 'New Practice Plan')
+      }
       size="xl"
       isMobileOptimized
     >
@@ -493,8 +632,19 @@ export function PlanEditorModal({
         <Button variant="ghost" onClick={handleClose} disabled={isSubmitting}>
           {t('reports:planningEditor.cancel', 'Cancel')}
         </Button>
+        {mode === 'edit' && onDelete && (
+          <Button
+            variant="danger"
+            onClick={handleDelete}
+            disabled={isSubmitting}
+          >
+            {t('reports:planningEditor.deletePlan', 'Delete plan')}
+          </Button>
+        )}
         <Button onClick={handleSubmit} loading={isSubmitting}>
-          {t('reports:planningEditor.createPlan', 'Create plan')}
+          {mode === 'edit'
+            ? t('reports:planningEditor.updatePlan', 'Save changes')
+            : t('reports:planningEditor.createPlan', 'Create plan')}
         </Button>
       </ModalFooter>
     </Modal>

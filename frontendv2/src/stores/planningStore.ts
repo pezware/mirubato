@@ -7,6 +7,7 @@ import {
 } from '../api/planning'
 
 export interface PlanSegmentDraft {
+  id?: string
   label: string
   durationMinutes?: number
   instructions?: string
@@ -14,6 +15,8 @@ export interface PlanSegmentDraft {
 }
 
 export interface CreatePlanDraft {
+  planId?: string
+  occurrenceId?: string
   title: string
   description?: string
   schedule: {
@@ -46,6 +49,19 @@ interface PlanningState {
   }>
   getOccurrencesForPlan: (planId: string) => PlanOccurrence[]
   getNextOccurrenceForPlan: (planId: string) => PlanOccurrence | undefined
+  updatePlan: (draft: CreatePlanDraft) => Promise<{
+    plan: PracticePlan
+    occurrence: PlanOccurrence
+  }>
+  deletePlan: (planId: string) => Promise<void>
+  completeOccurrence: (
+    occurrenceId: string,
+    input: {
+      logEntryId: string
+      responses: Record<string, string>
+      metrics?: Record<string, unknown>
+    }
+  ) => Promise<void>
 }
 
 const PLANS_STORAGE_KEY = 'mirubato:planning:plans'
@@ -198,9 +214,14 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
 
     const durationMinutes = draft.schedule.durationMinutes
     const scheduledEnd = addMinutes(scheduledStart, durationMinutes)
+    const resolvedDuration =
+      durationMinutes && durationMinutes > 0
+        ? Math.round(durationMinutes)
+        : existingPlan.schedule.durationMinutes
 
     const cleanSegments = draft.segments
       .map(segment => ({
+        id: segment.id,
         label: segment.label.trim(),
         durationMinutes:
           segment.durationMinutes && segment.durationMinutes > 0
@@ -213,7 +234,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       }))
       .filter(segment => segment.label.length > 0)
       .map((segment, index) => ({
-        id: `${occurrenceId}_segment_${index + 1}`,
+        id: segment.id ?? `${occurrenceId}_segment_${index + 1}`,
         ...segment,
       }))
 
@@ -247,10 +268,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       pieceRefs: [],
       schedule: {
         kind: scheduleKind,
-        durationMinutes:
-          durationMinutes && durationMinutes > 0
-            ? Math.round(durationMinutes)
-            : undefined,
+        durationMinutes: resolvedDuration ?? undefined,
         timeOfDay: draft.schedule.timeOfDay,
         flexibility: draft.schedule.flexibility,
         startDate: draft.schedule.startDate,
@@ -354,5 +372,254 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       }
       return new Date(occurrence.scheduledStart).getTime() >= now
     })
+  },
+
+  updatePlan: async draft => {
+    if (!draft.planId || !draft.occurrenceId) {
+      throw new Error('Missing plan identifiers')
+    }
+
+    const { plansMap, occurrencesMap } = get()
+    const existingPlan = plansMap.get(draft.planId)
+    const existingOccurrence = occurrencesMap.get(draft.occurrenceId)
+
+    if (!existingPlan || !existingOccurrence) {
+      throw new Error('Plan not found')
+    }
+
+    const nowIso = new Date().toISOString()
+
+    const scheduledStart = combineDateAndTime(
+      draft.schedule.startDate,
+      draft.schedule.timeOfDay
+    )
+
+    if (!scheduledStart) {
+      throw new Error('Invalid schedule')
+    }
+
+    const durationMinutes = draft.schedule.durationMinutes
+    const scheduledEnd = addMinutes(scheduledStart, durationMinutes)
+
+    const cleanSegments = draft.segments
+      .map(segment => ({
+        id: segment.id,
+        label: segment.label.trim(),
+        durationMinutes:
+          segment.durationMinutes && segment.durationMinutes > 0
+            ? Math.round(segment.durationMinutes)
+            : undefined,
+        instructions: segment.instructions?.trim() || undefined,
+        techniques: segment.techniques
+          ?.map(tech => tech.trim())
+          .filter(Boolean),
+      }))
+      .filter(segment => segment.label.length > 0)
+      .map((segment, index) => ({
+        id: segment.id ?? `${draft.occurrenceId}_segment_${index + 1}`,
+        ...segment,
+      }))
+
+    if (cleanSegments.length === 0) {
+      throw new Error('At least one segment is required')
+    }
+
+    const reflectionPrompts = draft.reflectionPrompts
+      ?.map(prompt => prompt.trim())
+      .filter(Boolean)
+      .slice(0, 10)
+
+    const focusAreas = draft.focusAreas
+      ?.map(area => area.trim())
+      .filter(Boolean)
+
+    const planTechniques = draft.techniques
+      ?.map(tech => tech.trim())
+      .filter(Boolean)
+
+    const scheduleKind = draft.schedule.kind ?? existingPlan.schedule.kind
+
+    const updatedPlan: PracticePlan = {
+      ...existingPlan,
+      title: draft.title.trim(),
+      description: draft.description?.trim() || null,
+      type: draft.type ?? existingPlan.type,
+      focusAreas:
+        focusAreas && focusAreas.length > 0
+          ? focusAreas
+          : existingPlan.focusAreas,
+      techniques:
+        planTechniques && planTechniques.length > 0
+          ? planTechniques
+          : existingPlan.techniques,
+      schedule: {
+        ...existingPlan.schedule,
+        kind: scheduleKind,
+        durationMinutes: resolvedDuration ?? undefined,
+        timeOfDay: draft.schedule.timeOfDay,
+        flexibility: draft.schedule.flexibility,
+        startDate: draft.schedule.startDate,
+        endDate: draft.schedule.endDate ?? null,
+        target:
+          scheduleKind === 'single'
+            ? scheduledStart
+            : existingPlan.schedule.target,
+        metadata: {
+          ...existingPlan.schedule.metadata,
+          segmentsCount: cleanSegments.length,
+        },
+      },
+      updatedAt: nowIso,
+    }
+
+    const updatedOccurrence: PlanOccurrence = {
+      ...existingOccurrence,
+      scheduledStart,
+      scheduledEnd,
+      flexWindow: draft.schedule.flexibility,
+      recurrenceKey:
+        scheduleKind === 'recurring'
+          ? (existingOccurrence.recurrenceKey ?? scheduledStart)
+          : undefined,
+      segments: cleanSegments,
+      reflectionPrompts,
+      updatedAt: nowIso,
+    }
+
+    const sanitizedPlan = sanitizeForStorage(updatedPlan)
+    const sanitizedOccurrence = sanitizeForStorage(updatedOccurrence)
+
+    try {
+      await planningApi.updatePlan(sanitizedPlan, [sanitizedOccurrence])
+
+      const nextPlansMap = new Map(plansMap)
+      const nextOccurrencesMap = new Map(occurrencesMap)
+
+      nextPlansMap.set(sanitizedPlan.id, sanitizedPlan)
+      nextOccurrencesMap.set(sanitizedOccurrence.id, sanitizedOccurrence)
+
+      const nextPlansList = toSortedPlans(nextPlansMap)
+      const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+      writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+      writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+
+      set({
+        plansMap: nextPlansMap,
+        occurrencesMap: nextOccurrencesMap,
+        plans: nextPlansList,
+        occurrences: nextOccurrencesList,
+        error: null,
+      })
+
+      return {
+        plan: sanitizedPlan,
+        occurrence: sanitizedOccurrence,
+      }
+    } catch (error) {
+      console.error('[Planning] Failed to update plan:', error)
+      throw error instanceof Error ? error : new Error('Failed to update plan')
+    }
+  },
+
+  deletePlan: async planId => {
+    const { plansMap, occurrencesMap } = get()
+    const existingPlan = plansMap.get(planId)
+    if (!existingPlan) {
+      return
+    }
+
+    const relatedOccurrences = Array.from(occurrencesMap.values()).filter(
+      occurrence => occurrence.planId === planId
+    )
+
+    try {
+      await planningApi.deletePlan(existingPlan, relatedOccurrences)
+
+      const nextPlansMap = new Map(plansMap)
+      nextPlansMap.delete(planId)
+
+      const nextOccurrencesMap = new Map(occurrencesMap)
+      relatedOccurrences.forEach(occurrence => {
+        nextOccurrencesMap.delete(occurrence.id)
+      })
+
+      const nextPlansList = toSortedPlans(nextPlansMap)
+      const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+      writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+      writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+
+      set({
+        plansMap: nextPlansMap,
+        occurrencesMap: nextOccurrencesMap,
+        plans: nextPlansList,
+        occurrences: nextOccurrencesList,
+      })
+    } catch (error) {
+      console.error('[Planning] Failed to delete plan:', error)
+      throw error instanceof Error ? error : new Error('Failed to delete plan')
+    }
+  },
+
+  completeOccurrence: async (occurrenceId, input) => {
+    const { occurrencesMap, plansMap } = get()
+    const occurrence = occurrencesMap.get(occurrenceId)
+    if (!occurrence) {
+      throw new Error('Occurrence not found')
+    }
+
+    const plan = plansMap.get(occurrence.planId)
+    const nowIso = new Date().toISOString()
+
+    const updatedOccurrence: PlanOccurrence = {
+      ...occurrence,
+      status: 'completed',
+      logEntryId: input.logEntryId,
+      checkIn: {
+        recordedAt: nowIso,
+        responses: input.responses,
+      },
+      metrics: {
+        ...occurrence.metrics,
+        ...input.metrics,
+      },
+      updatedAt: nowIso,
+    }
+
+    const sanitizedOccurrence = sanitizeForStorage(updatedOccurrence)
+
+    try {
+      await planningApi.updateOccurrence(sanitizedOccurrence)
+
+      const nextOccurrencesMap = new Map(occurrencesMap)
+      nextOccurrencesMap.set(occurrenceId, sanitizedOccurrence)
+
+      const nextPlansMap = new Map(plansMap)
+      if (plan) {
+        nextPlansMap.set(occurrence.planId, {
+          ...plan,
+          updatedAt: nowIso,
+        })
+      }
+
+      const nextPlansList = toSortedPlans(nextPlansMap)
+      const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+      writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+      writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+
+      set({
+        plansMap: nextPlansMap,
+        occurrencesMap: nextOccurrencesMap,
+        plans: nextPlansList,
+        occurrences: nextOccurrencesList,
+      })
+    } catch (error) {
+      console.error('[Planning] Failed to complete occurrence:', error)
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to update occurrence')
+    }
   },
 }))

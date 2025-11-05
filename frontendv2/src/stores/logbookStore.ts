@@ -65,7 +65,7 @@ interface LogbookState {
   loadEntries: () => Promise<void>
   createEntry: (
     entry: Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'>
-  ) => Promise<void>
+  ) => Promise<LogbookEntry>
   updateEntry: (id: string, updates: Partial<LogbookEntry>) => Promise<void>
   deleteEntry: (id: string) => Promise<void>
 
@@ -517,6 +517,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           timestamp: new Date().toISOString(),
         })
       }
+
+      return entry
     } catch (error: unknown) {
       set({ error: 'Failed to create entry' })
       throw error
