@@ -14,6 +14,7 @@ import type { PracticePlan, PlanOccurrence } from '@/api/planning'
 import PlanEditorModal from './PlanEditorModal'
 import PlanCheckInModal from './PlanCheckInModal'
 import { usePlanningStore, type CreatePlanDraft } from '@/stores/planningStore'
+import { Calendar, Plus } from 'lucide-react'
 
 interface PlanningViewProps {
   plans: PracticePlan[]
@@ -190,10 +191,10 @@ const PlanningView = ({
           <CardContent className="py-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <Typography variant="h3">
+                <Typography variant="h3" className="text-morandi-stone-900">
                   {t('reports:planningView.error')}
                 </Typography>
-                <Typography variant="body" className="text-muted-foreground">
+                <Typography variant="body" className="text-morandi-stone-600">
                   {error}
                 </Typography>
               </div>
@@ -241,7 +242,10 @@ const PlanningView = ({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={openCreateModal}>
+            <Button
+              onClick={openCreateModal}
+              leftIcon={<Plus className="w-4 h-4" />}
+            >
               {t('reports:planningView.emptyState.createPlan')}
             </Button>
           </CardContent>
@@ -259,14 +263,17 @@ const PlanningView = ({
           <Typography variant="h2">
             {t('reports:planningView.heading', 'Practice planning')}
           </Typography>
-          <Typography variant="body" className="text-muted-foreground">
+          <Typography variant="body" className="text-morandi-stone-600">
             {t(
               'reports:planningView.headingDescription',
               'Schedule upcoming sessions and track progress as you go.'
             )}
           </Typography>
         </div>
-        <Button onClick={openCreateModal}>
+        <Button
+          onClick={openCreateModal}
+          leftIcon={<Plus className="w-4 h-4" />}
+        >
           {t('reports:planningView.createPlan', 'Create plan')}
         </Button>
       </div>
@@ -288,95 +295,136 @@ const PlanningView = ({
 
         return (
           <Card key={plan.id}>
-            <CardHeader className="pb-2">
-              <div className="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between">
-                <div>
-                  <CardTitle className="text-lg sm:text-xl">
-                    {plan.title}
-                  </CardTitle>
-                  {plan.description && (
-                    <CardDescription className="mt-1">
-                      {plan.description}
-                    </CardDescription>
-                  )}
+            <CardHeader className="pb-3">
+              <div className="flex gap-3 sm:gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-morandi-sage-100 flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-morandi-sage-600" />
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={() => {
-                      if (!primaryOccurrence) return
-                      setActiveCheckIn({ plan, occurrence: primaryOccurrence })
-                    }}
-                    disabled={!primaryOccurrence}
-                  >
-                    {t('reports:planningView.checkIn', 'Check In')}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => openEditModal(plan, primaryOccurrence)}
-                  >
-                    {t('reports:planningView.editPlan', 'Edit plan')}
-                  </Button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg sm:text-xl mb-1">
+                        {plan.title}
+                      </CardTitle>
+                      {plan.description && (
+                        <CardDescription className="mt-1">
+                          {plan.description}
+                        </CardDescription>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2 flex-shrink-0">
+                      <Button
+                        onClick={() => {
+                          if (!primaryOccurrence) return
+                          setActiveCheckIn({
+                            plan,
+                            occurrence: primaryOccurrence,
+                          })
+                        }}
+                        disabled={!primaryOccurrence}
+                        size="sm"
+                      >
+                        {t('reports:planningView.checkIn', 'Check In')}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => openEditModal(plan, primaryOccurrence)}
+                      >
+                        {t('reports:planningView.editPlan', 'Edit plan')}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <CardContent className="space-y-4">
+              {/* Metadata section */}
+              <div className="flex flex-wrap gap-3 text-sm text-morandi-stone-600">
                 <div>
-                  <span className="font-medium text-foreground">
-                    {t('reports:planningView.upcoming')}
-                  </span>{' '}
-                  {startTime ??
-                    t('reports:planningView.noUpcoming', 'No upcoming session')}
+                  <span className="font-medium text-morandi-stone-900">
+                    {t('reports:planningView.nextSession', 'Next session')}
+                  </span>
+                  {' · '}
+                  <span>
+                    {startTime ??
+                      t(
+                        'reports:planningView.noUpcoming',
+                        'No upcoming session'
+                      )}
+                  </span>
                 </div>
-                {segmentCount > 0 && (
-                  <div>
-                    <span className="font-medium text-foreground">
-                      {t('reports:planningView.segmentsLabel', 'Segments')}
-                    </span>{' '}
-                    {t('reports:planningView.segmentCount', {
-                      count: segmentCount,
-                    })}
-                  </div>
-                )}
+              </div>
+
+              {/* Plan details */}
+              <div className="flex flex-wrap gap-4 text-sm text-morandi-stone-600">
                 {plan.schedule?.durationMinutes && (
                   <div>
-                    <span className="font-medium text-foreground">
+                    <span className="font-medium text-morandi-stone-900">
                       {t('reports:planningView.durationLabel', 'Duration')}
-                    </span>{' '}
-                    {plan.schedule.durationMinutes}m
+                    </span>
+                    {' · '}
+                    <span>{plan.schedule.durationMinutes}m</span>
                   </div>
                 )}
                 {plan.schedule?.flexibility && (
                   <div>
-                    <span className="font-medium text-foreground">
+                    <span className="font-medium text-morandi-stone-900">
                       {t(
                         'reports:planningView.flexibilityLabel',
                         'Flexibility'
                       )}
-                    </span>{' '}
-                    {plan.schedule.flexibility}
+                    </span>
+                    {' · '}
+                    <span className="capitalize">
+                      {plan.schedule.flexibility.replace('-', ' ')}
+                    </span>
+                  </div>
+                )}
+                {segmentCount > 0 && (
+                  <div>
+                    <span className="font-medium text-morandi-stone-900">
+                      {t('reports:planningView.segmentsLabel', 'Segments')}
+                    </span>
+                    {' · '}
+                    <span>
+                      {t('reports:planningView.segmentCount', {
+                        count: segmentCount,
+                      })}
+                    </span>
                   </div>
                 )}
               </div>
 
               {primaryOccurrence && primaryOccurrence.segments && (
-                <div className="space-y-2">
-                  <Typography variant="h4">
-                    {t('reports:planningView.nextSession')}
-                    {timeOfDay ? ` · ${timeOfDay}` : ''}
+                <div className="space-y-3 pt-2">
+                  <Typography variant="h5" className="text-morandi-stone-700">
+                    {t('reports:planningView.segmentsLabel', 'Segments')}
+                    {timeOfDay && (
+                      <span className="text-morandi-stone-500 font-normal text-sm ml-2">
+                        {timeOfDay}
+                      </span>
+                    )}
                   </Typography>
                   <ul className="space-y-2">
                     {primaryOccurrence.segments.map(segment => (
                       <li
                         key={segment.id ?? segment.label}
-                        className="rounded-md border border-border bg-muted/30 p-3"
+                        className="rounded-lg border border-morandi-stone-200 bg-morandi-stone-50/50 p-3"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <Typography variant="h5">{segment.label}</Typography>
+                          <Typography
+                            variant="h6"
+                            className="text-morandi-stone-900"
+                          >
+                            {segment.label}
+                          </Typography>
                           {segment.durationMinutes && (
                             <Typography
-                              variant="body"
-                              className="text-muted-foreground"
+                              variant="body-sm"
+                              className="text-morandi-stone-600"
                             >
                               {segment.durationMinutes}m
                             </Typography>
@@ -384,20 +432,17 @@ const PlanningView = ({
                         </div>
                         {segment.instructions && (
                           <Typography
-                            variant="body"
-                            className="text-muted-foreground mt-1"
+                            variant="body-sm"
+                            className="text-morandi-stone-600 mt-2"
                           >
                             {segment.instructions}
                           </Typography>
                         )}
                         {segment.techniques &&
                           segment.techniques.length > 0 && (
-                            <Typography
-                              variant="body"
-                              className="text-muted-foreground mt-1"
-                            >
+                            <div className="mt-2 text-xs text-morandi-stone-500">
                               {segment.techniques.join(' · ')}
-                            </Typography>
+                            </div>
                           )}
                       </li>
                     ))}
@@ -406,7 +451,7 @@ const PlanningView = ({
               )}
 
               {allOccurrences.length > 0 && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-morandi-stone-500 pt-2 border-t border-morandi-stone-200">
                   {t('reports:planningView.scheduledSessions', {
                     count: allOccurrences.length,
                   })}
