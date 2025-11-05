@@ -4,6 +4,7 @@ import {
   planningApi,
   type PracticePlan,
   type PlanOccurrence,
+  type PlanSegment,
 } from '../api/planning'
 
 export interface PlanSegmentDraft {
@@ -214,33 +215,41 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
 
     const durationMinutes = draft.schedule.durationMinutes
     const scheduledEnd = addMinutes(scheduledStart, durationMinutes)
-    const resolvedDuration =
-      durationMinutes && durationMinutes > 0
-        ? Math.round(durationMinutes)
-        : existingPlan.schedule.durationMinutes
 
-    const cleanSegments = draft.segments
-      .map(segment => ({
-        id: segment.id,
-        label: segment.label.trim(),
+    const cleanSegments: PlanSegment[] = []
+    draft.segments.forEach((segment, index) => {
+      const label = segment.label.trim()
+      if (!label) {
+        return
+      }
+
+      const techniques = segment.techniques
+        ?.map(tech => tech.trim())
+        .filter(Boolean)
+
+      cleanSegments.push({
+        id: segment.id ?? `${occurrenceId}_segment_${index + 1}`,
+        label,
         durationMinutes:
           segment.durationMinutes && segment.durationMinutes > 0
             ? Math.round(segment.durationMinutes)
             : undefined,
         instructions: segment.instructions?.trim() || undefined,
-        techniques: segment.techniques
-          ?.map(tech => tech.trim())
-          .filter(Boolean),
-      }))
-      .filter(segment => segment.label.length > 0)
-      .map((segment, index) => ({
-        id: segment.id ?? `${occurrenceId}_segment_${index + 1}`,
-        ...segment,
-      }))
+        techniques: techniques && techniques.length > 0 ? techniques : [],
+      })
+    })
 
     if (cleanSegments.length === 0) {
       throw new Error('At least one segment is required')
     }
+
+    const resolvedDuration =
+      durationMinutes && durationMinutes > 0
+        ? Math.round(durationMinutes)
+        : cleanSegments.reduce(
+            (sum, segment) => sum + (segment.durationMinutes ?? 0),
+            0
+          ) || undefined
 
     const reflectionPrompts = draft.reflectionPrompts
       ?.map(prompt => prompt.trim())
@@ -401,24 +410,28 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     const durationMinutes = draft.schedule.durationMinutes
     const scheduledEnd = addMinutes(scheduledStart, durationMinutes)
 
-    const cleanSegments = draft.segments
-      .map(segment => ({
-        id: segment.id,
-        label: segment.label.trim(),
+    const cleanSegments: PlanSegment[] = []
+    draft.segments.forEach((segment, index) => {
+      const label = segment.label.trim()
+      if (!label) {
+        return
+      }
+
+      const techniques = segment.techniques
+        ?.map(tech => tech.trim())
+        .filter(Boolean)
+
+      cleanSegments.push({
+        id: segment.id ?? `${draft.occurrenceId}_segment_${index + 1}`,
+        label,
         durationMinutes:
           segment.durationMinutes && segment.durationMinutes > 0
             ? Math.round(segment.durationMinutes)
             : undefined,
         instructions: segment.instructions?.trim() || undefined,
-        techniques: segment.techniques
-          ?.map(tech => tech.trim())
-          .filter(Boolean),
-      }))
-      .filter(segment => segment.label.length > 0)
-      .map((segment, index) => ({
-        id: segment.id ?? `${draft.occurrenceId}_segment_${index + 1}`,
-        ...segment,
-      }))
+        techniques: techniques && techniques.length > 0 ? techniques : [],
+      })
+    })
 
     if (cleanSegments.length === 0) {
       throw new Error('At least one segment is required')
@@ -438,6 +451,17 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       .filter(Boolean)
 
     const scheduleKind = draft.schedule.kind ?? existingPlan.schedule.kind
+
+    const segmentDurationTotal = cleanSegments.reduce(
+      (sum, segment) => sum + (segment.durationMinutes ?? 0),
+      0
+    )
+
+    const resolvedDuration =
+      durationMinutes && durationMinutes > 0
+        ? Math.round(durationMinutes)
+        : existingPlan.schedule.durationMinutes ??
+          (segmentDurationTotal > 0 ? segmentDurationTotal : undefined)
 
     const updatedPlan: PracticePlan = {
       ...existingPlan,
