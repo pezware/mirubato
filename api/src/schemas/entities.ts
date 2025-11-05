@@ -117,11 +117,7 @@ export const PartialGoalSchema = GoalSchema.partial().required({
 })
 
 // Practice planning schemas
-export const PracticePlanVisibility = z.enum([
-  'private',
-  'shared',
-  'template',
-])
+export const PracticePlanVisibility = z.enum(['private', 'shared', 'template'])
 
 export const PracticePlanStatus = z.enum([
   'draft',
@@ -212,9 +208,7 @@ export const PlanOccurrenceSchema = z.object({
   user_id: z.string().optional(),
   scheduledStart: z.string().optional().nullable(),
   scheduledEnd: z.string().optional().nullable(),
-  flexWindow: z
-    .union([z.string(), z.null()])
-    .optional(),
+  flexWindow: z.union([z.string(), z.null()]).optional(),
   recurrenceKey: z.string().optional().nullable(),
   segments: z.array(PlanSegmentSchema).default([]),
   targets: PlanTargetsSchema,

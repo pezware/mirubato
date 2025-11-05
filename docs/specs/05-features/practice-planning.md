@@ -53,7 +53,7 @@ Introduce structured planning layers on top of the existing logbook so musicians
 | Entity                    | Key Fields                                                                                                                                                                                                                                                                                           | Notes                                                                                                                                       |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `practice_plan`           | `id`, `title`, `description`, `type` (`bootcamp`, `course`, `custom`), `focusAreas[]`, `techniques[]`, `pieceRefs[]` (`scoreId`, `title`, `composer`), `schedule` (definition), `ownerId`, `visibility` (`private`, `shared`, `template`), `status` (`active`, `archived`), `createdAt`, `updatedAt` | Lives in `sync_data`, versioned like logbook entries.                                                                                       |
-| `plan_occurrence`         | `id`, `planId`, `scheduledStart`, `scheduledEnd`, `flexWindow` (`daily`, `weekly`, custom range), `recurrenceKey`, `segments[]`, `targets`, `reflectionPrompts[]`, `status` (`scheduled`, `completed`, `skipped`, `expired`), `logEntryId`, `checkIn`, `notes`, `reminderState`, `metrics` | Either nested under `practice_plan.occurrences[]` for near-term windows or stored as separate sync entities for easier incremental updates. |
+| `plan_occurrence`         | `id`, `planId`, `scheduledStart`, `scheduledEnd`, `flexWindow` (`daily`, `weekly`, custom range), `recurrenceKey`, `segments[]`, `targets`, `reflectionPrompts[]`, `status` (`scheduled`, `completed`, `skipped`, `expired`), `logEntryId`, `checkIn`, `notes`, `reminderState`, `metrics`           | Either nested under `practice_plan.occurrences[]` for near-term windows or stored as separate sync entities for easier incremental updates. |
 | `plan_template` (Phase 3) | Same as plan, plus `templateVersion`, `authorId`, `tags`, `estimatedDurationDays`, `publisherMetadata`                                                                                                                                                                                               | Only available once tutor tooling is enabled.                                                                                               |
 
 **Schedule definition** (JSON):
@@ -84,7 +84,11 @@ Single sessions use `{"kind":"single","target":"2025-04-12T10:00:00Z","durationM
       "label": "Morning Focus",
       "durationMinutes": 7,
       "pieceRefs": [
-        { "scoreId": "score_c_major_warmup", "title": "C Major Scale", "composer": null }
+        {
+          "scoreId": "score_c_major_warmup",
+          "title": "C Major Scale",
+          "composer": null
+        }
       ],
       "techniques": ["slow mapping"],
       "instructions": "Play open position slowly at ♩=60. Eyes closed on second pass."

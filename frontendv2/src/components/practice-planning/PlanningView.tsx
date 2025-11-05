@@ -10,10 +10,7 @@ import {
   LoadingSkeleton,
   Typography,
 } from '@/components/ui'
-import type {
-  PracticePlan,
-  PlanOccurrence,
-} from '@/api/planning'
+import type { PracticePlan, PlanOccurrence } from '@/api/planning'
 
 interface PlanningViewProps {
   plans: PracticePlan[]
@@ -21,9 +18,7 @@ interface PlanningViewProps {
   isLoading: boolean
   error: string | null
   onReload: () => Promise<void> | void
-  getNextOccurrenceForPlan: (
-    planId: string
-  ) => PlanOccurrence | undefined
+  getNextOccurrenceForPlan: (planId: string) => PlanOccurrence | undefined
 }
 
 const formatDateTime = (value?: string | null, locale?: string) => {
@@ -209,7 +204,10 @@ const PlanningView = ({
                 {plan.schedule?.flexibility && (
                   <div>
                     <span className="font-medium text-foreground">
-                      {t('reports:planningView.flexibilityLabel', 'Flexibility')}
+                      {t(
+                        'reports:planningView.flexibilityLabel',
+                        'Flexibility'
+                      )}
                     </span>{' '}
                     {plan.schedule.flexibility}
                   </div>
@@ -229,9 +227,7 @@ const PlanningView = ({
                         className="rounded-md border border-border bg-muted/30 p-3"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <Typography variant="h5">
-                            {segment.label}
-                          </Typography>
+                          <Typography variant="h5">{segment.label}</Typography>
                           {segment.durationMinutes && (
                             <Typography
                               variant="body"
@@ -249,14 +245,15 @@ const PlanningView = ({
                             {segment.instructions}
                           </Typography>
                         )}
-                        {segment.techniques && segment.techniques.length > 0 && (
-                          <Typography
-                            variant="body"
-                            className="text-muted-foreground mt-1"
-                          >
-                            {segment.techniques.join(' · ')}
-                          </Typography>
-                        )}
+                        {segment.techniques &&
+                          segment.techniques.length > 0 && (
+                            <Typography
+                              variant="body"
+                              className="text-muted-foreground mt-1"
+                            >
+                              {segment.techniques.join(' · ')}
+                            </Typography>
+                          )}
                       </li>
                     ))}
                   </ul>

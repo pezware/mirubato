@@ -15,15 +15,13 @@ interface PlanningState {
   occurrences: PlanOccurrence[]
   loadPlanningData: () => Promise<void>
   getOccurrencesForPlan: (planId: string) => PlanOccurrence[]
-  getNextOccurrenceForPlan: (
-    planId: string
-  ) => PlanOccurrence | undefined
+  getNextOccurrenceForPlan: (planId: string) => PlanOccurrence | undefined
 }
 
 const PLANS_STORAGE_KEY = 'mirubato:planning:plans'
 const OCCURRENCES_STORAGE_KEY = 'mirubato:planning:occurrences'
 
-const readFromStorage = <T,>(key: string): T[] => {
+const readFromStorage = <T>(key: string): T[] => {
   try {
     const raw = localStorage.getItem(key)
     if (!raw) return []
@@ -77,13 +75,12 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     // Bootstrap from storage on first load
     if (!hasLoaded && plansMap.size === 0 && occurrencesMap.size === 0) {
       const cachedPlans = readFromStorage<PracticePlan>(PLANS_STORAGE_KEY)
-      const cachedOccurrences =
-        readFromStorage<PlanOccurrence>(OCCURRENCES_STORAGE_KEY)
+      const cachedOccurrences = readFromStorage<PlanOccurrence>(
+        OCCURRENCES_STORAGE_KEY
+      )
 
       if (cachedPlans.length > 0 || cachedOccurrences.length > 0) {
-        const cachedPlansMap = new Map(
-          cachedPlans.map(plan => [plan.id, plan])
-        )
+        const cachedPlansMap = new Map(cachedPlans.map(plan => [plan.id, plan]))
         const cachedOccurrencesMap = new Map(
           cachedOccurrences.map(occurrence => [occurrence.id, occurrence])
         )
@@ -121,9 +118,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       })
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to load practice plans'
+        error instanceof Error ? error.message : 'Failed to load practice plans'
       set({
         error: message,
         isLoading: false,
