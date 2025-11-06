@@ -3,8 +3,12 @@
   "autocomplete": {
     "offline": "Sin conexión - mostrando tu historial"
   },
+  "clickEntryInList": "Haz clic en una entrada de la lista para ver todos los detalles",
   "continueToLogbook": "Continuar al diario",
+  "dateAndTime": "Fecha y hora",
+  "duration": "Duración",
   "empty": "Aún no hay entradas de práctica. ¡Comienza a registrar tu viaje musical!",
+  "emptyDescription": "Comienza a registrar tus sesiones de práctica para seguir tu progreso.",
   "entry": {
     "addEntry": "Añadir entrada",
     "addFirstEntry": "Añadir tu primera entrada",
@@ -60,6 +64,7 @@
     },
     "updateEntry": "Actualizar entrada"
   },
+  "entryDetails": "Detalles de la entrada",
   "filters": {
     "allTime": "Todo el tiempo",
     "last30Days": "Últimos 30 días",
@@ -67,6 +72,7 @@
     "lastMonth": "Mes pasado",
     "thisMonth": "Este mes"
   },
+  "instrument": "Instrumento",
   "linkedScore": "Partitura vinculada",
   "loading": "Cargando tus sesiones de práctica...",
   "mood": {
@@ -76,12 +82,17 @@
     "satisfied": "Satisfecho"
   },
   "noResults": "No hay entradas que coincidan con tu búsqueda.",
+  "notes": "Notas",
   "openLogbook": "Abrir diario",
+  "pieces": "Piezas",
   "searchPlaceholder": "Buscar entradas...",
+  "selectEntryToView": "Selecciona una entrada para ver los detalles",
   "syncStatus": {
     "localOnly": "Almacenamiento local",
     "synced": "Sincronizado"
   },
+  "tags": "Etiquetas",
+  "techniques": "Técnicas",
   "timeline": {
     "month": "{{month}}",
     "week": "Semana {{number}}",
@@ -121,17 +132,6 @@
     "visualOnly": "Solo notificación visual"
   },
   "title": "Diario",
-  "viewScore": "Ver partitura",
-  "emptyDescription": "Comienza a registrar tus sesiones de práctica para seguir tu progreso.",
-  "selectEntryToView": "Selecciona una entrada para ver los detalles",
-  "clickEntryInList": "Haz clic en una entrada de la lista para ver todos los detalles",
-  "entryDetails": "Detalles de la entrada",
-  "dateAndTime": "Fecha y hora",
-  "duration": "Duración",
   "type": "Tipo",
-  "instrument": "Instrumento",
-  "techniques": "Técnicas",
-  "notes": "Notas",
-  "tags": "Etiquetas",
-  "pieces": "Piezas"
+  "viewScore": "Ver partitura"
 }

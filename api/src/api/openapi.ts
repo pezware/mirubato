@@ -677,7 +677,13 @@ export const openAPISpec = {
                 },
                 type: {
                   type: 'string',
-                  enum: ['logbook_entry', 'goal'],
+                  enum: [
+                    'logbook_entry',
+                    'goal',
+                    'practice_plan',
+                    'plan_occurrence',
+                    'user_preferences',
+                  ],
                   example: 'logbook_entry',
                 },
                 data: {

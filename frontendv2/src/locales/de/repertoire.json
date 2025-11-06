@@ -1,7 +1,7 @@
 {
+  "active": "Aktiv",
   "activeGoals": "Aktive Ziele",
   "activePieces": "Aktive Stücke",
-  "active": "Aktiv",
   "activeRepertoire": "Aktives Repertoire",
   "addCustomPiece": "Eigenes Stück hinzufügen",
   "addCustomPieceDescription": "Ein Stück hinzufügen, das nicht in der Bibliothek ist",
@@ -119,8 +119,9 @@
   "personalNotes": "Persönliche Notizen",
   "pieceTitle": "Titel des Stücks",
   "pieceTitlePlaceholder": "z.B. Nocturne in Es-Dur",
-  "polishedPieces": "Polierte Stücke",
   "polished": "Poliert",
+  "polishedPieces": "Polierte Stücke",
+  "practiceHistory": "Übungsverlauf",
   "practiceThisWeek": "Übung diese Woche",
   "practicedTimes": "{{count}} Mal geübt",
   "practicedToday": "Heute geübt",
@@ -169,14 +170,13 @@
   },
   "targetValuePlaceholder": "z.B. 30",
   "titleRequired": "Der Titel des Stücks ist erforderlich",
-  "totalPieces": "Alle Stücke",
   "total": "Gesamt",
+  "totalPieces": "Alle Stücke",
   "totalPractice": "Gesamte Übungszeit",
   "totalRepertoire": "Repertoire gesamt",
   "totalSessions": "gesamt",
   "unit": "Einheit",
   "viewAllSessions": "Alle {{count}} Sitzungen anzeigen",
   "viewDetails": "Details anzeigen",
-  "viewScore": "Noten ansehen",
-  "practiceHistory": "Übungsverlauf"
+  "viewScore": "Noten ansehen"
 }

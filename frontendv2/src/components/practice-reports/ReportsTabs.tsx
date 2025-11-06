@@ -1,8 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { Tabs } from '../ui'
-import { TrendingUp, Music, Table, Plus } from 'lucide-react'
+import { TrendingUp, Music, Table, Plus, Calendar } from 'lucide-react'
 
-export type ReportView = 'overview' | 'repertoire' | 'data' | 'newEntry'
+export type ReportView =
+  | 'overview'
+  | 'planning'
+  | 'repertoire'
+  | 'data'
+  | 'newEntry'
 
 interface ReportsTabsProps {
   reportView: ReportView
@@ -23,6 +28,12 @@ export function ReportsTabs({
       label: t('reports:tabs.overview'),
       icon: <TrendingUp size={20} />,
       shortLabel: t('reports:tabs.overview'),
+    },
+    {
+      id: 'planning',
+      label: t('reports:tabs.planning', 'Planning'),
+      icon: <Calendar size={20} />,
+      shortLabel: t('reports:tabs.planning', 'Planning'),
     },
     {
       id: 'newEntry',

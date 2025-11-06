@@ -116,6 +116,125 @@ export const PartialGoalSchema = GoalSchema.partial().required({
   // Only id is required for sync operations
 })
 
+// Practice planning schemas
+export const PracticePlanVisibility = z.enum(['private', 'shared', 'template'])
+
+export const PracticePlanStatus = z.enum([
+  'draft',
+  'active',
+  'completed',
+  'archived',
+])
+
+export const PracticePlanType = z.enum(['bootcamp', 'course', 'custom'])
+
+export const PlanPieceRefSchema = z.object({
+  scoreId: z.string().optional(),
+  title: z.string().optional(),
+  composer: z.string().nullable().optional(),
+})
+
+export const PlanSegmentSchema = z.object({
+  id: z.string().optional(),
+  label: z.string().min(1),
+  durationMinutes: z.number().int().min(1).optional(),
+  pieceRefs: z.array(PlanPieceRefSchema).optional(),
+  techniques: z.array(z.string()).optional(),
+  instructions: z.string().optional(),
+  tempoTargets: z
+    .record(z.union([z.number(), z.string(), z.null()]))
+    .optional(),
+  metadata: z.record(z.unknown()).optional(),
+})
+
+export const PlanTargetsSchema = z
+  .record(z.union([z.number(), z.string(), z.null(), z.array(z.number())]))
+  .optional()
+
+export const PlanCheckInSchema = z
+  .object({
+    recordedAt: z.string().optional(),
+    responses: z.record(z.unknown()).optional(),
+  })
+  .optional()
+
+export const PlanMetricsSchema = z
+  .record(z.union([z.number(), z.string(), z.null(), z.array(z.unknown())]))
+  .optional()
+
+export const PracticePlanScheduleSchema = z.object({
+  kind: z.enum(['single', 'recurring']),
+  rule: z.string().optional(),
+  durationMinutes: z.number().int().min(1).optional(),
+  timeOfDay: z.string().optional(),
+  flexibility: z.enum(['fixed', 'same-day', 'anytime']).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional().nullable(),
+  target: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+})
+
+export const PracticePlanSchema = z.object({
+  id: z.string(),
+  user_id: z.string().optional(),
+  title: z.string().min(1),
+  description: z.string().nullable().optional(),
+  type: PracticePlanType.default('custom'),
+  focusAreas: z.array(z.string()).default([]).optional(),
+  techniques: z.array(z.string()).default([]).optional(),
+  pieceRefs: z.array(PlanPieceRefSchema).default([]).optional(),
+  schedule: PracticePlanScheduleSchema,
+  visibility: PracticePlanVisibility.default('private'),
+  status: PracticePlanStatus.default('draft'),
+  ownerId: z.string().optional(),
+  templateVersion: z.number().int().optional(),
+  tags: z.array(z.string()).optional(),
+  metadata: z.record(z.unknown()).optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  archivedAt: z.string().nullable().optional(),
+  deletedAt: z.string().nullable().optional(),
+})
+
+export const PlanOccurrenceStatus = z.enum([
+  'scheduled',
+  'completed',
+  'skipped',
+  'expired',
+])
+
+export const PlanOccurrenceSchema = z.object({
+  id: z.string(),
+  planId: z.string(),
+  user_id: z.string().optional(),
+  scheduledStart: z.string().optional().nullable(),
+  scheduledEnd: z.string().optional().nullable(),
+  flexWindow: z.union([z.string(), z.null()]).optional(),
+  recurrenceKey: z.string().optional().nullable(),
+  segments: z.array(PlanSegmentSchema).default([]),
+  targets: PlanTargetsSchema,
+  reflectionPrompts: z.array(z.string()).optional(),
+  status: PlanOccurrenceStatus.default('scheduled'),
+  logEntryId: z.string().nullable().optional(),
+  checkIn: PlanCheckInSchema,
+  notes: z.string().nullable().optional(),
+  reminderState: z.record(z.unknown()).optional(),
+  metrics: PlanMetricsSchema,
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  deletedAt: z.string().nullable().optional(),
+})
+
+export const PartialPracticePlanSchema = PracticePlanSchema.partial().required({
+  id: true,
+})
+
+export const PartialPlanOccurrenceSchema =
+  PlanOccurrenceSchema.partial().required({
+    id: true,
+    planId: true,
+  })
+
 // Type exports for TypeScript
 export type LogbookEntry = z.infer<typeof LogbookEntrySchema>
 export type Goal = z.infer<typeof GoalSchema>
@@ -123,3 +242,5 @@ export type NotificationSettings = z.infer<typeof NotificationSettingsSchema>
 export type Piece = z.infer<typeof PieceSchema>
 export type PartialLogbookEntry = z.infer<typeof PartialLogbookEntrySchema>
 export type PartialGoal = z.infer<typeof PartialGoalSchema>
+export type PracticePlan = z.infer<typeof PracticePlanSchema>
+export type PlanOccurrence = z.infer<typeof PlanOccurrenceSchema>

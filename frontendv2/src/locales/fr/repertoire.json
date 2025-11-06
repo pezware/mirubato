@@ -1,7 +1,7 @@
 {
+  "active": "Actives",
   "activeGoals": "Objectifs Actifs",
   "activePieces": "Pièces actives",
-  "active": "Actives",
   "activeRepertoire": "Répertoire actif",
   "addCustomPiece": "Ajouter une Pièce Personnalisée",
   "addCustomPieceDescription": "Ajouter une pièce qui n'est pas dans la bibliothèque",
@@ -119,8 +119,9 @@
   "personalNotes": "Notes Personnelles",
   "pieceTitle": "Titre de la Pièce",
   "pieceTitlePlaceholder": "ex. Nocturne en Mi bémol Majeur",
-  "polishedPieces": "Pièces Polies",
   "polished": "Polies",
+  "polishedPieces": "Pièces Polies",
+  "practiceHistory": "Historique de Pratique",
   "practiceThisWeek": "Pratique Cette Semaine",
   "practicedTimes": "Pratiqué {{count}} fois",
   "practicedToday": "Pratiqué aujourd'hui",
@@ -169,14 +170,13 @@
   },
   "targetValuePlaceholder": "ex. 30",
   "titleRequired": "Le titre de la pièce est obligatoire",
-  "totalPieces": "Total de Pièces",
   "total": "Total",
+  "totalPieces": "Total de Pièces",
   "totalPractice": "Pratique totale",
   "totalRepertoire": "Répertoire Total",
   "totalSessions": "total",
   "unit": "Unité",
   "viewAllSessions": "Voir toutes les {{count}} sessions",
   "viewDetails": "Voir les détails",
-  "viewScore": "Voir la Partition",
-  "practiceHistory": "Historique de Pratique"
+  "viewScore": "Voir la Partition"
 }

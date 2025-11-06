@@ -3,6 +3,8 @@ import {
   NotificationSettingsSchema,
   PartialLogbookEntrySchema,
   PartialGoalSchema,
+  PartialPracticePlanSchema,
+  PartialPlanOccurrenceSchema,
 } from '../schemas/entities'
 
 /**
@@ -34,7 +36,13 @@ export const schemas = {
   // Sync schemas with proper typing (using partial schemas for flexibility)
   syncEntity: z.object({
     id: z.string(),
-    type: z.enum(['logbook_entry', 'goal', 'user_preferences']),
+    type: z.enum([
+      'logbook_entry',
+      'goal',
+      'practice_plan',
+      'plan_occurrence',
+      'user_preferences',
+    ]),
     data: z.unknown(), // Allow any data structure since sync_data is flexible
     checksum: z.string(),
     version: z.number().int().positive(),
@@ -44,7 +52,13 @@ export const schemas = {
     entities: z.array(
       z.object({
         id: z.string(),
-        type: z.enum(['logbook_entry', 'goal', 'user_preferences']),
+        type: z.enum([
+          'logbook_entry',
+          'goal',
+          'practice_plan',
+          'plan_occurrence',
+          'user_preferences',
+        ]),
         data: z.unknown(), // Allow any data structure since sync_data is flexible
         checksum: z.string(),
         version: z.number().int().positive(),
@@ -57,6 +71,8 @@ export const schemas = {
     changes: z.object({
       entries: z.array(PartialLogbookEntrySchema).optional(),
       goals: z.array(PartialGoalSchema).optional(),
+      practicePlans: z.array(PartialPracticePlanSchema).optional(),
+      planOccurrences: z.array(PartialPlanOccurrenceSchema).optional(),
     }),
     lastSyncToken: z.string().optional(),
   }),

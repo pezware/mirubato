@@ -31,6 +31,8 @@ interface ManualEntryFormProps {
   initialDuration?: number
   initialStartTime?: Date
   initialPieces?: Array<{ title: string; composer?: string; scoreId?: string }>
+  metadataOverrides?: Record<string, unknown>
+  onEntryCreated?: (entry: LogbookEntry) => void
 }
 
 export default function ManualEntryForm({
@@ -40,6 +42,8 @@ export default function ManualEntryForm({
   initialDuration,
   initialStartTime,
   initialPieces,
+  metadataOverrides,
+  onEntryCreated,
 }: ManualEntryFormProps) {
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
@@ -58,6 +62,14 @@ export default function ManualEntryForm({
   const [pendingEntryData, setPendingEntryData] = useState<{
     [key: string]: unknown
   } | null>(null)
+
+  const createEntryAndNotify = async (
+    data: Parameters<typeof createEntry>[0]
+  ) => {
+    const createdEntry = await createEntry(data)
+    onEntryCreated?.(createdEntry)
+    return createdEntry
+  }
 
   // Load repertoire on mount
   useEffect(() => {
@@ -170,6 +182,7 @@ export default function ManualEntryForm({
         tags: tags.length > 0 ? tags : [],
         metadata: {
           source: 'manual',
+          ...(metadataOverrides ?? {}),
         },
         // If we have a scoreId from initialPieces (from piece detail page), include it
         ...(initialPieces &&
@@ -265,7 +278,7 @@ export default function ManualEntryForm({
               }
 
               // No duplicates found, create entry and show repertoire prompt
-              await createEntry(entryData)
+              await createEntryAndNotify(entryData)
               setShowRepertoirePrompt({ piece, scoreId })
               // Exit after showing prompt for first piece not in repertoire
               return
@@ -274,7 +287,7 @@ export default function ManualEntryForm({
         }
 
         // No pieces or all pieces already in repertoire - create entry directly
-        await createEntry(entryData)
+        await createEntryAndNotify(entryData)
       }
 
       onSave()
@@ -644,7 +657,7 @@ export default function ManualEntryForm({
                             }
 
                             // Create the entry with the selected piece
-                            await createEntry(
+                            await createEntryAndNotify(
                               updatedEntryData as Omit<
                                 LogbookEntry,
                                 'id' | 'createdAt' | 'updatedAt'
@@ -673,7 +686,7 @@ export default function ManualEntryForm({
                 onClick={async () => {
                   // Create the entry with the original piece data
                   if (pendingEntryData) {
-                    await createEntry(
+                    await createEntryAndNotify(
                       pendingEntryData as Omit<
                         LogbookEntry,
                         'id' | 'createdAt' | 'updatedAt'

@@ -1,7 +1,7 @@
 {
+  "active": "活躍",
   "activeGoals": "進行中的目標",
   "activePieces": "活躍曲目",
-  "active": "活躍",
   "activeRepertoire": "活躍曲目庫",
   "addCustomPiece": "新增自訂曲目",
   "addCustomPieceDescription": "新增不在曲庫中的曲目",
@@ -119,8 +119,9 @@
   "personalNotes": "個人筆記",
   "pieceTitle": "曲目名稱",
   "pieceTitlePlaceholder": "例如：降E大調夜曲",
-  "polishedPieces": "完善曲目",
   "polished": "完善",
+  "polishedPieces": "完善曲目",
+  "practiceHistory": "練習記錄",
   "practiceThisWeek": "本週練習",
   "practicedTimes": "已練習 {{count}} 次",
   "practicedToday": "今天已練習",
@@ -169,14 +170,13 @@
   },
   "targetValuePlaceholder": "例如：30",
   "titleRequired": "曲目名稱為必填",
-  "totalPieces": "總曲目數",
   "total": "總計",
+  "totalPieces": "總曲目數",
   "totalPractice": "總練習時間",
   "totalRepertoire": "曲目總數",
   "totalSessions": "總計",
   "unit": "單位",
   "viewAllSessions": "查看所有 {{count}} 次練習",
   "viewDetails": "查看詳情",
-  "viewScore": "查看樂譜",
-  "practiceHistory": "練習記錄"
+  "viewScore": "查看樂譜"
 }

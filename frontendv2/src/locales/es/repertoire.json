@@ -1,7 +1,7 @@
 {
+  "active": "Activas",
   "activeGoals": "Objetivos Activos",
   "activePieces": "Piezas Activas",
-  "active": "Activas",
   "activeRepertoire": "Repertorio Activo",
   "addCustomPiece": "Añadir Pieza Personalizada",
   "addCustomPieceDescription": "Añadir una pieza que no está en la biblioteca",
@@ -119,8 +119,9 @@
   "personalNotes": "Notas Personales",
   "pieceTitle": "Título de la Pieza",
   "pieceTitlePlaceholder": "ej. Nocturno en Mi bemol Mayor",
-  "polishedPieces": "Piezas Pulidas",
   "polished": "Pulidas",
+  "polishedPieces": "Piezas Pulidas",
+  "practiceHistory": "Historial de Práctica",
   "practiceThisWeek": "Práctica Esta Semana",
   "practicedTimes": "Practicado {{count}} veces",
   "practicedToday": "Practicado hoy",
@@ -169,14 +170,13 @@
   },
   "targetValuePlaceholder": "ej. 30",
   "titleRequired": "El título de la pieza es obligatorio",
-  "totalPieces": "Total de Piezas",
   "total": "Total",
+  "totalPieces": "Total de Piezas",
   "totalPractice": "Práctica Total",
   "totalRepertoire": "Repertorio Total",
   "totalSessions": "total",
   "unit": "Unidad",
   "viewAllSessions": "Ver todas las {{count}} sesiones",
   "viewDetails": "Ver Detalles",
-  "viewScore": "Ver Partitura",
-  "practiceHistory": "Historial de Práctica"
+  "viewScore": "Ver Partitura"
 }

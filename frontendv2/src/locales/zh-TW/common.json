@@ -147,6 +147,7 @@
     "september": "九月"
   },
   "more": "更多",
+  "moreOptions": "更多選項",
   "music": {
     "lesson": "課程",
     "notes": {
@@ -308,6 +309,5 @@
     "list": "清單"
   },
   "warning": "警告",
-  "yes": "是",
-  "moreOptions": "更多選項"
+  "yes": "是"
 }
