@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { act } from 'react'
-import { usePlanningStore, type CreatePlanDraft } from './planningStore'
+import {
+  usePlanningStore,
+  type CreatePlanDraft,
+  generateRecurrenceDates,
+} from './planningStore'
 import { planningApi } from '../api/planning'
 import {
   buildPracticePlan,
@@ -378,6 +382,80 @@ describe('usePlanningStore', () => {
       })
 
       expect(result.occurrence.reflectionPrompts).toHaveLength(10)
+    })
+
+    it('should create recurring plans with generated occurrences and metadata', async () => {
+      const draft = buildCreatePlanDraft({
+        schedule: {
+          kind: 'recurring',
+          startDate: '2025-01-01',
+          timeOfDay: '18:00',
+          durationMinutes: 45,
+          flexibility: 'fixed',
+          endDate: '2025-01-31',
+          rule: 'FREQ=WEEKLY;BYDAY=MO,WE',
+          recurrence: {
+            frequency: 'WEEKLY',
+            interval: 1,
+            weekdays: ['MO', 'WE'],
+            until: '2025-01-31',
+          },
+        },
+      })
+
+      vi.mocked(planningApi.createPlan).mockImplementation(
+        async (plan, occurrences) => ({
+          plan,
+          occurrences,
+        })
+      )
+
+      const result = await act(async () => {
+        return await usePlanningStore.getState().createPlan(draft)
+      })
+
+      expect(result.plan.schedule.kind).toBe('recurring')
+      expect(result.plan.schedule.rule).toBe(
+        'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE;UNTIL=20250131T235959Z'
+      )
+      expect(result.occurrence.recurrenceKey).toBeDefined()
+
+      const state = usePlanningStore.getState()
+      const storedPlan = state.plansMap.get(result.plan.id)
+      expect(storedPlan?.schedule.metadata?.recurrence).toMatchObject({
+        frequency: 'WEEKLY',
+        interval: 1,
+        weekdays: ['MO', 'WE'],
+        until: '2025-01-31',
+      })
+
+      const occurrencesForPlan = state.occurrences.filter(
+        occurrence => occurrence.planId === result.plan.id
+      )
+
+      const expectedDates = generateRecurrenceDates(
+        {
+          start: new Date('2025-01-01T18:00:00'),
+          frequency: 'WEEKLY',
+          interval: 1,
+          weekdays: ['MO', 'WE'],
+          until: new Date('2025-01-31T23:59:59'),
+        },
+        { maxOccurrences: 12, horizonDays: 90 }
+      )
+
+      expect(occurrencesForPlan).toHaveLength(expectedDates.length)
+      occurrencesForPlan.forEach(occurrence => {
+        expect(occurrence.flexWindow).toBe('fixed')
+        expect(occurrence.recurrenceKey).toBe(result.occurrence.recurrenceKey)
+      })
+
+      const occurrenceStarts = occurrencesForPlan.map(
+        occurrence => occurrence.scheduledStart
+      )
+      expectedDates.forEach(date => {
+        expect(occurrenceStarts).toContain(date.toISOString())
+      })
     })
   })
 

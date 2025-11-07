@@ -7,6 +7,213 @@ import {
   PartialPlanOccurrenceSchema,
 } from '../schemas/entities'
 
+const RECURRENCE_WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
+export type RecurrenceWeekday = (typeof RECURRENCE_WEEKDAYS)[number]
+export type RecurrenceFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY'
+
+const ICS_UNTIL_REGEX = /^\d{8}T\d{6}Z$/i
+const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
+export interface NormalizedRecurrence {
+  frequency: RecurrenceFrequency
+  interval: number
+  weekdays?: RecurrenceWeekday[]
+  count?: number
+  until?: string | null
+}
+
+const normalizeUntilValue = (value?: string | null): string | null => {
+  if (!value) {
+    return null
+  }
+
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  if (DATE_ONLY_REGEX.test(trimmed)) {
+    return trimmed
+  }
+
+  if (ICS_UNTIL_REGEX.test(trimmed)) {
+    const year = trimmed.slice(0, 4)
+    const month = trimmed.slice(4, 6)
+    const day = trimmed.slice(6, 8)
+    return `${year}-${month}-${day}`
+  }
+
+  const parsed = new Date(trimmed)
+  if (Number.isNaN(parsed.getTime())) {
+    return null
+  }
+
+  return parsed.toISOString().slice(0, 10)
+}
+
+const normalizeWeekdays = (
+  weekdays?: RecurrenceWeekday[]
+): RecurrenceWeekday[] => {
+  if (!weekdays) {
+    return []
+  }
+
+  const seen = new Set<RecurrenceWeekday>()
+  const normalized: RecurrenceWeekday[] = []
+
+  weekdays.forEach(day => {
+    const upper = day.toUpperCase() as RecurrenceWeekday
+    if (RECURRENCE_WEEKDAYS.includes(upper) && !seen.has(upper)) {
+      seen.add(upper)
+      normalized.push(upper)
+    }
+  })
+
+  return normalized.sort((a, b) => {
+    const order: Record<RecurrenceWeekday, number> = {
+      SU: 0,
+      MO: 1,
+      TU: 2,
+      WE: 3,
+      TH: 4,
+      FR: 5,
+      SA: 6,
+    }
+    return order[a] - order[b]
+  })
+}
+
+export const normalizeRecurrenceMetadata = (
+  metadata?: unknown
+): NormalizedRecurrence | null => {
+  if (!metadata || typeof metadata !== 'object') {
+    return null
+  }
+
+  const record = metadata as Record<string, unknown>
+
+  const frequency =
+    typeof record.frequency === 'string'
+      ? record.frequency.toUpperCase()
+      : undefined
+
+  if (
+    frequency !== 'DAILY' &&
+    frequency !== 'WEEKLY' &&
+    frequency !== 'MONTHLY'
+  ) {
+    return null
+  }
+
+  const intervalValue = Number(record.interval)
+  const interval =
+    Number.isFinite(intervalValue) && intervalValue > 0
+      ? Math.round(intervalValue)
+      : 1
+
+  const weekdays = Array.isArray(record.weekdays)
+    ? normalizeWeekdays(
+        (record.weekdays as unknown[]).map(
+          day => String(day).toUpperCase() as RecurrenceWeekday
+        )
+      )
+    : undefined
+
+  const countValue = Number(record.count)
+  const count =
+    Number.isFinite(countValue) && countValue > 0
+      ? Math.round(countValue)
+      : undefined
+
+  const until = normalizeUntilValue(
+    typeof record.until === 'string' ? record.until : undefined
+  )
+
+  return {
+    frequency,
+    interval,
+    weekdays,
+    count,
+    until,
+  }
+}
+
+export const parseRecurrenceRule = (
+  rule?: string | null
+): NormalizedRecurrence | null => {
+  if (!rule || typeof rule !== 'string') {
+    return null
+  }
+
+  const segments = rule
+    .split(';')
+    .map(segment => segment.trim())
+    .filter(Boolean)
+
+  if (segments.length === 0) {
+    return null
+  }
+
+  let frequency: RecurrenceFrequency | null = null
+  let interval = 1
+  let weekdays: RecurrenceWeekday[] | undefined
+  let count: number | undefined
+  let until: string | null | undefined
+
+  segments.forEach(segment => {
+    const [rawKey, rawValue] = segment.split('=')
+    if (!rawKey || typeof rawValue === 'undefined') {
+      return
+    }
+
+    const key = rawKey.trim().toUpperCase()
+    const value = rawValue.trim()
+
+    if (key === 'FREQ') {
+      const upperValue = value.toUpperCase()
+      if (
+        upperValue === 'DAILY' ||
+        upperValue === 'WEEKLY' ||
+        upperValue === 'MONTHLY'
+      ) {
+        frequency = upperValue as RecurrenceFrequency
+      }
+    } else if (key === 'INTERVAL') {
+      const parsedInterval = Number.parseInt(value, 10)
+      if (!Number.isNaN(parsedInterval) && parsedInterval > 0) {
+        interval = parsedInterval
+      }
+    } else if (key === 'BYDAY') {
+      const parsedWeekdays = value
+        .split(',')
+        .map(part => part.trim().toUpperCase() as RecurrenceWeekday)
+      const normalized = normalizeWeekdays(parsedWeekdays)
+      if (normalized.length > 0) {
+        weekdays = normalized
+      }
+    } else if (key === 'COUNT') {
+      const parsedCount = Number.parseInt(value, 10)
+      if (!Number.isNaN(parsedCount) && parsedCount > 0) {
+        count = parsedCount
+      }
+    } else if (key === 'UNTIL') {
+      until = normalizeUntilValue(value)
+    }
+  })
+
+  if (!frequency) {
+    return null
+  }
+
+  return {
+    frequency,
+    interval,
+    weekdays,
+    count,
+    until: until ?? null,
+  }
+}
+
 /**
  * Common validation schemas
  */

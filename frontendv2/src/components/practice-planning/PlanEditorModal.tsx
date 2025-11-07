@@ -10,8 +10,19 @@ import {
   ModalBody,
   ModalFooter,
   Typography,
+  SegmentedControl,
 } from '@/components/ui'
-import type { CreatePlanDraft } from '@/stores/planningStore'
+import {
+  RECURRENCE_WEEKDAYS,
+  type RecurrenceWeekday,
+  type RecurrenceFrequency,
+  type NormalizedRecurrence,
+  buildRecurrenceRuleString,
+  generateRecurrenceDates,
+  normalizeRecurrenceMetadata,
+  parseRecurrenceRule,
+  type CreatePlanDraft,
+} from '@/stores/planningStore'
 import type { PracticePlan, PlanOccurrence } from '@/api/planning'
 
 interface PlanEditorModalProps {
@@ -72,6 +83,65 @@ const toLocalTime = (value?: string | null): string => {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
+const WEEKDAY_CODES = RECURRENCE_WEEKDAYS
+
+type WeekdayCode = RecurrenceWeekday
+
+const WEEKDAY_FALLBACK_LABELS: Record<WeekdayCode, string> = {
+  MO: 'Mon',
+  TU: 'Tue',
+  WE: 'Wed',
+  TH: 'Thu',
+  FR: 'Fri',
+  SA: 'Sat',
+  SU: 'Sun',
+}
+
+const CODE_TO_JS_DAY: Record<WeekdayCode, number> = {
+  SU: 0,
+  MO: 1,
+  TU: 2,
+  WE: 3,
+  TH: 4,
+  FR: 5,
+  SA: 6,
+}
+
+const JS_DAY_TO_CODE: Record<number, WeekdayCode> = {
+  0: 'SU',
+  1: 'MO',
+  2: 'TU',
+  3: 'WE',
+  4: 'TH',
+  5: 'FR',
+  6: 'SA',
+}
+
+const ensureTimeFormat = (time?: string) => {
+  if (!time) return '00:00:00'
+  const trimmed = time.trim()
+  if (!trimmed) return '00:00:00'
+  if (/^\d{2}:\d{2}$/.test(trimmed)) {
+    return `${trimmed}:00`
+  }
+  if (/^\d{2}:\d{2}:\d{2}$/.test(trimmed)) {
+    return trimmed
+  }
+  return '00:00:00'
+}
+
+const combineDateAndTimeLocal = (date: string, time?: string): Date | null => {
+  if (!date) return null
+  const normalizedTime = ensureTimeFormat(time)
+  const candidate = new Date(`${date}T${normalizedTime}`)
+  if (Number.isNaN(candidate.getTime())) {
+    return null
+  }
+  return candidate
+}
+
+const PREVIEW_OCCURRENCES_LIMIT = 10
+
 export function PlanEditorModal({
   isOpen,
   onClose,
@@ -82,7 +152,7 @@ export function PlanEditorModal({
   initialPlan = null,
   onDelete,
 }: PlanEditorModalProps) {
-  const { t } = useTranslation(['reports', 'common'])
+  const { t, i18n } = useTranslation(['reports', 'common'])
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -94,6 +164,20 @@ export function PlanEditorModal({
   const [flexibility, setFlexibility] = useState<
     'fixed' | 'same-day' | 'anytime'
   >('anytime')
+  const [scheduleKind, setScheduleKind] = useState<'single' | 'recurring'>(
+    'single'
+  )
+  const [recurrenceFrequency, setRecurrenceFrequency] =
+    useState<RecurrenceFrequency>('WEEKLY')
+  const [recurrenceInterval, setRecurrenceInterval] = useState('1')
+  const [recurrenceWeekdays, setRecurrenceWeekdays] = useState<WeekdayCode[]>(
+    []
+  )
+  const [recurrenceEndMode, setRecurrenceEndMode] = useState<
+    'never' | 'onDate' | 'afterCount'
+  >('never')
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('')
+  const [recurrenceCount, setRecurrenceCount] = useState('10')
   const [segments, setSegments] = useState<SegmentState[]>([
     createEmptySegment(),
   ])
@@ -131,6 +215,173 @@ export function PlanEditorModal({
     [t]
   )
 
+  const scheduleKindOptions = useMemo(
+    () => [
+      {
+        value: 'single',
+        label: t('reports:planningEditor.schedule.single', 'Single session'),
+      },
+      {
+        value: 'recurring',
+        label: t(
+          'reports:planningEditor.schedule.recurring',
+          'Recurring schedule'
+        ),
+      },
+    ],
+    [t]
+  )
+
+  const recurrenceFrequencyOptions = useMemo(
+    () => [
+      {
+        value: 'DAILY',
+        label: t('reports:planningEditor.recurrence.frequency.daily', 'Daily'),
+      },
+      {
+        value: 'WEEKLY',
+        label: t(
+          'reports:planningEditor.recurrence.frequency.weekly',
+          'Weekly'
+        ),
+      },
+      {
+        value: 'MONTHLY',
+        label: t(
+          'reports:planningEditor.recurrence.frequency.monthly',
+          'Monthly'
+        ),
+      },
+    ],
+    [t]
+  )
+
+  const recurrenceEndModeOptions = useMemo(
+    () => [
+      {
+        value: 'never',
+        label: t('reports:planningEditor.recurrence.end.never', 'No end date'),
+      },
+      {
+        value: 'onDate',
+        label: t('reports:planningEditor.recurrence.end.onDate', 'End on date'),
+      },
+      {
+        value: 'afterCount',
+        label: t(
+          'reports:planningEditor.recurrence.end.afterCount',
+          'End after count'
+        ),
+      },
+    ],
+    [t]
+  )
+
+  const weekdayOptions = useMemo(
+    () =>
+      WEEKDAY_CODES.map(code => ({
+        code,
+        label: t(
+          `reports:planningEditor.weekdays.${code.toLowerCase()}`,
+          WEEKDAY_FALLBACK_LABELS[code]
+        ),
+      })),
+    [t]
+  )
+
+  const previewFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(i18n.language, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }),
+    [i18n.language]
+  )
+
+  const recurrencePreviewDates = useMemo(() => {
+    if (scheduleKind !== 'recurring') {
+      return [] as Date[]
+    }
+
+    const startDateTime = combineDateAndTimeLocal(
+      startDate,
+      startTime || undefined
+    )
+    if (!startDateTime) {
+      return [] as Date[]
+    }
+
+    const intervalValue = Number.parseInt(recurrenceInterval, 10)
+    if (!Number.isFinite(intervalValue) || intervalValue <= 0) {
+      return [] as Date[]
+    }
+
+    const weekdaysForRecurrence =
+      recurrenceFrequency === 'WEEKLY'
+        ? recurrenceWeekdays.length > 0
+          ? recurrenceWeekdays
+          : [JS_DAY_TO_CODE[startDateTime.getDay()]]
+        : undefined
+
+    let countValue: number | undefined
+    if (recurrenceEndMode === 'afterCount') {
+      const parsedCount = Number.parseInt(recurrenceCount, 10)
+      if (!Number.isFinite(parsedCount) || parsedCount <= 0) {
+        return [] as Date[]
+      }
+      countValue = parsedCount
+    }
+
+    let untilDate: Date | null = null
+    if (recurrenceEndMode === 'onDate') {
+      if (!recurrenceEndDate) {
+        return [] as Date[]
+      }
+      untilDate = combineDateAndTimeLocal(recurrenceEndDate, '23:59:59')
+      if (!untilDate) {
+        return [] as Date[]
+      }
+    }
+
+    try {
+      return generateRecurrenceDates(
+        {
+          start: startDateTime,
+          frequency: recurrenceFrequency,
+          interval: intervalValue,
+          weekdays: weekdaysForRecurrence,
+          count: countValue,
+          until: untilDate,
+        },
+        {
+          maxOccurrences:
+            countValue && countValue > 0
+              ? Math.min(countValue, PREVIEW_OCCURRENCES_LIMIT)
+              : PREVIEW_OCCURRENCES_LIMIT,
+          horizonDays: 365,
+        }
+      )
+    } catch (error) {
+      console.warn('[PlanEditor] Failed to preview recurrence', error)
+      return [] as Date[]
+    }
+  }, [
+    scheduleKind,
+    startDate,
+    startTime,
+    recurrenceFrequency,
+    recurrenceInterval,
+    recurrenceWeekdays,
+    recurrenceEndMode,
+    recurrenceEndDate,
+    recurrenceCount,
+  ])
+
+  const recurrencePreviewStrings = useMemo(
+    () => recurrencePreviewDates.map(date => previewFormatter.format(date)),
+    [recurrencePreviewDates, previewFormatter]
+  )
+
   const resetForm = () => {
     setTitle('')
     setDescription('')
@@ -138,6 +389,13 @@ export function PlanEditorModal({
     setStartTime('')
     setDurationMinutes('30')
     setFlexibility('anytime')
+    setScheduleKind('single')
+    setRecurrenceFrequency('WEEKLY')
+    setRecurrenceInterval('1')
+    setRecurrenceWeekdays([])
+    setRecurrenceEndMode('never')
+    setRecurrenceEndDate('')
+    setRecurrenceCount('10')
     setSegments([createEmptySegment()])
     setPrompts([])
     setFormError(null)
@@ -148,6 +406,96 @@ export function PlanEditorModal({
     setEditingIds({ planId: plan.id, occurrenceId: occurrence?.id })
     setTitle(plan.title)
     setDescription(plan.description ?? '')
+
+    const nextScheduleKind = plan.schedule.kind ?? 'single'
+    setScheduleKind(nextScheduleKind)
+
+    let nextRecurrenceFrequency: RecurrenceFrequency = 'WEEKLY'
+    let nextRecurrenceInterval = 1
+    let nextRecurrenceWeekdays: WeekdayCode[] = []
+    let nextEndMode: 'never' | 'onDate' | 'afterCount' = 'never'
+    let nextEndDate = ''
+    let nextCount = '10'
+
+    if (nextScheduleKind === 'recurring') {
+      const recurrenceMetadata = normalizeRecurrenceMetadata(
+        (plan.schedule.metadata as { recurrence?: unknown })?.recurrence
+      )
+
+      const recurrenceFromRule =
+        plan.schedule.rule && !recurrenceMetadata
+          ? parseRecurrenceRule(plan.schedule.rule)
+          : null
+
+      const normalizedRecurrence = recurrenceMetadata || recurrenceFromRule
+
+      if (normalizedRecurrence) {
+        nextRecurrenceFrequency = normalizedRecurrence.frequency
+        nextRecurrenceInterval = normalizedRecurrence.interval
+
+        if (
+          normalizedRecurrence.frequency === 'WEEKLY' &&
+          normalizedRecurrence.weekdays?.length
+        ) {
+          nextRecurrenceWeekdays = normalizedRecurrence.weekdays
+        }
+
+        if (
+          typeof normalizedRecurrence.count === 'number' &&
+          normalizedRecurrence.count > 0
+        ) {
+          nextEndMode = 'afterCount'
+          nextCount = String(normalizedRecurrence.count)
+        } else if (normalizedRecurrence.until) {
+          nextEndMode = 'onDate'
+          nextEndDate = normalizedRecurrence.until
+        }
+      }
+
+      if (
+        nextRecurrenceFrequency === 'WEEKLY' &&
+        nextRecurrenceWeekdays.length === 0
+      ) {
+        let baseDate: Date | null = null
+        if (occurrence?.scheduledStart) {
+          const parsed = new Date(occurrence.scheduledStart)
+          if (!Number.isNaN(parsed.getTime())) {
+            baseDate = parsed
+          }
+        }
+        if (!baseDate) {
+          baseDate = combineDateAndTimeLocal(
+            plan.schedule.startDate ?? '',
+            plan.schedule.timeOfDay ?? undefined
+          )
+        }
+        if (!baseDate) {
+          baseDate = new Date()
+        }
+        nextRecurrenceWeekdays = [JS_DAY_TO_CODE[baseDate.getDay()]]
+      }
+
+      if (!nextEndDate && plan.schedule.endDate) {
+        nextEndMode = 'onDate'
+        nextEndDate = plan.schedule.endDate.slice(0, 10)
+      }
+    }
+
+    if (nextScheduleKind === 'recurring') {
+      setRecurrenceFrequency(nextRecurrenceFrequency)
+      setRecurrenceInterval(String(nextRecurrenceInterval))
+      setRecurrenceWeekdays(nextRecurrenceWeekdays)
+      setRecurrenceEndMode(nextEndMode)
+      setRecurrenceEndDate(nextEndDate)
+      setRecurrenceCount(nextCount)
+    } else {
+      setRecurrenceFrequency('WEEKLY')
+      setRecurrenceInterval('1')
+      setRecurrenceWeekdays([])
+      setRecurrenceEndMode('never')
+      setRecurrenceEndDate('')
+      setRecurrenceCount('10')
+    }
 
     if (occurrence?.scheduledStart) {
       setStartDate(toLocalDate(occurrence.scheduledStart))
@@ -253,6 +601,17 @@ export function PlanEditorModal({
     setPrompts(prev => prev.filter(prompt => prompt.id !== id))
   }
 
+  const handleToggleWeekday = (code: WeekdayCode) => {
+    setRecurrenceWeekdays(prev => {
+      if (prev.includes(code)) {
+        return prev.filter(value => value !== code)
+      }
+      const next = [...prev, code]
+      next.sort((a, b) => CODE_TO_JS_DAY[a] - CODE_TO_JS_DAY[b])
+      return next
+    })
+  }
+
   const composeDraft = (): CreatePlanDraft | null => {
     const trimmedTitle = title.trim()
 
@@ -314,24 +673,122 @@ export function PlanEditorModal({
       ? Number.parseInt(durationMinutes, 10) || undefined
       : undefined
 
+    const effectiveScheduleKind = scheduleKind
+    const baseEndDate =
+      mode === 'edit' ? (initialPlan?.plan.schedule.endDate ?? null) : null
+
+    let recurrenceRule: string | undefined
+    let recurrenceConfig: CreatePlanDraft['schedule']['recurrence']
+    let scheduleEndDate: string | null | undefined =
+      effectiveScheduleKind === 'recurring' ? null : baseEndDate
+
+    if (effectiveScheduleKind === 'recurring') {
+      const startDateTime = combineDateAndTimeLocal(
+        startDate,
+        startTime || undefined
+      )
+
+      if (!startDateTime) {
+        setFormError(
+          t(
+            'reports:planningEditor.validation.recurrenceStartInvalid',
+            'Recurring plans require a valid start date'
+          )
+        )
+        return null
+      }
+
+      const intervalValue = Number.parseInt(recurrenceInterval, 10)
+      if (!Number.isFinite(intervalValue) || intervalValue <= 0) {
+        setFormError(
+          t(
+            'reports:planningEditor.validation.recurrenceInterval',
+            'Recurrence interval must be at least 1'
+          )
+        )
+        return null
+      }
+
+      const weekdaysForRecurrence =
+        recurrenceFrequency === 'WEEKLY'
+          ? recurrenceWeekdays.length > 0
+            ? recurrenceWeekdays
+            : [JS_DAY_TO_CODE[startDateTime.getDay()]]
+          : undefined
+
+      const normalizedRecurrence: NormalizedRecurrence = {
+        frequency: recurrenceFrequency,
+        interval: intervalValue,
+        weekdays: weekdaysForRecurrence,
+      }
+
+      if (recurrenceEndMode === 'afterCount') {
+        const parsedCount = Number.parseInt(recurrenceCount, 10)
+        if (!Number.isFinite(parsedCount) || parsedCount <= 0) {
+          setFormError(
+            t(
+              'reports:planningEditor.validation.recurrenceCount',
+              'Number of occurrences must be at least 1'
+            )
+          )
+          return null
+        }
+        normalizedRecurrence.count = parsedCount
+        scheduleEndDate = null
+      } else if (recurrenceEndMode === 'onDate') {
+        if (!recurrenceEndDate) {
+          setFormError(
+            t(
+              'reports:planningEditor.validation.recurrenceEndDateRequired',
+              'Select an end date for the recurring plan'
+            )
+          )
+          return null
+        }
+        const untilDate = combineDateAndTimeLocal(recurrenceEndDate, '23:59:59')
+        if (!untilDate) {
+          setFormError(
+            t(
+              'reports:planningEditor.validation.recurrenceEndDateInvalid',
+              'End date must be a valid date'
+            )
+          )
+          return null
+        }
+        normalizedRecurrence.until = recurrenceEndDate
+        scheduleEndDate = recurrenceEndDate
+      } else {
+        scheduleEndDate = null
+      }
+
+      recurrenceRule = buildRecurrenceRuleString(normalizedRecurrence)
+
+      recurrenceConfig = {
+        frequency: normalizedRecurrence.frequency,
+        interval: normalizedRecurrence.interval,
+        weekdays: normalizedRecurrence.weekdays,
+        count: normalizedRecurrence.count,
+        until: normalizedRecurrence.until ?? undefined,
+      }
+    }
+
     return {
       planId: editingIds?.planId,
       occurrenceId: editingIds?.occurrenceId,
       title: trimmedTitle,
       description: description.trim() || undefined,
       schedule: {
-        kind:
-          mode === 'edit'
-            ? (initialPlan?.plan.schedule.kind ?? 'single')
-            : 'single',
+        kind: effectiveScheduleKind,
         startDate,
         timeOfDay: startTime || undefined,
         durationMinutes: parsedDuration,
         flexibility,
         endDate:
-          mode === 'edit'
-            ? (initialPlan?.plan.schedule.endDate ?? null)
-            : undefined,
+          effectiveScheduleKind === 'recurring'
+            ? (scheduleEndDate ?? null)
+            : baseEndDate,
+        rule: recurrenceRule,
+        recurrence: recurrenceConfig,
       },
       segments: parsedSegments,
       reflectionPrompts: preparedPrompts,
@@ -425,10 +882,20 @@ export function PlanEditorModal({
           />
         </section>
 
-        <section className="space-y-3">
-          <Typography variant="h3">
-            {t('reports:planningEditor.schedule', 'Schedule')}
-          </Typography>
+        <section className="space-y-4">
+          <div className="space-y-3">
+            <Typography variant="h3">
+              {t('reports:planningEditor.schedule', 'Schedule')}
+            </Typography>
+            <SegmentedControl
+              options={scheduleKindOptions}
+              value={scheduleKind}
+              onChange={value =>
+                setScheduleKind(value as 'single' | 'recurring')
+              }
+              fullWidth
+            />
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               id="plan-start-date"
@@ -468,6 +935,122 @@ export function PlanEditorModal({
               )}
             />
           </div>
+          {scheduleKind === 'recurring' && (
+            <div className="space-y-4 rounded-xl border border-border bg-muted/30 p-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Select
+                  value={recurrenceFrequency}
+                  onChange={value =>
+                    setRecurrenceFrequency(value as RecurrenceFrequency)
+                  }
+                  options={recurrenceFrequencyOptions}
+                  label={t(
+                    'reports:planningEditor.recurrence.frequencyLabel',
+                    'Frequency'
+                  )}
+                  placeholder={t(
+                    'reports:planningEditor.recurrence.frequencyPlaceholder',
+                    'Choose frequency'
+                  )}
+                />
+                <Input
+                  id="plan-recurrence-interval"
+                  label={t(
+                    'reports:planningEditor.recurrence.intervalLabel',
+                    'Interval'
+                  )}
+                  type="number"
+                  min={1}
+                  value={recurrenceInterval}
+                  onChange={event => setRecurrenceInterval(event.target.value)}
+                />
+              </div>
+              {recurrenceFrequency === 'WEEKLY' && (
+                <div className="space-y-2">
+                  <Typography variant="body" className="text-sm font-medium">
+                    {t(
+                      'reports:planningEditor.recurrence.weekdaysLabel',
+                      'Repeat on'
+                    )}
+                  </Typography>
+                  <div className="flex flex-wrap gap-2">
+                    {weekdayOptions.map(day => {
+                      const isActive = recurrenceWeekdays.includes(day.code)
+                      return (
+                        <Button
+                          key={day.code}
+                          variant={isActive ? 'primary' : 'secondary'}
+                          size="sm"
+                          onClick={() => handleToggleWeekday(day.code)}
+                        >
+                          {day.label}
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Select
+                  value={recurrenceEndMode}
+                  onChange={value =>
+                    setRecurrenceEndMode(
+                      value as 'never' | 'onDate' | 'afterCount'
+                    )
+                  }
+                  options={recurrenceEndModeOptions}
+                  label={t(
+                    'reports:planningEditor.recurrence.endModeLabel',
+                    'Ends'
+                  )}
+                  placeholder={t(
+                    'reports:planningEditor.recurrence.endModePlaceholder',
+                    'Choose ending'
+                  )}
+                />
+                {recurrenceEndMode === 'onDate' && (
+                  <Input
+                    id="plan-recurrence-end-date"
+                    label={t(
+                      'reports:planningEditor.recurrence.endDateLabel',
+                      'End date'
+                    )}
+                    type="date"
+                    value={recurrenceEndDate}
+                    onChange={event => setRecurrenceEndDate(event.target.value)}
+                  />
+                )}
+                {recurrenceEndMode === 'afterCount' && (
+                  <Input
+                    id="plan-recurrence-count"
+                    label={t(
+                      'reports:planningEditor.recurrence.countLabel',
+                      'Number of occurrences'
+                    )}
+                    type="number"
+                    min={1}
+                    value={recurrenceCount}
+                    onChange={event => setRecurrenceCount(event.target.value)}
+                  />
+                )}
+              </div>
+              {recurrencePreviewStrings.length > 0 && (
+                <div className="space-y-2 rounded-lg bg-muted/40 p-3">
+                  <Typography variant="body" className="text-sm font-medium">
+                    {t(
+                      'reports:planningEditor.recurrence.previewLabel',
+                      'Upcoming occurrences'
+                    )}
+                  </Typography>
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                    {recurrencePreviewStrings.map(value => (
+                      <li key={value}>{value}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         <section className="space-y-4">
