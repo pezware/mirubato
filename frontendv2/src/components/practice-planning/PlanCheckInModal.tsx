@@ -114,19 +114,40 @@ export function PlanCheckInModal({
 
     const timestamp = new Date().toISOString()
 
-    const summaryNotes =
-      notes.trim() ||
-      `${plan.title} · ${t('reports:planningCheckIn.defaultNote', 'Logged from practice plan')}`
+    const trimmedNote = notes.trim()
+    const planTitle = plan.title?.trim()
+    const defaultNoteSuffix = t(
+      'reports:planningCheckIn.defaultNote',
+      'Logged from practice plan'
+    )
+
+    const summaryNotes = planTitle
+      ? trimmedNote
+        ? `${planTitle} · ${trimmedNote}`
+        : `${planTitle} · ${defaultNoteSuffix}`
+      : trimmedNote || defaultNoteSuffix
 
     const metadataBase: Record<string, unknown> = occurrencePrefill?.metadata
       ? { ...occurrencePrefill.metadata }
       : {}
+
+    const reflectionResponses = Object.entries(responses)
+      .map(([prompt, value]) => ({
+        prompt: prompt.trim(),
+        response: value.trim(),
+      }))
+      .filter(
+        (item): item is { prompt: string; response: string } =>
+          item.prompt.length > 0 && item.response.length > 0
+      )
 
     const entryMetadata = sanitizeMetadataRecord({
       ...metadataBase,
       source: 'practice_plan',
       planId: (metadataBase.planId as string | undefined) ?? plan.id,
       planOccurrenceId: occurrence.id,
+      reflectionResponses:
+        reflectionResponses.length > 0 ? reflectionResponses : undefined,
     }) as LogEntryMetadata
 
     if (!entryMetadata.planTitle && plan.title) {

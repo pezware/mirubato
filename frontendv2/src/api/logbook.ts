@@ -10,6 +10,10 @@ export interface LogEntryMetadata {
   planTitle?: string
   segments?: unknown
   reflectionPrompts?: string[]
+  reflectionResponses?: Array<{
+    prompt: string
+    response: string
+  }>
   focusAreas?: string[]
   planTechniques?: string[]
   targets?: Record<string, unknown>
