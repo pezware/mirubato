@@ -94,25 +94,37 @@ export interface PlanOccurrence {
 
 const normalizePlan = (plan: PracticePlan): PracticePlan => ({
   ...plan,
-  focusAreas: plan.focusAreas ?? [],
-  techniques: plan.techniques ?? [],
-  pieceRefs: plan.pieceRefs ?? [],
-  tags: plan.tags ?? [],
-  metadata: plan.metadata ?? {},
+  focusAreas: Array.isArray(plan.focusAreas) ? plan.focusAreas : [],
+  techniques: Array.isArray(plan.techniques) ? plan.techniques : [],
+  pieceRefs: Array.isArray(plan.pieceRefs) ? plan.pieceRefs : [],
+  tags: Array.isArray(plan.tags) ? plan.tags : [],
+  metadata: plan.metadata && typeof plan.metadata === 'object' ? plan.metadata : {},
 })
 
 const normalizeOccurrence = (occurrence: PlanOccurrence): PlanOccurrence => ({
   ...occurrence,
-  segments: occurrence.segments ?? [],
-  targets: occurrence.targets ?? {},
-  reflectionPrompts: occurrence.reflectionPrompts ?? [],
+  segments: Array.isArray(occurrence.segments) ? occurrence.segments : [],
+  targets: occurrence.targets && typeof occurrence.targets === 'object' ? occurrence.targets : {},
+  reflectionPrompts: Array.isArray(occurrence.reflectionPrompts) ? occurrence.reflectionPrompts : [],
   checkIn: occurrence.checkIn ?? undefined,
   reminderState: occurrence.reminderState ?? undefined,
   metrics: occurrence.metrics ?? undefined,
 })
 
 const sanitize = <T>(value: T): T => {
-  return JSON.parse(JSON.stringify(value)) as T
+  // Handle circular references and undefined values
+  const seen = new WeakSet()
+  const replacer = (_key: string, val: unknown) => {
+    if (val !== null && typeof val === 'object') {
+      if (seen.has(val)) {
+        return undefined // Remove circular references
+      }
+      seen.add(val)
+    }
+    return val
+  }
+
+  return JSON.parse(JSON.stringify(value, replacer)) as T
 }
 
 export const planningApi = {

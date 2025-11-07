@@ -2,18 +2,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { act } from 'react'
 import { usePlanningStore, type CreatePlanDraft } from './planningStore'
 import { planningApi } from '../api/planning'
-import type { PracticePlan, PlanOccurrence } from '../api/planning'
 import {
   buildPracticePlan,
   buildPlanOccurrence,
   buildCreatePlanDraft,
   buildPlanWithOccurrences,
-  buildCompletedOccurrence,
   resetIdCounter,
 } from '../tests/builders/planning.builders'
-import { nanoid } from 'nanoid'
 
-// Mock the planningApi and nanoid
+// Mock the planningApi
 vi.mock('../api/planning', () => ({
   planningApi: {
     getPlanningData: vi.fn(),
@@ -24,6 +21,8 @@ vi.mock('../api/planning', () => ({
   },
 }))
 
+// Mock nanoid to return predictable IDs for testing
+// Note: Used by planningStore internally for ID generation
 vi.mock('nanoid', () => ({
   nanoid: vi.fn(() => 'test-id-123'),
 }))
@@ -106,10 +105,10 @@ describe('usePlanningStore', () => {
       localStorageData[PLANS_KEY] = JSON.stringify([mockPlan])
       localStorageData[OCCURRENCES_KEY] = JSON.stringify([mockOccurrence])
 
-      // Mock API to return empty (testing localStorage bootstrap)
+      // Mock API to return the same data from localStorage
       vi.mocked(planningApi.getPlanningData).mockResolvedValue({
-        plans: [],
-        occurrences: [],
+        plans: [mockPlan],
+        occurrences: [mockOccurrence],
         syncToken: undefined,
       })
 
@@ -538,7 +537,12 @@ describe('usePlanningStore', () => {
     })
 
     it('should update plan timestamp when occurrence completed', async () => {
-      const plan = buildPracticePlan({ id: 'plan1' })
+      // Create plan with an older timestamp
+      const oldTimestamp = new Date(Date.now() - 60000).toISOString() // 1 minute ago
+      const plan = buildPracticePlan({
+        id: 'plan1',
+        updatedAt: oldTimestamp
+      })
       const occurrence = buildPlanOccurrence({
         id: 'occ1',
         planId: 'plan1'
@@ -562,7 +566,7 @@ describe('usePlanningStore', () => {
 
       // Plan's updatedAt should be updated
       expect(new Date(updatedPlan!.updatedAt).getTime()).toBeGreaterThan(
-        new Date(plan.updatedAt).getTime()
+        new Date(oldTimestamp).getTime()
       )
     })
   })

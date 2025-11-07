@@ -122,6 +122,19 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }))
 
+// Mock IntersectionObserver for HeadlessUI components
+class IntersectionObserverMock {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+  root = null
+  rootMargin = ''
+  thresholds = []
+  takeRecords = vi.fn(() => [])
+}
+
+global.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver
+
 // Mock DOMMatrix for PDF.js
 global.DOMMatrix = vi.fn().mockImplementation(() => ({
   a: 1,

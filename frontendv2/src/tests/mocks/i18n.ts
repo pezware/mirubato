@@ -78,8 +78,20 @@ export const i18nMock = {
       // Planning view translations
       if (key === 'reports:planningView.loading') return 'Loading plans...'
       if (key === 'reports:planningView.error') return 'Failed to load plans'
+      if (key === 'reports:planningView.retry') return 'Retry'
       if (key === 'reports:planningView.emptyState.title') return 'No plans yet'
+      if (key === 'reports:planningView.emptyState.description') return 'Start scheduling your practice sessions'
       if (key === 'reports:planningView.emptyState.createPlan') return 'Create Your First Plan'
+      if (key === 'reports:planningView.heading') return 'Practice planning'
+      if (key === 'reports:planningView.headingDescription') return 'Schedule upcoming sessions and track progress as you go.'
+      if (key === 'reports:planningView.createPlan') return 'Create plan'
+      if (key === 'reports:planningView.checkIn') return 'Check In'
+      if (key === 'reports:planningView.editPlan') return 'Edit plan'
+      if (key === 'reports:planningView.nextSession') return 'Next session'
+      if (key === 'reports:planningView.noUpcoming') return 'No upcoming session'
+      if (key === 'reports:planningView.durationLabel') return 'Duration'
+      if (key === 'reports:planningView.flexibilityLabel') return 'Flexibility'
+      if (key === 'reports:planningView.segmentsLabel') return 'Segments'
       if (key === 'reports:planningView.upcomingOccurrences') return 'Upcoming Sessions'
       if (key === 'reports:planningView.activePlans') return 'Active Plans'
       if (key === 'reports:planningView.completedOccurrences') return 'Completed Sessions'
@@ -99,6 +111,16 @@ export const i18nMock = {
           return options.count === 1
             ? `${options.count} occurrence`
             : `${options.count} occurrences`
+        }
+        if (key === 'reports:planningView.segmentCount') {
+          return options.count === 1
+            ? `${options.count} segment`
+            : `${options.count} segments`
+        }
+        if (key === 'reports:planningView.scheduledSessions') {
+          return options.count === 1
+            ? `${options.count} scheduled session`
+            : `${options.count} scheduled sessions`
         }
       }
 
