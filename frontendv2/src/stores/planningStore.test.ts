@@ -1,10 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { act } from 'react'
-import { usePlanningStore, type CreatePlanDraft } from './planningStore'
+import {
+  usePlanningStore,
+  type CreatePlanDraft,
+  generateRecurrenceDates,
+} from './planningStore'
 import { planningApi } from '../api/planning'
 import {
   buildPracticePlan,
   buildPlanOccurrence,
+  buildPlanSchedule,
   buildCreatePlanDraft,
   buildPlanWithOccurrences,
   resetIdCounter,
@@ -379,6 +384,80 @@ describe('usePlanningStore', () => {
 
       expect(result.occurrence.reflectionPrompts).toHaveLength(10)
     })
+
+    it('should create recurring plans with generated occurrences and metadata', async () => {
+      const draft = buildCreatePlanDraft({
+        schedule: {
+          kind: 'recurring',
+          startDate: '2025-01-01',
+          timeOfDay: '18:00',
+          durationMinutes: 45,
+          flexibility: 'fixed',
+          endDate: '2025-01-31',
+          rule: 'FREQ=WEEKLY;BYDAY=MO,WE',
+          recurrence: {
+            frequency: 'WEEKLY',
+            interval: 1,
+            weekdays: ['MO', 'WE'],
+            until: '2025-01-31',
+          },
+        },
+      })
+
+      vi.mocked(planningApi.createPlan).mockImplementation(
+        async (plan, occurrences) => ({
+          plan,
+          occurrences,
+        })
+      )
+
+      const result = await act(async () => {
+        return await usePlanningStore.getState().createPlan(draft)
+      })
+
+      expect(result.plan.schedule.kind).toBe('recurring')
+      expect(result.plan.schedule.rule).toBe(
+        'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE;UNTIL=20250131T235959Z'
+      )
+      expect(result.occurrence.recurrenceKey).toBeDefined()
+
+      const state = usePlanningStore.getState()
+      const storedPlan = state.plansMap.get(result.plan.id)
+      expect(storedPlan?.schedule.metadata?.recurrence).toMatchObject({
+        frequency: 'WEEKLY',
+        interval: 1,
+        weekdays: ['MO', 'WE'],
+        until: '2025-01-31',
+      })
+
+      const occurrencesForPlan = state.occurrences.filter(
+        occurrence => occurrence.planId === result.plan.id
+      )
+
+      const expectedDates = generateRecurrenceDates(
+        {
+          start: new Date('2025-01-01T18:00:00'),
+          frequency: 'WEEKLY',
+          interval: 1,
+          weekdays: ['MO', 'WE'],
+          until: new Date('2025-01-31T23:59:59'),
+        },
+        { maxOccurrences: 12, horizonDays: 90 }
+      )
+
+      expect(occurrencesForPlan).toHaveLength(expectedDates.length)
+      occurrencesForPlan.forEach(occurrence => {
+        expect(occurrence.flexWindow).toBe('fixed')
+        expect(occurrence.recurrenceKey).toBe(result.occurrence.recurrenceKey)
+      })
+
+      const occurrenceStarts = occurrencesForPlan.map(
+        occurrence => occurrence.scheduledStart
+      )
+      expectedDates.forEach(date => {
+        expect(occurrenceStarts).toContain(date.toISOString())
+      })
+    })
   })
 
   describe('updatePlan', () => {
@@ -450,6 +529,155 @@ describe('usePlanningStore', () => {
           await usePlanningStore.getState().updatePlan(draft)
         })
       ).rejects.toThrow('Missing plan identifiers')
+    })
+
+    it('should retain custom schedule metadata while updating recurrence details', async () => {
+      const planId = 'plan-meta'
+      const occurrenceId = 'occ-meta'
+      const startDate = '2024-05-01'
+
+      const existingPlan = buildPracticePlan({
+        id: planId,
+        schedule: {
+          ...buildPlanSchedule({
+            kind: 'recurring',
+            startDate,
+            timeOfDay: '09:00',
+            metadata: {
+              customFlag: true,
+              extraInfo: { foo: 'bar' },
+              recurrence: {
+                frequency: 'WEEKLY',
+                interval: 2,
+                weekdays: ['TU'],
+              },
+            },
+          }),
+          rule: 'FREQ=WEEKLY;INTERVAL=2;BYDAY=TU',
+        },
+      })
+
+      const existingOccurrence = buildPlanOccurrence({
+        id: occurrenceId,
+        planId,
+        scheduledStart: `${startDate}T09:00:00.000Z`,
+        scheduledEnd: `${startDate}T09:45:00.000Z`,
+      })
+
+      usePlanningStore.setState({
+        plansMap: new Map([[planId, existingPlan]]),
+        occurrencesMap: new Map([[occurrenceId, existingOccurrence]]),
+        plans: [existingPlan],
+        occurrences: [existingOccurrence],
+      })
+
+      const draft: CreatePlanDraft = {
+        ...buildCreatePlanDraft({
+          schedule: {
+            kind: 'recurring',
+            startDate,
+            timeOfDay: '09:00',
+            flexibility: 'same-day',
+            endDate: null,
+            recurrence: {
+              frequency: 'WEEKLY',
+              interval: 1,
+              weekdays: ['MO', 'WE'],
+              count: 4,
+            },
+          },
+        }),
+        planId,
+        occurrenceId,
+      }
+
+      vi.mocked(planningApi.updatePlan).mockImplementation(async plan => ({
+        plan,
+        occurrences: [],
+      }))
+
+      const { plan } = await act(async () => {
+        return await usePlanningStore.getState().updatePlan(draft)
+      })
+
+      expect(plan.schedule.metadata).toMatchObject({
+        customFlag: true,
+        extraInfo: { foo: 'bar' },
+        segmentsCount: draft.segments.length,
+        recurrence: {
+          frequency: 'WEEKLY',
+          interval: 1,
+          weekdays: ['MO', 'WE'],
+          count: 4,
+        },
+      })
+    })
+
+    it('should remove recurrence metadata when switching to a single schedule', async () => {
+      const planId = 'plan-switch'
+      const occurrenceId = 'occ-switch'
+      const startDate = '2024-06-10'
+
+      const existingPlan = buildPracticePlan({
+        id: planId,
+        schedule: {
+          ...buildPlanSchedule({
+            kind: 'recurring',
+            startDate,
+            timeOfDay: '07:30',
+            metadata: {
+              customField: 'keep-me',
+              recurrence: {
+                frequency: 'DAILY',
+                interval: 1,
+              },
+            },
+          }),
+          rule: 'FREQ=DAILY;INTERVAL=1',
+        },
+      })
+
+      const existingOccurrence = buildPlanOccurrence({
+        id: occurrenceId,
+        planId,
+        scheduledStart: `${startDate}T07:30:00.000Z`,
+        scheduledEnd: `${startDate}T08:00:00.000Z`,
+      })
+
+      usePlanningStore.setState({
+        plansMap: new Map([[planId, existingPlan]]),
+        occurrencesMap: new Map([[occurrenceId, existingOccurrence]]),
+        plans: [existingPlan],
+        occurrences: [existingOccurrence],
+      })
+
+      const draft: CreatePlanDraft = {
+        ...buildCreatePlanDraft({
+          schedule: {
+            kind: 'single',
+            startDate,
+            timeOfDay: '07:30',
+            flexibility: 'same-day',
+          },
+        }),
+        planId,
+        occurrenceId,
+      }
+
+      vi.mocked(planningApi.updatePlan).mockImplementation(async plan => ({
+        plan,
+        occurrences: [],
+      }))
+
+      const { plan } = await act(async () => {
+        return await usePlanningStore.getState().updatePlan(draft)
+      })
+
+      expect(plan.schedule.metadata).toMatchObject({
+        customField: 'keep-me',
+        segmentsCount: draft.segments.length,
+      })
+      expect(plan.schedule.metadata?.recurrence).toBeUndefined()
     })
   })
 

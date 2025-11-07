@@ -6,7 +6,11 @@ import {
   calculateChecksum,
   generateId,
 } from '../../utils/database'
-import { schemas } from '../../utils/validation'
+import {
+  schemas,
+  parseRecurrenceRule,
+  normalizeRecurrenceMetadata,
+} from '../../utils/validation'
 import { Errors } from '../../utils/errors'
 import { withIdempotency } from '../../utils/idempotency'
 import {
@@ -382,6 +386,48 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
 
           if (timestampFields.updatedAt && !timestampFields.updated_at) {
             timestampFields.updated_at = timestampFields.updatedAt
+          }
+
+          const schedule = transformedPlan.schedule as
+            | {
+                kind?: string
+                rule?: unknown
+                metadata?: unknown
+              }
+            | undefined
+
+          if (schedule) {
+            if (schedule.metadata && typeof schedule.metadata !== 'object') {
+              schedule.metadata = {}
+            }
+
+            if (schedule.kind === 'recurring') {
+              if (
+                typeof schedule.rule !== 'string' ||
+                schedule.rule.trim().length === 0
+              ) {
+                throw new Error('Invalid recurrence rule')
+              }
+
+              const normalizedRule = parseRecurrenceRule(schedule.rule)
+              if (!normalizedRule) {
+                throw new Error('Invalid recurrence rule')
+              }
+
+              const recurrenceMetadata = (
+                schedule.metadata as {
+                  recurrence?: unknown
+                }
+              )?.recurrence
+
+              if (recurrenceMetadata) {
+                const normalizedMetadata =
+                  normalizeRecurrenceMetadata(recurrenceMetadata)
+                if (!normalizedMetadata) {
+                  throw new Error('Invalid recurrence metadata')
+                }
+              }
+            }
           }
 
           const checksum = await calculateChecksum(transformedPlan)

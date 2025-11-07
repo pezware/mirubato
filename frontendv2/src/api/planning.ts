@@ -98,12 +98,27 @@ const normalizePlan = (plan: PracticePlan): PracticePlan => ({
   techniques: Array.isArray(plan.techniques) ? plan.techniques : [],
   pieceRefs: Array.isArray(plan.pieceRefs) ? plan.pieceRefs : [],
   tags: Array.isArray(plan.tags) ? plan.tags : [],
+  schedule: {
+    ...plan.schedule,
+    metadata:
+      plan.schedule?.metadata && typeof plan.schedule.metadata === 'object'
+        ? plan.schedule.metadata
+        : {},
+  },
   metadata:
     plan.metadata && typeof plan.metadata === 'object' ? plan.metadata : {},
 })
 
 const normalizeOccurrence = (occurrence: PlanOccurrence): PlanOccurrence => ({
   ...occurrence,
+  flexWindow:
+    typeof occurrence.flexWindow === 'string'
+      ? occurrence.flexWindow
+      : (occurrence.flexWindow ?? null),
+  recurrenceKey:
+    typeof occurrence.recurrenceKey === 'string'
+      ? occurrence.recurrenceKey
+      : (occurrence.recurrenceKey ?? undefined),
   segments: Array.isArray(occurrence.segments) ? occurrence.segments : [],
   targets:
     occurrence.targets && typeof occurrence.targets === 'object'

@@ -84,15 +84,19 @@ export const buildRecurringSchedule = (
   overrides?: Partial<PracticePlanSchedule>
 ): PracticePlanSchedule => ({
   kind: 'recurring',
-  rule: 'FREQ=WEEKLY;BYDAY=MO,WE,FR',
+  rule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE,FR',
   durationMinutes: 45,
   timeOfDay: '18:00',
   flexibility: 'same-day',
   startDate: getISODate(1),
   endDate: getISODate(90), // 3 months
   metadata: {
-    frequency: 'weekly',
-    daysOfWeek: ['monday', 'wednesday', 'friday'],
+    recurrence: {
+      frequency: 'WEEKLY',
+      interval: 1,
+      weekdays: ['MO', 'WE', 'FR'],
+      until: getISODate(90).slice(0, 10),
+    },
   },
   ...overrides,
 })
@@ -233,9 +237,9 @@ export const buildCreatePlanDraft = (
     kind: 'single',
     startDate: getISODate(1).split('T')[0], // Just the date part
     timeOfDay: '18:00',
-    durationMinutes: 30,
     flexibility: 'same-day',
     endDate: null,
+    ...(overrides?.schedule ?? {}),
   },
   segments: [
     {
@@ -255,7 +259,13 @@ export const buildCreatePlanDraft = (
   focusAreas: ['technique'],
   techniques: ['scales', 'sight-reading'],
   type: 'custom',
-  ...overrides,
+  ...(() => {
+    if (!overrides) {
+      return {}
+    }
+    const { schedule: _schedule, ...rest } = overrides
+    return rest
+  })(),
 })
 
 /**
