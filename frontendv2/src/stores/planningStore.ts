@@ -1059,8 +1059,14 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
         ? buildRecurrenceRuleString(normalizedRecurrence)
         : undefined
 
+    const existingScheduleMetadata =
+      existingPlan.schedule.metadata &&
+      typeof existingPlan.schedule.metadata === 'object'
+        ? { ...existingPlan.schedule.metadata }
+        : {}
+
     const scheduleMetadata: Record<string, unknown> = {
-      ...(existingPlan.schedule.metadata ?? {}),
+      ...existingScheduleMetadata,
       segmentsCount: preparedSegments.length,
     }
 

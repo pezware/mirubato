@@ -8,8 +8,8 @@
     "cd frontend && jest --bail --findRelatedTests --passWithNoTests"
   ],
   "frontendv2/**/*.{ts,tsx}": [
-    "cd frontendv2 && eslint --fix",
-    "cd frontendv2 && vitest related --run --no-coverage --passWithNoTests"
+    "pnpm --filter @mirubato/frontendv2 exec eslint --fix",
+    "pnpm --filter @mirubato/frontendv2 exec vitest related --run --no-coverage --passWithNoTests"
   ],
   "api/**/*.{ts,tsx}": [
     "cd api && eslint --fix",
