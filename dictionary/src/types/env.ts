@@ -2,7 +2,7 @@
  * Environment types for Cloudflare Workers
  */
 
-import type { Ai } from '@cloudflare/ai'
+import type { Ai } from '@cloudflare/workers-types'
 
 export interface Env {
   // D1 Database

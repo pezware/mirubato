@@ -267,7 +267,7 @@ batchHandler.post(
               status: 'unchanged',
             })
           }
-        } catch (error) {
+        } catch {
           results.failed++
           results.entries.push({
             id: entry.id,

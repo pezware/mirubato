@@ -33,7 +33,7 @@ async function checkRateLimit(
       if (userId) {
         return { allowed: true }
       }
-    } catch (error) {
+    } catch {
       // Invalid token, apply rate limiting
     }
   }

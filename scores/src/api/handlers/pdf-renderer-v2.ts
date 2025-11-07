@@ -185,7 +185,7 @@ async function renderPage(
       if (renderError) {
         throw new Error(`PDF.js error: ${renderError}`)
       }
-    } catch (timeoutError) {
+    } catch {
       // If timeout, check if canvas has content
       const hasContent = await page.evaluate(checkCanvasHasContent)
 

@@ -25,7 +25,7 @@ async function checkRateLimit(
   if (authHeader?.startsWith('Bearer ')) {
     try {
       return { allowed: true }
-    } catch (error) {
+    } catch {
       // Invalid token, apply rate limiting
     }
   }
@@ -93,7 +93,7 @@ importHandler.post('/', async c => {
 
         pdfBuffer = Buffer.from(base64Data, 'base64')
         originalFileName = filename || 'uploaded.pdf'
-      } catch (error) {
+      } catch {
         throw new HTTPException(400, { message: 'Invalid base64 PDF data' })
       }
     } else {
@@ -104,7 +104,7 @@ importHandler.post('/', async c => {
         if (!['http:', 'https:'].includes(pdfUrl.protocol)) {
           throw new Error('Invalid protocol')
         }
-      } catch (error) {
+      } catch {
         throw new HTTPException(400, { message: 'Invalid URL format' })
       }
 
@@ -267,7 +267,7 @@ importHandler.post('/', async c => {
           }>
         )
         userId = user?.id || null
-      } catch (error) {
+      } catch {
         // Continue without auth - will be anonymous upload
       }
     }

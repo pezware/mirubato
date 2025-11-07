@@ -33,7 +33,7 @@ vi.mock('../middleware', () => ({
         const context = c as any
         context.set('validatedBody', body)
         return next()
-      } catch (e) {
+      } catch {
         return (c as any).json({ error: 'Invalid body' }, 400)
       }
     },

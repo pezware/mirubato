@@ -218,7 +218,7 @@ scores_service_info{version="${SERVICE_VERSION}",environment="${c.env.ENVIRONMEN
     return c.text(prometheusMetrics, 200, {
       'Content-Type': 'text/plain; version=0.0.4',
     })
-  } catch (error) {
+  } catch {
     return c.text('# Error generating metrics', 500)
   }
 })
@@ -444,7 +444,7 @@ async function runSmokeTests(env: Env) {
 
       // Check if payload matches what we signed
       tests.authTokenValidation = payload.sub === 'health-check-test'
-    } catch (error) {
+    } catch {
       tests.authTokenValidation = false
     }
 
@@ -484,7 +484,7 @@ async function checkDatabaseTables(db: D1Database) {
           exists: true,
           rowCount: Number(result?.count) || 0,
         }
-      } catch (error) {
+      } catch {
         results[table] = {
           exists: false,
           rowCount: 0,

@@ -76,7 +76,7 @@ syncHandler.post('/pull', async c => {
         } else if (item.entity_type === 'plan_occurrence') {
           planOccurrences.push(data)
         }
-      } catch (parseError) {
+      } catch {
         // Error: Failed to parse sync data
         // Continue processing other items
       }
@@ -92,7 +92,7 @@ syncHandler.post('/pull', async c => {
       syncToken,
       timestamp: new Date().toISOString(),
     })
-  } catch (error) {
+  } catch {
     throw Errors.InternalError('Failed to pull sync data')
   }
 })
@@ -717,7 +717,7 @@ syncHandler.post('/batch', validateBody(schemas.syncBatch), async c => {
       conflicts,
       newSyncToken,
     })
-  } catch (error) {
+  } catch {
     throw Errors.InternalError('Failed to perform batch sync')
   }
 })
@@ -743,7 +743,7 @@ syncHandler.get('/status', async c => {
       deviceCount: metadata?.device_count || 1,
       entityCount: (syncData as { results: unknown[] }).results.length,
     })
-  } catch (error) {
+  } catch {
     throw Errors.InternalError('Failed to get sync status')
   }
 })

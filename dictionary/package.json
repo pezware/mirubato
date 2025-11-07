@@ -20,11 +20,10 @@
     "test:api": "curl http://dictionary-mirubato.localhost:9799/health | jq",
     "test:language": "tsx test-language-support.ts",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix"
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
-    "@cloudflare/ai": "^1.2.2",
     "@hono/swagger-ui": "^0.5.2",
     "@hono/zod-openapi": "^0.19.10",
     "@hono/zod-validator": "^0.7.2",
@@ -38,11 +37,14 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250726.0",
+    "@eslint/js": "^9.25.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.9",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.57.1",
+    "@typescript-eslint/eslint-plugin": "^8.30.1",
+    "@typescript-eslint/parser": "^8.30.1",
+    "eslint": "^9.25.0",
+    "globals": "^16.0.0",
+    "typescript-eslint": "^8.30.1",
     "jsonwebtoken": "^9.0.2",
     "prettier": "^3.6.2",
     "typescript": "^5.8.3",
