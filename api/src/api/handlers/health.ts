@@ -400,7 +400,7 @@ async function runSmokeTests(env: Env) {
 
         // Check if payload matches what we signed
         tests.authTokenGeneration = payload.sub === 'health-check-test'
-      } catch (error) {
+      } catch {
         tests.authTokenGeneration = false
       }
     }
@@ -436,7 +436,7 @@ async function checkDatabaseTables(db: D1Database) {
           exists: true,
           rowCount: Number(result?.count) || 0,
         }
-      } catch (error) {
+      } catch {
         results[table] = {
           exists: false,
           rowCount: 0,

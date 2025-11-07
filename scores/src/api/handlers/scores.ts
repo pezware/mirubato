@@ -27,7 +27,7 @@ scoresHandler.get('/', async c => {
         const { getUserIdFromAuth } = await import('../../utils/auth')
         userId = await getUserIdFromAuth(c as any)
       }
-    } catch (error) {
+    } catch {
       // Continue without auth
     }
 
@@ -200,7 +200,7 @@ scoresHandler.get('/:id', async c => {
           const { getUserIdFromAuth } = await import('../../utils/auth')
           userId = await getUserIdFromAuth(c as any)
         }
-      } catch (error) {
+      } catch {
         // Continue without auth
       }
 
@@ -521,7 +521,7 @@ scoresHandler.get('/:id/pages/:pageNumber', async c => {
           const { getUserIdFromAuth } = await import('../../utils/auth')
           userId = await getUserIdFromAuth(c as any)
         }
-      } catch (error) {
+      } catch {
         // Continue without auth
       }
 

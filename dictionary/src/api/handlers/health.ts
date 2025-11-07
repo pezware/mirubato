@@ -252,7 +252,7 @@ dictionary_service_info{version="${SERVICE_VERSION}",environment="${c.env.ENVIRO
     return c.text(prometheusMetrics, 200, {
       'Content-Type': 'text/plain; version=0.0.4',
     })
-  } catch (error) {
+  } catch {
     return c.text('# Error generating metrics', 500)
   }
 })
@@ -708,7 +708,7 @@ async function checkDatabaseTables(db: D1Database) {
           exists: true,
           rowCount: Number(result?.count) || 0,
         }
-      } catch (error) {
+      } catch {
         results[table] = {
           exists: false,
           rowCount: 0,

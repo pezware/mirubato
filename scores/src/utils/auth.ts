@@ -37,7 +37,7 @@ export async function getUserIdFromAuth(
     const token = authHeader.substring(7)
     const payload = await verifyToken(token, c.env.JWT_SECRET)
     return payload.sub
-  } catch (error) {
+  } catch {
     return null
   }
 }

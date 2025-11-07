@@ -66,7 +66,7 @@ export default {
 
         // Acknowledge the message
         message.ack()
-      } catch (error) {
+      } catch {
         // Retry the message
         message.retry()
       }

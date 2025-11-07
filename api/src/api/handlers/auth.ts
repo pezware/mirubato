@@ -303,7 +303,7 @@ authHandler.post('/refresh', async c => {
       accessToken,
       expiresIn: 604800, // 7 days in seconds
     })
-  } catch (error) {
+  } catch {
     throw Errors.InvalidToken()
   }
 })

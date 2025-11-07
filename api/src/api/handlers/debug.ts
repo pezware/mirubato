@@ -125,7 +125,7 @@ debugHandler.get('/db-status', async c => {
         results.tableDetails[tableName] = {
           rowCount: count?.count || 0,
         }
-      } catch (e) {
+      } catch {
         results.tableDetails[tableName] = {
           error: 'Could not get count',
         }

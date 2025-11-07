@@ -506,7 +506,7 @@ pdfRendererHandler.get(
           await page.waitForFunction('window.renderingComplete === true', {
             timeout: 15000, // Reduced timeout to fail faster
           })
-        } catch (timeoutError) {
+        } catch {
           // Try to get any error information from the page
           const pageError = await page.evaluate(getErrorElementText)
 

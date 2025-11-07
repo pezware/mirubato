@@ -160,7 +160,7 @@ exportHandler.get('/:exportId', async c => {
         }
         break
       }
-    } catch (error) {
+    } catch {
       // Continue checking other formats
     }
   }

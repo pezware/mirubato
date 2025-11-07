@@ -200,7 +200,7 @@ export const authMiddleware: MiddlewareHandler<{
     })
 
     await next()
-  } catch (error) {
+  } catch {
     throw new HTTPException(401, { message: 'Invalid or expired token' })
   }
 }

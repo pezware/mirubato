@@ -107,7 +107,7 @@ renderHandler.get('/scores/:id/download/pdf', async c => {
           const { getUserIdFromAuth } = await import('../../utils/auth')
           userId = await getUserIdFromAuth(c as any)
         }
-      } catch (error) {
+      } catch {
         // Continue without auth
       }
 

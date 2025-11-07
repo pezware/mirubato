@@ -53,7 +53,7 @@ export async function validatePdfFile(
       valid: true,
       fileSize: contentLength,
     }
-  } catch (error) {
+  } catch {
     return {
       valid: false,
       error: 'Failed to read file for validation',

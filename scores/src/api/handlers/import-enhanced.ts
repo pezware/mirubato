@@ -271,7 +271,7 @@ enhancedImportHandler.post('/batch', async c => {
         let parsedUrl: URL
         try {
           parsedUrl = new URL(url)
-        } catch (e) {
+        } catch {
           results.push({
             url,
             error: 'Invalid URL format',
