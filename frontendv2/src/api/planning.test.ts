@@ -115,7 +115,9 @@ describe('planningApi', () => {
       const networkError = new Error('Network error')
       vi.mocked(apiClient.post).mockRejectedValue(networkError)
 
-      await expect(planningApi.getPlanningData()).rejects.toThrow('Network error')
+      await expect(planningApi.getPlanningData()).rejects.toThrow(
+        'Network error'
+      )
       expect(apiClient.post).toHaveBeenCalledTimes(1)
     })
 

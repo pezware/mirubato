@@ -100,7 +100,10 @@ describe('usePlanningStore', () => {
   describe('loadPlanningData', () => {
     it('should load data from localStorage on first load', async () => {
       const mockPlan = buildPracticePlan({ id: 'plan1' })
-      const mockOccurrence = buildPlanOccurrence({ id: 'occ1', planId: 'plan1' })
+      const mockOccurrence = buildPlanOccurrence({
+        id: 'occ1',
+        planId: 'plan1',
+      })
 
       localStorageData[PLANS_KEY] = JSON.stringify([mockPlan])
       localStorageData[OCCURRENCES_KEY] = JSON.stringify([mockOccurrence])
@@ -180,7 +183,9 @@ describe('usePlanningStore', () => {
     it('should handle localStorage parse errors', async () => {
       localStorageData[PLANS_KEY] = 'invalid json'
 
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
 
       vi.mocked(planningApi.getPlanningData).mockResolvedValue({
         plans: [],
@@ -218,10 +223,12 @@ describe('usePlanningStore', () => {
         reflectionPrompts: ['How did it go?'],
       })
 
-      vi.mocked(planningApi.createPlan).mockImplementation(async (plan, occurrences) => ({
-        plan,
-        occurrences,
-      }))
+      vi.mocked(planningApi.createPlan).mockImplementation(
+        async (plan, occurrences) => ({
+          plan,
+          occurrences,
+        })
+      )
 
       const result = await act(async () => {
         return await usePlanningStore.getState().createPlan(draft)
@@ -247,16 +254,22 @@ describe('usePlanningStore', () => {
     it('should handle segment validation and cleanup', async () => {
       const draft = buildCreatePlanDraft({
         segments: [
-          { label: '  Warm-up  ', durationMinutes: 10, techniques: ['  scales  ', ''] },
+          {
+            label: '  Warm-up  ',
+            durationMinutes: 10,
+            techniques: ['  scales  ', ''],
+          },
           { label: '', durationMinutes: 5 }, // Should be filtered out
           { label: 'Main', durationMinutes: 0 }, // Duration should be undefined
         ],
       })
 
-      vi.mocked(planningApi.createPlan).mockImplementation(async (plan, occurrences) => ({
-        plan,
-        occurrences,
-      }))
+      vi.mocked(planningApi.createPlan).mockImplementation(
+        async (plan, occurrences) => ({
+          plan,
+          occurrences,
+        })
+      )
 
       const result = await act(async () => {
         return await usePlanningStore.getState().createPlan(draft)
@@ -283,10 +296,12 @@ describe('usePlanningStore', () => {
         ],
       })
 
-      vi.mocked(planningApi.createPlan).mockImplementation(async (plan, occurrences) => ({
-        plan,
-        occurrences,
-      }))
+      vi.mocked(planningApi.createPlan).mockImplementation(
+        async (plan, occurrences) => ({
+          plan,
+          occurrences,
+        })
+      )
 
       const result = await act(async () => {
         return await usePlanningStore.getState().createPlan(draft)
@@ -327,7 +342,9 @@ describe('usePlanningStore', () => {
     it('should handle API failure during creation', async () => {
       const draft = buildCreatePlanDraft()
 
-      vi.mocked(planningApi.createPlan).mockRejectedValue(new Error('API Error'))
+      vi.mocked(planningApi.createPlan).mockRejectedValue(
+        new Error('API Error')
+      )
 
       await expect(
         act(async () => {
@@ -341,15 +358,20 @@ describe('usePlanningStore', () => {
     })
 
     it('should limit reflection prompts to 10', async () => {
-      const manyPrompts = Array.from({ length: 20 }, (_, i) => `Prompt ${i + 1}`)
+      const manyPrompts = Array.from(
+        { length: 20 },
+        (_, i) => `Prompt ${i + 1}`
+      )
       const draft = buildCreatePlanDraft({
         reflectionPrompts: manyPrompts,
       })
 
-      vi.mocked(planningApi.createPlan).mockImplementation(async (plan, occurrences) => ({
-        plan,
-        occurrences,
-      }))
+      vi.mocked(planningApi.createPlan).mockImplementation(
+        async (plan, occurrences) => ({
+          plan,
+          occurrences,
+        })
+      )
 
       const result = await act(async () => {
         return await usePlanningStore.getState().createPlan(draft)
@@ -364,12 +386,14 @@ describe('usePlanningStore', () => {
       const existingPlan = buildPracticePlan({ id: 'plan1' })
       const existingOccurrence = buildPlanOccurrence({
         id: 'occ1',
-        planId: 'plan1'
+        planId: 'plan1',
       })
 
       // Pre-populate store
       const plansMap = new Map([[existingPlan.id, existingPlan]])
-      const occurrencesMap = new Map([[existingOccurrence.id, existingOccurrence]])
+      const occurrencesMap = new Map([
+        [existingOccurrence.id, existingOccurrence],
+      ])
       usePlanningStore.setState({
         plansMap,
         occurrencesMap,
@@ -384,10 +408,12 @@ describe('usePlanningStore', () => {
         title: 'Updated Plan Title',
       }
 
-      vi.mocked(planningApi.updatePlan).mockImplementation(async (plan, occurrences) => ({
-        plan,
-        occurrences,
-      }))
+      vi.mocked(planningApi.updatePlan).mockImplementation(
+        async (plan, occurrences) => ({
+          plan,
+          occurrences,
+        })
+      )
 
       const result = await act(async () => {
         return await usePlanningStore.getState().updatePlan(draft)
@@ -433,9 +459,7 @@ describe('usePlanningStore', () => {
 
       // Pre-populate store
       const plansMap = new Map([[plan.id, plan]])
-      const occurrencesMap = new Map(
-        occurrences.map(o => [o.id, o])
-      )
+      const occurrencesMap = new Map(occurrences.map(o => [o.id, o]))
       usePlanningStore.setState({
         plansMap,
         occurrencesMap,
@@ -456,10 +480,7 @@ describe('usePlanningStore', () => {
       })
 
       // Check API was called with plan and occurrences
-      expect(planningApi.deletePlan).toHaveBeenCalledWith(
-        plan,
-        occurrences
-      )
+      expect(planningApi.deletePlan).toHaveBeenCalledWith(plan, occurrences)
     })
 
     it('should handle deletion of non-existent plan gracefully', async () => {
@@ -476,7 +497,9 @@ describe('usePlanningStore', () => {
       const plansMap = new Map([[plan.id, plan]])
       usePlanningStore.setState({ plansMap, plans: [plan] })
 
-      vi.mocked(planningApi.deletePlan).mockRejectedValue(new Error('Delete failed'))
+      vi.mocked(planningApi.deletePlan).mockRejectedValue(
+        new Error('Delete failed')
+      )
 
       await expect(
         act(async () => {
@@ -496,14 +519,16 @@ describe('usePlanningStore', () => {
       const occurrence = buildPlanOccurrence({
         id: 'occ1',
         planId: 'plan1',
-        status: 'scheduled'
+        status: 'scheduled',
       })
 
       const plansMap = new Map([[plan.id, plan]])
       const occurrencesMap = new Map([[occurrence.id, occurrence]])
       usePlanningStore.setState({ plansMap, occurrencesMap })
 
-      vi.mocked(planningApi.updateOccurrence).mockImplementation(async (occ) => occ)
+      vi.mocked(planningApi.updateOccurrence).mockImplementation(
+        async occ => occ
+      )
 
       const input = {
         logEntryId: 'log123',
@@ -541,18 +566,20 @@ describe('usePlanningStore', () => {
       const oldTimestamp = new Date(Date.now() - 60000).toISOString() // 1 minute ago
       const plan = buildPracticePlan({
         id: 'plan1',
-        updatedAt: oldTimestamp
+        updatedAt: oldTimestamp,
       })
       const occurrence = buildPlanOccurrence({
         id: 'occ1',
-        planId: 'plan1'
+        planId: 'plan1',
       })
 
       const plansMap = new Map([[plan.id, plan]])
       const occurrencesMap = new Map([[occurrence.id, occurrence]])
       usePlanningStore.setState({ plansMap, occurrencesMap })
 
-      vi.mocked(planningApi.updateOccurrence).mockImplementation(async (occ) => occ)
+      vi.mocked(planningApi.updateOccurrence).mockImplementation(
+        async occ => occ
+      )
 
       await act(async () => {
         await usePlanningStore.getState().completeOccurrence('occ1', {
@@ -576,16 +603,16 @@ describe('usePlanningStore', () => {
       const plan1Occ1 = buildPlanOccurrence({
         id: 'occ1',
         planId: 'plan1',
-        scheduledStart: '2025-01-15T10:00:00Z'
+        scheduledStart: '2025-01-15T10:00:00Z',
       })
       const plan1Occ2 = buildPlanOccurrence({
         id: 'occ2',
         planId: 'plan1',
-        scheduledStart: '2025-01-20T10:00:00Z'
+        scheduledStart: '2025-01-20T10:00:00Z',
       })
       const plan2Occ = buildPlanOccurrence({
         id: 'occ3',
-        planId: 'plan2'
+        planId: 'plan2',
       })
 
       const occurrencesMap = new Map([
@@ -604,7 +631,9 @@ describe('usePlanningStore', () => {
     })
 
     it('should return empty array if no occurrences for plan', () => {
-      const result = usePlanningStore.getState().getOccurrencesForPlan('no-plan')
+      const result = usePlanningStore
+        .getState()
+        .getOccurrencesForPlan('no-plan')
       expect(result).toEqual([])
     })
   })
@@ -636,7 +665,9 @@ describe('usePlanningStore', () => {
 
       usePlanningStore.setState({ occurrencesMap })
 
-      const result = usePlanningStore.getState().getNextOccurrenceForPlan('plan1')
+      const result = usePlanningStore
+        .getState()
+        .getNextOccurrenceForPlan('plan1')
 
       expect(result?.id).toBe('future1') // Next upcoming occurrence
     })
@@ -650,7 +681,9 @@ describe('usePlanningStore', () => {
       const occurrencesMap = new Map([[pastOcc.id, pastOcc]])
       usePlanningStore.setState({ occurrencesMap })
 
-      const result = usePlanningStore.getState().getNextOccurrenceForPlan('plan1')
+      const result = usePlanningStore
+        .getState()
+        .getNextOccurrenceForPlan('plan1')
 
       expect(result).toBeUndefined()
     })
@@ -665,7 +698,9 @@ describe('usePlanningStore', () => {
       const occurrencesMap = new Map([[occWithoutStart.id, occWithoutStart]])
       usePlanningStore.setState({ occurrencesMap })
 
-      const result = usePlanningStore.getState().getNextOccurrenceForPlan('plan1')
+      const result = usePlanningStore
+        .getState()
+        .getNextOccurrenceForPlan('plan1')
 
       expect(result?.id).toBe('no-start') // Should return it as "next"
     })
@@ -701,13 +736,17 @@ describe('usePlanningStore', () => {
         throw new Error('QuotaExceededError')
       })
 
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
 
       const draft = buildCreatePlanDraft()
-      vi.mocked(planningApi.createPlan).mockImplementation(async (plan, occurrences) => ({
-        plan,
-        occurrences,
-      }))
+      vi.mocked(planningApi.createPlan).mockImplementation(
+        async (plan, occurrences) => ({
+          plan,
+          occurrences,
+        })
+      )
 
       await act(async () => {
         await usePlanningStore.getState().createPlan(draft)

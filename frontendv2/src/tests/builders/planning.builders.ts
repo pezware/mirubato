@@ -31,7 +31,9 @@ const getISODate = (daysFromNow = 0): string => {
 /**
  * Build a PlanPieceRef with defaults
  */
-export const buildPlanPieceRef = (overrides?: Partial<PlanPieceRef>): PlanPieceRef => ({
+export const buildPlanPieceRef = (
+  overrides?: Partial<PlanPieceRef>
+): PlanPieceRef => ({
   scoreId: generateId('score'),
   title: 'Test Piece',
   composer: 'Test Composer',
@@ -41,7 +43,9 @@ export const buildPlanPieceRef = (overrides?: Partial<PlanPieceRef>): PlanPieceR
 /**
  * Build a PlanSegment with defaults
  */
-export const buildPlanSegment = (overrides?: Partial<PlanSegment>): PlanSegment => ({
+export const buildPlanSegment = (
+  overrides?: Partial<PlanSegment>
+): PlanSegment => ({
   id: generateId('segment'),
   label: 'Warm-up',
   durationMinutes: 10,
@@ -96,7 +100,9 @@ export const buildRecurringSchedule = (
 /**
  * Build a PracticePlan with defaults
  */
-export const buildPracticePlan = (overrides?: Partial<PracticePlan>): PracticePlan => {
+export const buildPracticePlan = (
+  overrides?: Partial<PracticePlan>
+): PracticePlan => {
   const now = getISODate()
   const id = generateId('plan')
 
@@ -130,7 +136,9 @@ export const buildPracticePlan = (overrides?: Partial<PracticePlan>): PracticePl
 /**
  * Build a PlanCheckIn with defaults
  */
-export const buildPlanCheckIn = (overrides?: Partial<PlanCheckIn>): PlanCheckIn => ({
+export const buildPlanCheckIn = (
+  overrides?: Partial<PlanCheckIn>
+): PlanCheckIn => ({
   recordedAt: getISODate(),
   responses: {
     'How did the warm-up feel?': 'Good, fingers were responsive',
@@ -142,7 +150,9 @@ export const buildPlanCheckIn = (overrides?: Partial<PlanCheckIn>): PlanCheckIn 
 /**
  * Build PlanTargets with defaults
  */
-export const buildPlanTargets = (overrides?: Partial<PlanTargets>): PlanTargets => ({
+export const buildPlanTargets = (
+  overrides?: Partial<PlanTargets>
+): PlanTargets => ({
   tempo: 120,
   accuracy: 95,
   duration: 30,
@@ -241,10 +251,7 @@ export const buildCreatePlanDraft = (
       techniques: ['sight-reading'],
     },
   ],
-  reflectionPrompts: [
-    'How did it go?',
-    'What to improve next time?',
-  ],
+  reflectionPrompts: ['How did it go?', 'What to improve next time?'],
   focusAreas: ['technique'],
   techniques: ['scales', 'sight-reading'],
   type: 'custom',
@@ -275,7 +282,8 @@ export const buildPlanWithOccurrences = (
         scheduledStart,
         scheduledEnd: scheduledEnd.toISOString(),
         status: i === 0 ? 'scheduled' : i === 1 ? 'completed' : 'scheduled',
-        recurrenceKey: plan.schedule.kind === 'recurring' ? scheduledStart : null,
+        recurrenceKey:
+          plan.schedule.kind === 'recurring' ? scheduledStart : null,
       })
     )
   }

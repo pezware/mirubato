@@ -51,7 +51,9 @@ describe('PlanningView', () => {
 
   describe('Loading state', () => {
     it('should render loading skeletons when loading', () => {
-      const { container } = render(<PlanningView {...mockProps} isLoading={true} />)
+      const { container } = render(
+        <PlanningView {...mockProps} isLoading={true} />
+      )
 
       // Check for loading skeletons by class name since LoadingSkeleton doesn't use role="status"
       const loadingElements = container.querySelectorAll('.animate-pulse')
@@ -71,7 +73,9 @@ describe('PlanningView', () => {
       render(<PlanningView {...mockProps} error={errorMessage} />)
 
       // Check for the error title (h3)
-      expect(screen.getByRole('heading', { name: 'Failed to load plans' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: 'Failed to load plans' })
+      ).toBeInTheDocument()
       // Check for the specific error message
       expect(screen.getByText(errorMessage)).toBeInTheDocument()
     })
@@ -100,11 +104,7 @@ describe('PlanningView', () => {
       ]
 
       render(
-        <PlanningView
-          {...mockProps}
-          plans={plans}
-          occurrences={occurrences}
-        />
+        <PlanningView {...mockProps} plans={plans} occurrences={occurrences} />
       )
 
       expect(screen.getByText('Daily Practice')).toBeInTheDocument()
@@ -256,11 +256,7 @@ describe('PlanningView', () => {
       ]
 
       render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-          occurrences={occurrences}
-        />
+        <PlanningView {...mockProps} plans={[plan]} occurrences={occurrences} />
       )
 
       // The component shows the count of scheduled sessions
@@ -279,9 +275,7 @@ describe('PlanningView', () => {
         buildPlanOccurrence({ planId: 'plan1' }),
         buildPlanOccurrence({ planId: 'plan1' }),
       ]
-      const plan2Occurrences = [
-        buildPlanOccurrence({ planId: 'plan2' }),
-      ]
+      const plan2Occurrences = [buildPlanOccurrence({ planId: 'plan2' })]
 
       const allOccurrences = [...plan1Occurrences, ...plan2Occurrences]
 
@@ -310,12 +304,7 @@ describe('PlanningView', () => {
         updatedAt: new Date().toISOString(),
       })
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[olderPlan, newerPlan]}
-        />
-      )
+      render(<PlanningView {...mockProps} plans={[olderPlan, newerPlan]} />)
 
       // Just verify both plans are rendered
       expect(screen.getByText('Older Plan')).toBeInTheDocument()
@@ -389,11 +378,7 @@ describe('PlanningView', () => {
       })()
 
       render(
-        <PlanningView
-          {...mockProps}
-          plans={plans}
-          occurrences={occurrences}
-        />
+        <PlanningView {...mockProps} plans={plans} occurrences={occurrences} />
       )
 
       // All plans should be rendered
@@ -441,12 +426,7 @@ describe('PlanningView', () => {
 
       // Update with new plans
       const newPlans = [buildPracticePlan({ title: 'New Plan' })]
-      rerender(
-        <PlanningView
-          {...mockProps}
-          plans={newPlans}
-        />
-      )
+      rerender(<PlanningView {...mockProps} plans={newPlans} />)
 
       await waitFor(() => {
         expect(screen.getByText('New Plan')).toBeInTheDocument()
@@ -479,12 +459,7 @@ describe('PlanningView', () => {
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
       const plan = buildPracticePlan()
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-        />
-      )
+      render(<PlanningView {...mockProps} plans={[plan]} />)
 
       // Check for semantic HTML and ARIA attributes
       const buttons = screen.getAllByRole('button')
@@ -504,7 +479,9 @@ describe('PlanningView', () => {
         buildPlanOccurrence({ planId: plans[1].id }),
       ]
 
-      render(<PlanningView {...mockProps} plans={plans} occurrences={occurrences} />)
+      render(
+        <PlanningView {...mockProps} plans={plans} occurrences={occurrences} />
+      )
 
       // Tab through interactive elements - focus on buttons instead of text
       const buttons = screen.getAllByRole('button')

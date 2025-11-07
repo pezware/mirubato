@@ -133,7 +133,8 @@ class IntersectionObserverMock {
   takeRecords = vi.fn(() => [])
 }
 
-global.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver
+global.IntersectionObserver =
+  IntersectionObserverMock as unknown as typeof IntersectionObserver
 
 // Mock DOMMatrix for PDF.js
 global.DOMMatrix = vi.fn().mockImplementation(() => ({
