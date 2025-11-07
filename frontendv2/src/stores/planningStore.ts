@@ -5,6 +5,7 @@ import {
   type PracticePlan,
   type PlanOccurrence,
   type PlanSegment,
+  type PlanTargets,
 } from '../api/planning'
 
 export const RECURRENCE_WEEKDAYS = [
@@ -494,6 +495,35 @@ export interface CreatePlanDraft {
   type?: PracticePlan['type']
 }
 
+export interface PlanOccurrencePrefillData {
+  planId: string
+  occurrenceId: string
+  planTitle?: string
+  scheduledStart?: string | null
+  scheduledEnd?: string | null
+  durationMinutes?: number
+  segments: Array<{
+    id?: string
+    label: string
+    durationMinutes?: number
+    pieceRefs?: PlanSegment['pieceRefs']
+    techniques?: string[]
+    instructions?: string
+    tempoTargets?: Record<string, number | string | null>
+    metadata?: Record<string, unknown>
+  }>
+  reflectionPrompts: string[]
+  focusAreas: string[]
+  techniques: string[]
+  targets?: PlanTargets
+  pieces: Array<{
+    title: string
+    composer?: string | null
+    scoreId?: string
+  }>
+  metadata: Record<string, unknown>
+}
+
 interface PlanningState {
   plansMap: Map<string, PracticePlan>
   occurrencesMap: Map<string, PlanOccurrence>
@@ -514,6 +544,13 @@ interface PlanningState {
     occurrence: PlanOccurrence
   }>
   deletePlan: (planId: string) => Promise<void>
+  getOccurrencePrefillData: (
+    occurrenceId: string
+  ) => PlanOccurrencePrefillData | null
+  markOccurrencePendingLog: (
+    occurrenceId: string,
+    options?: { pending?: boolean; logEntryId?: string | null }
+  ) => void
   completeOccurrence: (
     occurrenceId: string,
     input: {
@@ -588,6 +625,167 @@ const addMinutes = (iso: string, minutes?: number): string | undefined => {
 
 const sanitizeForStorage = <T>(value: T): T => {
   return JSON.parse(JSON.stringify(value)) as T
+}
+
+const sumSegmentDurations = (segments?: PlanSegment[]): number => {
+  if (!Array.isArray(segments)) {
+    return 0
+  }
+
+  return segments.reduce((total, segment) => {
+    const minutes = Number(segment?.durationMinutes)
+    if (Number.isFinite(minutes) && minutes > 0) {
+      return total + minutes
+    }
+    return total
+  }, 0)
+}
+
+const collectPiecesFromSegments = (
+  segments?: PlanSegment[]
+): Array<{ title: string; composer?: string | null; scoreId?: string }> => {
+  if (!Array.isArray(segments)) {
+    return []
+  }
+
+  const pieces: Array<{
+    title: string
+    composer?: string | null
+    scoreId?: string
+  }> = []
+  const seen = new Set<string>()
+
+  segments.forEach(segment => {
+    segment?.pieceRefs?.forEach(ref => {
+      if (!ref) {
+        return
+      }
+
+      const title = ref.title?.trim()
+      if (!title) {
+        return
+      }
+
+      const composer = ref.composer ?? null
+      const key = ref.scoreId
+        ? ref.scoreId
+        : `${title.toLowerCase()}|${(composer ?? '').toLowerCase()}`
+
+      if (seen.has(key)) {
+        return
+      }
+
+      seen.add(key)
+      pieces.push({
+        title,
+        composer,
+        scoreId: ref.scoreId ?? undefined,
+      })
+    })
+  })
+
+  return pieces
+}
+
+const aggregateTechniques = (
+  planTechniques: string[] | undefined,
+  segments?: PlanSegment[]
+): string[] => {
+  const aggregated = new Set<string>()
+
+  planTechniques?.forEach(technique => {
+    const trimmed = technique.trim()
+    if (trimmed) {
+      aggregated.add(trimmed)
+    }
+  })
+
+  segments?.forEach(segment => {
+    segment?.techniques?.forEach(technique => {
+      const trimmed = technique.trim()
+      if (trimmed) {
+        aggregated.add(trimmed)
+      }
+    })
+  })
+
+  return Array.from(aggregated)
+}
+
+const sanitizeMetadataRecord = (
+  metadata: Record<string, unknown>
+): Record<string, unknown> => {
+  return Object.fromEntries(
+    Object.entries(metadata).filter(([, value]) => value !== undefined)
+  )
+}
+
+const serializeSegmentsForMetadata = (
+  segments?: PlanSegment[]
+): PlanOccurrencePrefillData['segments'] => {
+  if (!Array.isArray(segments)) {
+    return []
+  }
+
+  return segments
+    .map(segment => {
+      if (!segment) {
+        return null
+      }
+
+      const normalized: Record<string, unknown> = {
+        label: segment.label,
+      }
+
+      if (segment.id) {
+        normalized.id = segment.id
+      }
+
+      if (
+        typeof segment.durationMinutes === 'number' &&
+        !Number.isNaN(segment.durationMinutes)
+      ) {
+        normalized.durationMinutes = segment.durationMinutes
+      }
+
+      if (Array.isArray(segment.pieceRefs) && segment.pieceRefs.length > 0) {
+        normalized.pieceRefs = segment.pieceRefs.map(piece => ({
+          scoreId: piece?.scoreId,
+          title: piece?.title,
+          composer: piece?.composer ?? null,
+        }))
+      }
+
+      if (Array.isArray(segment.techniques) && segment.techniques.length > 0) {
+        normalized.techniques = segment.techniques
+      }
+
+      if (segment.instructions) {
+        normalized.instructions = segment.instructions
+      }
+
+      if (
+        segment.tempoTargets &&
+        typeof segment.tempoTargets === 'object' &&
+        Object.keys(segment.tempoTargets).length > 0
+      ) {
+        normalized.tempoTargets = segment.tempoTargets
+      }
+
+      if (
+        segment.metadata &&
+        typeof segment.metadata === 'object' &&
+        Object.keys(segment.metadata).length > 0
+      ) {
+        normalized.metadata = segment.metadata
+      }
+
+      return sanitizeMetadataRecord(normalized)
+    })
+    .filter(
+      (segment): segment is PlanOccurrencePrefillData['segments'][number] =>
+        Boolean(segment)
+    )
 }
 
 export const usePlanningStore = create<PlanningState>((set, get) => ({
@@ -1207,6 +1405,118 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       console.error('[Planning] Failed to delete plan:', error)
       throw error instanceof Error ? error : new Error('Failed to delete plan')
     }
+  },
+
+  getOccurrencePrefillData: occurrenceId => {
+    const { occurrencesMap, plansMap } = get()
+    const occurrence = occurrencesMap.get(occurrenceId)
+    if (!occurrence) {
+      return null
+    }
+
+    const plan = plansMap.get(occurrence.planId)
+
+    const segments = serializeSegmentsForMetadata(occurrence.segments)
+    const reflectionPrompts = Array.isArray(occurrence.reflectionPrompts)
+      ? occurrence.reflectionPrompts.filter(
+          (prompt): prompt is string =>
+            typeof prompt === 'string' && prompt.trim().length > 0
+        )
+      : []
+    const focusAreas = Array.isArray(plan?.focusAreas)
+      ? (plan?.focusAreas ?? []).filter(area => area.trim().length > 0)
+      : []
+    const techniques = aggregateTechniques(
+      plan?.techniques,
+      occurrence.segments
+    )
+
+    const durationMinutes =
+      plan?.schedule.durationMinutes && plan.schedule.durationMinutes > 0
+        ? plan.schedule.durationMinutes
+        : (() => {
+            const total = sumSegmentDurations(occurrence.segments)
+            return total > 0 ? total : undefined
+          })()
+
+    const pieces = collectPiecesFromSegments(occurrence.segments)
+
+    const metadata = sanitizeMetadataRecord({
+      source: 'practice_plan',
+      planId: occurrence.planId,
+      planOccurrenceId: occurrence.id,
+      planTitle: plan?.title,
+      scheduledStart: occurrence.scheduledStart ?? null,
+      scheduledEnd: occurrence.scheduledEnd ?? null,
+      segments,
+      reflectionPrompts,
+      focusAreas: focusAreas.length > 0 ? focusAreas : undefined,
+      planTechniques: techniques.length > 0 ? techniques : undefined,
+      targets:
+        occurrence.targets && Object.keys(occurrence.targets).length > 0
+          ? occurrence.targets
+          : undefined,
+      occurrenceNotes: occurrence.notes ?? undefined,
+    })
+
+    return {
+      planId: occurrence.planId,
+      occurrenceId: occurrence.id,
+      planTitle: plan?.title,
+      scheduledStart: occurrence.scheduledStart ?? null,
+      scheduledEnd: occurrence.scheduledEnd ?? null,
+      durationMinutes,
+      segments,
+      reflectionPrompts,
+      focusAreas,
+      techniques,
+      targets:
+        occurrence.targets && Object.keys(occurrence.targets).length > 0
+          ? occurrence.targets
+          : undefined,
+      pieces,
+      metadata,
+    }
+  },
+
+  markOccurrencePendingLog: (occurrenceId, options = {}) => {
+    const { occurrencesMap } = get()
+    const occurrence = occurrencesMap.get(occurrenceId)
+    if (!occurrence) {
+      return
+    }
+
+    const { pending = true, logEntryId } = options
+    const metrics = { ...(occurrence.metrics ?? {}) }
+
+    if (pending) {
+      metrics.pendingLog = true
+      if (logEntryId) {
+        metrics.pendingLogEntryId = logEntryId
+      }
+      metrics.pendingLogUpdatedAt = new Date().toISOString()
+    } else {
+      delete metrics.pendingLog
+      delete metrics.pendingLogEntryId
+      delete metrics.pendingLogUpdatedAt
+    }
+
+    const sanitizedMetrics =
+      Object.keys(metrics).length > 0 ? metrics : undefined
+
+    const updatedOccurrence: PlanOccurrence = {
+      ...occurrence,
+      metrics: sanitizedMetrics,
+      updatedAt: new Date().toISOString(),
+    }
+
+    const nextOccurrencesMap = new Map(occurrencesMap)
+    nextOccurrencesMap.set(occurrenceId, updatedOccurrence)
+
+    set({
+      occurrencesMap: nextOccurrencesMap,
+      occurrences: toSortedOccurrences(nextOccurrencesMap),
+    })
   },
 
   completeOccurrence: async (occurrenceId, input) => {

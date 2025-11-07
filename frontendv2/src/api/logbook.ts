@@ -1,5 +1,24 @@
 import { apiClient } from './client'
 
+export interface LogEntryMetadata {
+  source: string
+  accuracy?: number
+  notesPlayed?: number
+  mistakeCount?: number
+  planId?: string
+  planOccurrenceId?: string
+  planTitle?: string
+  segments?: unknown
+  reflectionPrompts?: string[]
+  focusAreas?: string[]
+  planTechniques?: string[]
+  targets?: Record<string, unknown>
+  scheduledStart?: string | null
+  scheduledEnd?: string | null
+  occurrenceNotes?: string | null
+  [key: string]: unknown
+}
+
 export interface LogbookEntry {
   id: string
   timestamp: string
@@ -24,12 +43,7 @@ export interface LogbookEntry {
   notes?: string | null
   mood?: 'frustrated' | 'neutral' | 'satisfied' | 'excited' | null
   tags: string[]
-  metadata?: {
-    source: string
-    accuracy?: number
-    notesPlayed?: number
-    mistakeCount?: number
-  }
+  metadata?: LogEntryMetadata
   // Score integration fields
   scoreId?: string // Link to score in scorebook
   scoreTitle?: string // Cached score title for display
