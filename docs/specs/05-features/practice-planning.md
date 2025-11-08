@@ -36,7 +36,7 @@ Introduce structured planning layers on top of the existing logbook so musicians
    - Support “check off” that converts an occurrence into a `logbook_entry`, linking both records (stored as `source.planId` + `planOccurrenceId`).
    - Model rich occurrence content (multiple slots such as “morning” / “evening”, suggested tempos, textual guidance, reflection prompts) and prefill the log entry form with those details.
    - Capture a lightweight “check-in” before or after logging to track self-reported metrics (e.g., max clean tempo, tension hotspots) that feed future review screens.
-   - Provide reminders/badges inside the logbook overview to surface due or overdue sessions.
+   - Elevate the Planning tab to show upcoming sessions, lightweight reminders, and plan-level progress so musicians see urgent work immediately after opening the view.
 
 3. **Phase 3 – Tutor Templates & Sharing**
    - Define `plan_template` entities that tutors can publish and learners can adopt, including metadata (instrument, level, duration, tags).
@@ -47,6 +47,55 @@ Introduce structured planning layers on top of the existing logbook so musicians
    - Integrate planning data into analytics (forecasts, adherence metrics).
    - Allow plan adjustments (skip, reschedule, auto-cascade).
    - Enable collaborative plans (multiple participants) pending sync/permission upgrades.
+
+### Planning Tab Visual Refresh (Phase 2 scope)
+
+- **Hero reminders panel**: When the user opens the Planning tab, the first card highlights the next actionable occurrence with start window, instrument iconography, and a concise call to action (e.g., “Today 6 pm • Technique Tune-Up”). Multiple occurrences for the day stack in chronological order with light urgency color accents that respect Mirubato’s neutral/emerald palette.
+- **Plan progress rails**: Each active plan displays a horizontal progress bar summarizing `completed`, `due today`, and `remaining` occurrences for the current recurrence window. Colors reuse existing success (`--color-success-500`), accent (`--color-accent-500`), and muted (`--color-muted-300`) tokens rather than bespoke gradients. The progress bar sits alongside plan metadata (title, instrument, cadence) so users can scan status without opening detail modals.
+- **Underlying data**: Extend `usePlanningStore` selectors to expose counts for `completedOccurrences`, `dueTodayOccurrences`, and `upcomingOccurrences` keyed by plan. Occurrence hydration must respect local timezone windows and recurrence expansions, ensuring the UI can distinguish “today” vs. “upcoming”.
+- **Reminder logic**: Introduce a derived `nextActionableOccurrence` helper that prioritizes overdue, then due-today, then upcoming sessions. The UI consumes this helper to populate the hero reminders panel and to display subtle badges (e.g., “Due today”) inline with progress rails.
+- **Accessibility & responsiveness**: Progress rails collapse into stacked rows on mobile while preserving the same data points. Instrument glyphs (replacing the sample airplane) come from the existing icon set and always include accessible labels.
+
+### Outstanding work & suggested tickets
+
+#### Surface due practice-plan sessions in planning tab
+
+**Goal**: Prioritize reminders inside the Planning tab so musicians immediately see what needs attention, paired with clear progress context per plan.
+
+**Suggested ticket**: _“Surface actionable practice-plan reminders in the Planning tab”_
+
+**Sub-tasks**
+
+1. **Hero reminder carousel** – Introduce a top-of-tab module that lists the next actionable occurrences in priority order (overdue → due today → upcoming). Each reminder shows start window, instrument icon, and CTA (e.g., “Start session”). (`frontendv2/src/components/practice-planning/PlanningView.tsx`, `frontendv2/src/components/practice-planning/PlanReminderCard.tsx`)
+2. **Plan progress rail component** – Create a reusable progress bar that visualizes completed, today, and remaining counts with tokens (`--color-success-500`, `--color-accent-500`, `--color-muted-300`). Include accessible labels and mobile stacking rules. (`frontendv2/src/components/practice-planning/PlanProgressRail.tsx`, shared styles)
+3. **Planning selectors + reminders logic** – Extend `usePlanningStore` with derived selectors: `completedOccurrences`, `dueTodayOccurrences`, `upcomingOccurrences`, and `nextActionableOccurrence`. Ensure timezone-aware bucketing, recurrence expansion, and optimistic updates when occurrences complete. (`frontendv2/src/stores/planningStore.ts`, related tests)
+4. **Reminder badge copy + analytics hooks** – Emit lightweight analytics events (viewed reminder, started session) and finalize copy guidelines consistent with Mirubato tone. Update empty states to reference the new hero module. (`frontendv2/src/lib/analytics/planning.ts`, `frontendv2/src/components/practice-planning/PlanningEmptyState.tsx`)
+
+#### Integrate planning metrics into analytics
+
+**Goal**: Blend planned targets, actual completions, and adherence metrics so analytics surfaces progress toward planned curricula.
+
+**Suggested ticket**: _“Blend planning targets into practice analytics dashboards”_
+
+**Sub-tasks**
+
+1. **Data aggregation layer** – Extend the analytics selector/hook (`frontendv2/src/hooks/useEnhancedAnalytics.ts`) to join `plan_occurrence` check-in metrics and linked `logbook_entry` data, producing adherence %, completion streaks, and forecasted load.
+2. **Visualization updates** – Refresh analytics components to surface new KPIs (e.g., adherence trend sparkline, workload forecast). Coordinate with Planning tab metrics for consistent terminology. (`frontendv2/src/components/practice-planning/PlanningAnalyticsPanel.tsx`, `frontendv2/src/components/practice-reports/EnhancedReports.tsx`)
+3. **Backend schema alignment** – Ensure sync payloads expose necessary check-in metrics and targets. Update API validation and migrations if new fields are required. (`api/src/schemas/entities.ts`, `api/src/api/handlers/sync.ts`, `api/src/utils/validation.ts`)
+4. **Testing + telemetry** – Add unit tests for analytics calculations (edge cases: missing check-ins, skipped sessions) and confirm telemetry events capture adherence insights without PII leakage. (`frontendv2/src/hooks/__tests__/useEnhancedAnalytics.test.ts`, analytics logging utilities)
+
+#### Build plan template publishing & adoption
+
+**Goal**: Enable tutors to publish reusable plan templates and learners to browse, preview, and adopt them into personal planning.
+
+**Suggested ticket**: _“Introduce tutor practice plan templates and sharing flows”_
+
+**Sub-tasks**
+
+1. **Template data model** – Add `plan_template` entity definitions, migrations, and sync handlers with versioning, visibility controls, and author metadata. (`api/src/schemas/entities.ts`, `api/src/api/handlers/sync.ts`, database migrations)
+2. **Tutor publishing UI** – Build tutor-facing flows to author templates, attach metadata (instrument, level, duration), and manage visibility. (`frontendv2/src/components/practice-planning/templates/TemplatePublisherModal.tsx`, related forms)
+3. **Learner browsing & adoption** – Create a template gallery with filtering, preview details, and import wizard that clones templates into `practice_plan` instances with optional parameter prompts. (`frontendv2/src/components/practice-planning/templates/TemplateGallery.tsx`, `frontendv2/src/components/practice-planning/templates/TemplateImportWizard.tsx`)
+4. **Sharing + audit instrumentation** – Track template usage, enforce permission checks, and audit adoption events. Ensure sync conflicts resolve cleanly when templates update. (`frontendv2/src/stores/planningStore.ts`, telemetry hooks, sync-worker broadcasting)
 
 ### Data Model
 
