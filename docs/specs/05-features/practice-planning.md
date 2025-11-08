@@ -36,7 +36,7 @@ Introduce structured planning layers on top of the existing logbook so musicians
    - Support “check off” that converts an occurrence into a `logbook_entry`, linking both records (stored as `source.planId` + `planOccurrenceId`).
    - Model rich occurrence content (multiple slots such as “morning” / “evening”, suggested tempos, textual guidance, reflection prompts) and prefill the log entry form with those details.
    - Capture a lightweight “check-in” before or after logging to track self-reported metrics (e.g., max clean tempo, tension hotspots) that feed future review screens.
-   - Provide reminders/badges inside the logbook overview to surface due or overdue sessions.
+   - Elevate the Planning tab to show upcoming sessions, lightweight reminders, and plan-level progress so musicians see urgent work immediately after opening the view.
 
 3. **Phase 3 – Tutor Templates & Sharing**
    - Define `plan_template` entities that tutors can publish and learners can adopt, including metadata (instrument, level, duration, tags).
@@ -47,6 +47,14 @@ Introduce structured planning layers on top of the existing logbook so musicians
    - Integrate planning data into analytics (forecasts, adherence metrics).
    - Allow plan adjustments (skip, reschedule, auto-cascade).
    - Enable collaborative plans (multiple participants) pending sync/permission upgrades.
+
+### Planning Tab Visual Refresh (Phase 2 scope)
+
+- **Hero reminders panel**: When the user opens the Planning tab, the first card highlights the next actionable occurrence with start window, instrument iconography, and a concise call to action (e.g., “Today 6 pm • Technique Tune-Up”). Multiple occurrences for the day stack in chronological order with light urgency color accents that respect Mirubato’s neutral/emerald palette.
+- **Plan progress rails**: Each active plan displays a horizontal progress bar summarizing `completed`, `due today`, and `remaining` occurrences for the current recurrence window. Colors reuse existing success (`--color-success-500`), accent (`--color-accent-500`), and muted (`--color-muted-300`) tokens rather than bespoke gradients. The progress bar sits alongside plan metadata (title, instrument, cadence) so users can scan status without opening detail modals.
+- **Underlying data**: Extend `usePlanningStore` selectors to expose counts for `completedOccurrences`, `dueTodayOccurrences`, and `upcomingOccurrences` keyed by plan. Occurrence hydration must respect local timezone windows and recurrence expansions, ensuring the UI can distinguish “today” vs. “upcoming”.
+- **Reminder logic**: Introduce a derived `nextActionableOccurrence` helper that prioritizes overdue, then due-today, then upcoming sessions. The UI consumes this helper to populate the hero reminders panel and to display subtle badges (e.g., “Due today”) inline with progress rails.
+- **Accessibility & responsiveness**: Progress rails collapse into stacked rows on mobile while preserving the same data points. Instrument glyphs (replacing the sample airplane) come from the existing icon set and always include accessible labels.
 
 ### Data Model
 
