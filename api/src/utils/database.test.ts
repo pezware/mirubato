@@ -190,6 +190,7 @@ describe('DatabaseHelpers', () => {
         id: expect.stringMatching(/^sync_/),
         entity_id: 'entry-456',
         action: 'created',
+        seq: nextSequenceValue,
       })
 
       // Check SELECT was called first
@@ -262,6 +263,7 @@ describe('DatabaseHelpers', () => {
         id: 'existing-id',
         entity_id: 'goal-123',
         action: 'updated',
+        seq: nextSequenceValue,
       })
 
       // Should call SELECT first, then UPDATE

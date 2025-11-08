@@ -264,6 +264,49 @@ describe('WebSocketSync', () => {
       expect(sentMessages[1]).toEqual(event1)
       expect(sentMessages[2]).toEqual(event2)
     })
+
+    it('should queue planning events and flush on reconnection', async () => {
+      const planEvent: SyncEvent = {
+        type: 'PLAN_CREATED',
+        timestamp: new Date().toISOString(),
+        plan: { id: 'plan-1', title: 'Test Plan' },
+        occurrences: [
+          {
+            id: 'occ-1',
+            planId: 'plan-1',
+            status: 'scheduled',
+          },
+        ],
+      }
+
+      const occurrenceEvent: SyncEvent = {
+        type: 'PLAN_OCCURRENCE_COMPLETED',
+        timestamp: new Date().toISOString(),
+        occurrence: {
+          id: 'occ-1',
+          planId: 'plan-1',
+          status: 'completed',
+        },
+      }
+
+      webSocketSync.send(planEvent)
+      webSocketSync.send(occurrenceEvent)
+
+      expect(webSocketSync.getOfflineQueueSize()).toBe(2)
+
+      const connectPromise = webSocketSync.connect('user-123', 'token')
+      const mockWs = mockFactory.getLastInstance()
+      mockWs!.triggerOpen()
+      await connectPromise
+
+      expect(webSocketSync.getOfflineQueueSize()).toBe(0)
+
+      const sentMessages = mockWs!.getSentMessages()
+      const sentTypes = sentMessages.map(message => message.type)
+
+      expect(sentTypes).toContain('PLAN_CREATED')
+      expect(sentTypes).toContain('PLAN_OCCURRENCE_COMPLETED')
+    })
   })
 
   describe('Reconnection Logic', () => {

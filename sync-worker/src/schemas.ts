@@ -43,6 +43,91 @@ const PieceSchema = z.object({
   duration: z.number().optional(),
 })
 
+const PlanPieceRefSchema = z.object({
+  scoreId: z.string().optional(),
+  title: z.string().optional(),
+  composer: z.string().nullable().optional(),
+})
+
+const PlanSegmentSchema = z.object({
+  id: z.string().optional(),
+  label: z.string(),
+  durationMinutes: z.number().int().nonnegative().optional(),
+  pieceRefs: z.array(PlanPieceRefSchema).optional(),
+  techniques: z.array(z.string()).optional(),
+  instructions: z.string().optional(),
+  tempoTargets: z
+    .record(z.string(), z.union([z.number(), z.string(), z.null()]))
+    .optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+})
+
+const PlanCheckInSchema = z
+  .object({
+    recordedAt: z.string().datetime().optional(),
+    responses: z.record(z.string(), z.unknown()).optional(),
+  })
+  .optional()
+
+const PracticePlanVisibility = z.enum(['private', 'shared', 'template'])
+const PracticePlanStatus = z.enum(['draft', 'active', 'completed', 'archived'])
+const PracticePlanType = z.enum(['bootcamp', 'course', 'custom'])
+
+export const PlanOccurrenceSchema = z.object({
+  id: z.string(),
+  planId: z.string(),
+  plan_id: z.string().optional(),
+  user_id: z.string().optional(),
+  scheduledStart: z.string().datetime().nullable().optional(),
+  scheduledEnd: z.string().datetime().nullable().optional(),
+  flexWindow: z.string().nullable().optional(),
+  recurrenceKey: z.string().nullable().optional(),
+  segments: z.array(PlanSegmentSchema).default([]).optional(),
+  targets: z.record(z.string(), z.unknown()).default({}).optional(),
+  reflectionPrompts: z.array(z.string()).default([]).optional(),
+  status: z.enum(['scheduled', 'completed', 'skipped', 'expired']),
+  logEntryId: z.string().nullable().optional(),
+  checkIn: PlanCheckInSchema,
+  notes: z.string().nullable().optional(),
+  reminderState: z.record(z.string(), z.unknown()).optional(),
+  metrics: z.record(z.string(), z.unknown()).optional(),
+  createdAt: z.string().datetime().optional(),
+  updatedAt: z.string().datetime().optional(),
+  deletedAt: z.string().nullable().optional(),
+})
+
+export const PracticePlanSchema = z.object({
+  id: z.string(),
+  user_id: z.string().optional(),
+  title: z.string(),
+  description: z.string().nullable().optional(),
+  type: PracticePlanType,
+  focusAreas: z.array(z.string()).default([]).optional(),
+  techniques: z.array(z.string()).default([]).optional(),
+  pieceRefs: z.array(PlanPieceRefSchema).default([]).optional(),
+  schedule: z.object({
+    kind: z.enum(['single', 'recurring']),
+    rule: z.string().optional(),
+    durationMinutes: z.number().int().nonnegative().optional(),
+    timeOfDay: z.string().optional(),
+    flexibility: z.enum(['fixed', 'same-day', 'anytime']).nullable().optional(),
+    startDate: z.string().datetime().optional(),
+    endDate: z.string().datetime().nullable().optional(),
+    target: z.string().datetime().optional(),
+    metadata: z.record(z.string(), z.unknown()).default({}).optional(),
+  }),
+  visibility: PracticePlanVisibility,
+  status: PracticePlanStatus,
+  ownerId: z.string().optional(),
+  templateVersion: z.number().int().optional(),
+  tags: z.array(z.string()).default([]).optional(),
+  metadata: z.record(z.string(), z.unknown()).default({}).optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  archivedAt: z.string().datetime().nullable().optional(),
+  deletedAt: z.string().nullable().optional(),
+})
+
 // Helper to parse timestamp - accepts both Unix timestamp (number) and ISO string
 const TimestampSchema = z.union([
   z.number().int(),
@@ -167,6 +252,30 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
     piece: RepertoireItemSchema.optional(), // Make piece optional for dissociation
     seq: z.number().int().nonnegative().optional(),
   }),
+  // Planning events
+  z.object({
+    type: z.literal('PLAN_CREATED'),
+    plan: PracticePlanSchema,
+    occurrences: z.array(PlanOccurrenceSchema).optional(),
+    timestamp: z.string().datetime(),
+    userId: z.string().optional(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    type: z.literal('PLAN_UPDATED'),
+    plan: PracticePlanSchema,
+    occurrences: z.array(PlanOccurrenceSchema).optional(),
+    timestamp: z.string().datetime(),
+    userId: z.string().optional(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    type: z.literal('PLAN_OCCURRENCE_COMPLETED'),
+    occurrence: PlanOccurrenceSchema,
+    timestamp: z.string().datetime(),
+    userId: z.string().optional(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
   // Bulk sync events
   z.object({
     type: z.literal('BULK_SYNC'),
@@ -233,6 +342,26 @@ export const ResponseEventSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('ENTRY_DELETED'),
     entryId: z.string(),
+    timestamp: z.string().datetime(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    type: z.literal('PLAN_CREATED'),
+    plan: PracticePlanSchema,
+    occurrences: z.array(PlanOccurrenceSchema).optional(),
+    timestamp: z.string().datetime(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    type: z.literal('PLAN_UPDATED'),
+    plan: PracticePlanSchema,
+    occurrences: z.array(PlanOccurrenceSchema).optional(),
+    timestamp: z.string().datetime(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    type: z.literal('PLAN_OCCURRENCE_COMPLETED'),
+    occurrence: PlanOccurrenceSchema,
     timestamp: z.string().datetime(),
     seq: z.number().int().nonnegative().optional(),
   }),
@@ -354,6 +483,79 @@ export function sanitizeRepertoireItem(
     return validated
   } catch (error) {
     console.error('Repertoire item validation failed:', error)
+    return null
+  }
+}
+
+export function sanitizePracticePlan(
+  plan: unknown
+): z.infer<typeof PracticePlanSchema> | null {
+  try {
+    const validated = PracticePlanSchema.parse(plan)
+
+    if (!Array.isArray(validated.focusAreas)) {
+      validated.focusAreas = []
+    }
+
+    if (!Array.isArray(validated.techniques)) {
+      validated.techniques = []
+    }
+
+    if (!Array.isArray(validated.pieceRefs)) {
+      validated.pieceRefs = []
+    }
+
+    if (!Array.isArray(validated.tags)) {
+      validated.tags = []
+    }
+
+    if (!validated.metadata || typeof validated.metadata !== 'object') {
+      validated.metadata = {}
+    }
+
+    if (
+      !validated.schedule.metadata ||
+      typeof validated.schedule.metadata !== 'object'
+    ) {
+      validated.schedule.metadata = {}
+    }
+
+    return validated
+  } catch (error) {
+    console.error('Practice plan validation failed:', error)
+    return null
+  }
+}
+
+export function sanitizePlanOccurrence(
+  occurrence: unknown
+): z.infer<typeof PlanOccurrenceSchema> | null {
+  try {
+    const validated = PlanOccurrenceSchema.parse(occurrence)
+
+    if (!Array.isArray(validated.segments)) {
+      validated.segments = []
+    }
+
+    if (!validated.targets || typeof validated.targets !== 'object') {
+      validated.targets = {}
+    }
+
+    if (!Array.isArray(validated.reflectionPrompts)) {
+      validated.reflectionPrompts = []
+    }
+
+    if (validated.planId && !validated.plan_id) {
+      validated.plan_id = validated.planId
+    }
+
+    if (validated.plan_id && !validated.planId) {
+      validated.planId = validated.plan_id
+    }
+
+    return validated
+  } catch (error) {
+    console.error('Plan occurrence validation failed:', error)
     return null
   }
 }

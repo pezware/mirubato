@@ -170,6 +170,7 @@ export class DatabaseHelpers {
     id: string
     entity_id: string
     action: 'created' | 'updated' | 'duplicate_prevented'
+    seq?: number
   }> {
     // Sanitize data to ensure D1 compatibility (no undefined values)
     const sanitizedData = sanitizeForD1(data.data)
@@ -246,6 +247,7 @@ export class DatabaseHelpers {
           id: existing.id,
           entity_id: data.entityId,
           action: 'updated',
+          seq,
         }
       } else {
         const seq = await this.getNextSequence()
@@ -276,6 +278,7 @@ export class DatabaseHelpers {
           id,
           entity_id: data.entityId,
           action: 'created',
+          seq,
         }
       }
     } catch (error) {

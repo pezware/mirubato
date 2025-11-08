@@ -7,6 +7,7 @@ import {
   type PlanSegment,
   type PlanTargets,
 } from '../api/planning'
+import type { SyncEvent, WebSocketSync } from '../services/webSocketSync'
 
 export const RECURRENCE_WEEKDAYS = [
   'MO',
@@ -532,6 +533,11 @@ interface PlanningState {
   hasLoaded: boolean
   plans: PracticePlan[]
   occurrences: PlanOccurrence[]
+  _wsHandlers?: {
+    planCreated?: (event: SyncEvent) => void
+    planUpdated?: (event: SyncEvent) => void
+    occurrenceCompleted?: (event: SyncEvent) => void
+  }
   loadPlanningData: () => Promise<void>
   createPlan: (draft: CreatePlanDraft) => Promise<{
     plan: PracticePlan
@@ -559,6 +565,8 @@ interface PlanningState {
       metrics?: Record<string, unknown>
     }
   ) => Promise<void>
+  attachRealtimeHandlers: (webSocketSync: WebSocketSync) => void
+  detachRealtimeHandlers: (webSocketSync: WebSocketSync) => void
 }
 
 const PLANS_STORAGE_KEY = 'mirubato:planning:plans'
@@ -796,6 +804,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
   hasLoaded: false,
   plans: [],
   occurrences: [],
+  _wsHandlers: undefined,
 
   loadPlanningData: async () => {
     const { hasLoaded, plansMap, occurrencesMap } = get()
@@ -1578,5 +1587,128 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
         ? error
         : new Error('Failed to update occurrence')
     }
+  },
+
+  attachRealtimeHandlers: webSocketSync => {
+    const state = get()
+    if (state._wsHandlers) {
+      return
+    }
+
+    const upsertPlanFromSync = (
+      planData: unknown,
+      occurrenceData?: unknown[]
+    ) => {
+      if (!planData || typeof planData !== 'object') {
+        return
+      }
+
+      const sanitizedPlan = sanitizeForStorage(planData as PracticePlan)
+      const sanitizedOccurrences = Array.isArray(occurrenceData)
+        ? (occurrenceData
+            .map(raw =>
+              raw && typeof raw === 'object'
+                ? sanitizeForStorage(raw as PlanOccurrence)
+                : null
+            )
+            .filter(Boolean) as PlanOccurrence[])
+        : []
+
+      set(current => {
+        const plansMap = new Map(current.plansMap)
+        plansMap.set(sanitizedPlan.id, sanitizedPlan)
+
+        const occurrencesMap = new Map(current.occurrencesMap)
+        sanitizedOccurrences.forEach(occurrence => {
+          occurrencesMap.set(occurrence.id, occurrence)
+        })
+
+        const plans = toSortedPlans(plansMap)
+        const occurrences = toSortedOccurrences(occurrencesMap)
+
+        writeToStorage(PLANS_STORAGE_KEY, plans)
+        writeToStorage(OCCURRENCES_STORAGE_KEY, occurrences)
+
+        return { plansMap, occurrencesMap, plans, occurrences }
+      })
+    }
+
+    const completeOccurrenceFromSync = (occurrenceData: unknown) => {
+      if (!occurrenceData || typeof occurrenceData !== 'object') {
+        return
+      }
+
+      const sanitizedOccurrence = sanitizeForStorage(
+        occurrenceData as PlanOccurrence
+      )
+
+      set(current => {
+        const occurrencesMap = new Map(current.occurrencesMap)
+        occurrencesMap.set(sanitizedOccurrence.id, sanitizedOccurrence)
+
+        const plansMap = new Map(current.plansMap)
+        const relatedPlan = plansMap.get(sanitizedOccurrence.planId)
+        if (relatedPlan) {
+          plansMap.set(sanitizedOccurrence.planId, {
+            ...relatedPlan,
+            updatedAt: sanitizedOccurrence.updatedAt || relatedPlan.updatedAt,
+          })
+        }
+
+        const plans = toSortedPlans(plansMap)
+        const occurrences = toSortedOccurrences(occurrencesMap)
+
+        writeToStorage(PLANS_STORAGE_KEY, plans)
+        writeToStorage(OCCURRENCES_STORAGE_KEY, occurrences)
+
+        return { plansMap, occurrencesMap, plans, occurrences }
+      })
+    }
+
+    const handlers = {
+      planCreated: (event: SyncEvent) => {
+        if (event.plan) {
+          upsertPlanFromSync(event.plan, event.occurrences)
+        }
+      },
+      planUpdated: (event: SyncEvent) => {
+        if (event.plan) {
+          upsertPlanFromSync(event.plan, event.occurrences)
+        }
+      },
+      occurrenceCompleted: (event: SyncEvent) => {
+        if (event.occurrence) {
+          completeOccurrenceFromSync(event.occurrence)
+        }
+      },
+    }
+
+    webSocketSync.on('PLAN_CREATED', handlers.planCreated)
+    webSocketSync.on('PLAN_UPDATED', handlers.planUpdated)
+    webSocketSync.on('PLAN_OCCURRENCE_COMPLETED', handlers.occurrenceCompleted)
+
+    set({ _wsHandlers: handlers })
+  },
+
+  detachRealtimeHandlers: webSocketSync => {
+    const handlers = get()._wsHandlers
+    if (!handlers) {
+      return
+    }
+
+    if (handlers.planCreated) {
+      webSocketSync.off('PLAN_CREATED', handlers.planCreated)
+    }
+    if (handlers.planUpdated) {
+      webSocketSync.off('PLAN_UPDATED', handlers.planUpdated)
+    }
+    if (handlers.occurrenceCompleted) {
+      webSocketSync.off(
+        'PLAN_OCCURRENCE_COMPLETED',
+        handlers.occurrenceCompleted
+      )
+    }
+
+    set({ _wsHandlers: undefined })
   },
 }))

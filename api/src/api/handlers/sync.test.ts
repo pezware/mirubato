@@ -13,11 +13,19 @@ const mockDbInstance = {
   updateSyncMetadata: vi.fn(),
 }
 
+const { mockBroadcastPlanningEvents } = vi.hoisted(() => ({
+  mockBroadcastPlanningEvents: vi.fn(),
+}))
+
 // Mock dependencies
 vi.mock('../../utils/database', () => ({
   DatabaseHelpers: vi.fn(() => mockDbInstance),
   generateId: vi.fn(() => 'test-id-123'),
   calculateChecksum: vi.fn(() => 'test-checksum-abc'),
+}))
+
+vi.mock('../../services/syncWorkerBroadcaster', () => ({
+  broadcastPlanningEvents: mockBroadcastPlanningEvents,
 }))
 
 vi.mock('../middleware', () => ({
@@ -143,6 +151,7 @@ describe('Sync Handlers', () => {
         id: 'sync-id',
         entity_id: 'entry_1750717972797_0suwq20o8',
         action: 'created',
+        seq: 1,
       })
       mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
 
@@ -211,6 +220,7 @@ describe('Sync Handlers', () => {
         id: 'sync-id',
         entity_id: 'test-id',
         action: 'created',
+        seq: 1,
       })
       mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
 
@@ -248,6 +258,7 @@ describe('Sync Handlers', () => {
         id: 'sync-id',
         entity_id: 'entry-test',
         action: 'created',
+        seq: 1,
       })
       mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
 

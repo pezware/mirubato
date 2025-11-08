@@ -7,9 +7,12 @@ import {
   validateSyncEvent,
   sanitizeEntry,
   sanitizeRepertoireItem,
+  sanitizePracticePlan,
+  sanitizePlanOccurrence,
   ResponseEventSchema,
   type LogbookEntrySchema,
   type RepertoireItemSchema,
+  type PlanOccurrenceSchema,
 } from './schemas'
 import { z } from 'zod'
 
@@ -24,6 +27,9 @@ export interface SyncEvent {
     | 'PIECE_UPDATED'
     | 'PIECE_REMOVED'
     | 'PIECE_DISSOCIATED'
+    | 'PLAN_CREATED'
+    | 'PLAN_UPDATED'
+    | 'PLAN_OCCURRENCE_COMPLETED'
     | 'BULK_SYNC'
     | 'REPERTOIRE_BULK_SYNC'
     | 'SYNC_REQUEST'
@@ -35,6 +41,9 @@ export interface SyncEvent {
   entryId?: string
   piece?: any // RepertoireItem
   pieces?: any[] // RepertoireItem[]
+  plan?: any // PracticePlan
+  occurrences?: any[] // PlanOccurrence[]
+  occurrence?: any // PlanOccurrence
   scoreId?: string
   lastSyncTime?: string
   lastSeq?: number
@@ -54,6 +63,7 @@ export class SyncCoordinator implements DurableObject {
   private clients = new Map<string, ClientInfo>()
   private storage: DurableObjectStorage
   private env: any // Env interface from main worker
+  private coordinatorUserId: string | null = null
 
   constructor(state: DurableObjectState, env: any) {
     this.storage = state.storage
@@ -96,6 +106,10 @@ export class SyncCoordinator implements DurableObject {
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url)
+
+    if (request.method === 'POST' && url.pathname === '/broadcast') {
+      return this.handleBroadcastRequest(request)
+    }
 
     // Handle WebSocket upgrade
     if (request.headers.get('Upgrade') === 'websocket') {
@@ -156,6 +170,7 @@ export class SyncCoordinator implements DurableObject {
     }
 
     this.clients.set(clientId, clientInfo)
+    this.coordinatorUserId = this.coordinatorUserId || userId
 
     console.log(
       `🔗 Client connected: ${clientId} (Total: ${this.clients.size})`
@@ -267,6 +282,12 @@ export class SyncCoordinator implements DurableObject {
       case 'PIECE_DISSOCIATED':
         // Broadcast repertoire change to other clients
         await this.handlePieceChange(clientId, event)
+        break
+
+      case 'PLAN_CREATED':
+      case 'PLAN_UPDATED':
+      case 'PLAN_OCCURRENCE_COMPLETED':
+        await this.handlePlanningChange(clientId, event)
         break
 
       default:
@@ -780,6 +801,104 @@ export class SyncCoordinator implements DurableObject {
     }
   }
 
+  private async handlePlanningChange(
+    senderId: string | null,
+    event: SyncEvent,
+    options: { persist?: boolean; userId?: string } = {}
+  ): Promise<void> {
+    const sender = senderId ? this.clients.get(senderId) : null
+    const userId = options.userId || sender?.userId || this.coordinatorUserId
+
+    if (!userId) {
+      console.warn('⚠️ Unable to determine user for planning event')
+      return
+    }
+
+    if (event.plan) {
+      const sanitizedPlan = sanitizePracticePlan(event.plan)
+      if (!sanitizedPlan) {
+        if (senderId && sender) {
+          this.sendToClient(senderId, {
+            type: 'ERROR',
+            error: 'Invalid planning data',
+            timestamp: new Date().toISOString(),
+          })
+        }
+        return
+      }
+      event.plan = sanitizedPlan
+    }
+
+    if (Array.isArray(event.occurrences)) {
+      const sanitizedOccurrences = event.occurrences
+        .map(occurrence => sanitizePlanOccurrence(occurrence))
+        .filter((occ): occ is z.infer<typeof PlanOccurrenceSchema> =>
+          Boolean(occ)
+        )
+
+      event.occurrences = sanitizedOccurrences
+    }
+
+    if (event.occurrence) {
+      const sanitizedOccurrence = sanitizePlanOccurrence(event.occurrence)
+      if (!sanitizedOccurrence) {
+        if (senderId && sender) {
+          this.sendToClient(senderId, {
+            type: 'ERROR',
+            error: 'Invalid occurrence data',
+            timestamp: new Date().toISOString(),
+          })
+        }
+        return
+      }
+      event.occurrence = sanitizedOccurrence
+    }
+
+    console.log(
+      `📝 Broadcasting planning event ${event.type} for user ${userId}`
+    )
+
+    let sequence: number | null = null
+
+    if (options.persist !== false) {
+      try {
+        sequence = await this.savePlanningToDatabase(event, userId)
+      } catch (error) {
+        console.error('❌ Failed to persist planning event:', error)
+      }
+    } else if (typeof event.seq === 'number') {
+      sequence = event.seq
+    }
+
+    try {
+      event.timestamp = new Date().toISOString()
+    } catch {
+      // best effort
+    }
+
+    if (options.persist === false && typeof sequence === 'number') {
+      await this.updateSyncMetadata(userId, sequence)
+    }
+
+    if (typeof sequence === 'number' && senderId && sender) {
+      event.seq = sequence
+      this.sendToClient(senderId, {
+        type: 'SYNC_RESPONSE',
+        timestamp: new Date().toISOString(),
+        message: 'Mutation applied',
+        lastSeq: sequence,
+      })
+    }
+
+    for (const [clientId, client] of this.clients) {
+      if (!senderId || clientId !== senderId) {
+        if (client.userId === userId) {
+          this.sendToClient(clientId, event)
+        }
+      }
+    }
+  }
+
   private async updateSyncMetadata(
     userId: string,
     lastSeq?: number
@@ -936,6 +1055,219 @@ export class SyncCoordinator implements DurableObject {
     }
 
     return null
+  }
+
+  private async savePlanningToDatabase(
+    event: SyncEvent,
+    userId: string
+  ): Promise<number | null> {
+    if (!this.env.DB) {
+      console.warn('⚠️ Database not configured, skipping planning persistence')
+      return null
+    }
+
+    const sequences: number[] = []
+
+    const persistRecord = async (
+      entityType: 'practice_plan' | 'plan_occurrence',
+      entityId: string | undefined,
+      data: any
+    ): Promise<number | null> => {
+      if (!entityId) {
+        console.error('❌ Missing entity ID for planning persistence')
+        return null
+      }
+
+      if (data?.deletedAt) {
+        const seq = await this.getNextSequence()
+        await this.env.DB.prepare(
+          `
+          UPDATE sync_data
+          SET deleted_at = ?,
+              updated_at = CURRENT_TIMESTAMP,
+              seq = ?
+          WHERE user_id = ? AND entity_type = ? AND entity_id = ?
+        `
+        )
+          .bind(data.deletedAt, seq, userId, entityType, entityId)
+          .run()
+
+        return seq
+      }
+
+      const seq = await this.getNextSequence()
+      await this.env.DB.prepare(
+        `
+        INSERT INTO sync_data (
+          id, user_id, entity_type, entity_id, data,
+          checksum, device_id, version, updated_at, seq
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+        ON CONFLICT (user_id, entity_type, entity_id)
+        DO UPDATE SET
+          data = excluded.data,
+          checksum = excluded.checksum,
+          device_id = excluded.device_id,
+          updated_at = CURRENT_TIMESTAMP,
+          version = sync_data.version + 1,
+          seq = excluded.seq
+      `
+      )
+        .bind(
+          `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          userId,
+          entityType,
+          entityId,
+          JSON.stringify(data),
+          await this.calculateChecksum(data),
+          data?.device_id || 'sync-worker',
+          1,
+          seq
+        )
+        .run()
+
+      return seq
+    }
+
+    try {
+      if (event.type === 'PLAN_CREATED' || event.type === 'PLAN_UPDATED') {
+        if (event.plan) {
+          const planSeq = await persistRecord(
+            'practice_plan',
+            event.plan.id,
+            event.plan
+          )
+          if (typeof planSeq === 'number') {
+            sequences.push(planSeq)
+          }
+        }
+
+        if (Array.isArray(event.occurrences)) {
+          for (const occurrence of event.occurrences) {
+            const occurrenceSeq = await persistRecord(
+              'plan_occurrence',
+              occurrence.id,
+              occurrence
+            )
+            if (typeof occurrenceSeq === 'number') {
+              sequences.push(occurrenceSeq)
+            }
+          }
+        }
+      } else if (
+        event.type === 'PLAN_OCCURRENCE_COMPLETED' &&
+        event.occurrence
+      ) {
+        const occurrenceSeq = await persistRecord(
+          'plan_occurrence',
+          event.occurrence.id,
+          event.occurrence
+        )
+        if (typeof occurrenceSeq === 'number') {
+          sequences.push(occurrenceSeq)
+        }
+      }
+    } catch (error) {
+      console.error('Planning database operation failed:', error)
+      throw error
+    }
+
+    if (sequences.length > 0) {
+      const highestSeq = Math.max(...sequences)
+      await this.updateSyncMetadata(userId, highestSeq)
+      return highestSeq
+    }
+
+    return null
+  }
+
+  private async handleBroadcastRequest(request: Request): Promise<Response> {
+    try {
+      const payload = (await request.json()) as {
+        userId?: string
+        events?: unknown[]
+      }
+
+      const userId = payload.userId
+      const events = payload.events
+
+      if (!userId || !Array.isArray(events)) {
+        return new Response('Invalid payload', { status: 400 })
+      }
+
+      if (this.coordinatorUserId && this.coordinatorUserId !== userId) {
+        console.warn('⚠️ Broadcast user mismatch', {
+          expected: this.coordinatorUserId,
+          received: userId,
+        })
+        return new Response('Forbidden', { status: 403 })
+      }
+
+      this.coordinatorUserId = this.coordinatorUserId || userId
+
+      let delivered = 0
+
+      for (const rawEvent of events) {
+        let parsedEvent: z.infer<typeof ResponseEventSchema>
+        try {
+          parsedEvent = ResponseEventSchema.parse(rawEvent)
+        } catch (error) {
+          console.error('Broadcast event validation failed:', error)
+          continue
+        }
+
+        if (
+          parsedEvent.type === 'PLAN_CREATED' ||
+          parsedEvent.type === 'PLAN_UPDATED'
+        ) {
+          if (parsedEvent.plan) {
+            const sanitizedPlan = sanitizePracticePlan(parsedEvent.plan)
+            if (!sanitizedPlan) {
+              continue
+            }
+            parsedEvent.plan = sanitizedPlan
+          }
+
+          if (Array.isArray(parsedEvent.occurrences)) {
+            parsedEvent.occurrences = parsedEvent.occurrences
+              .map(occ => sanitizePlanOccurrence(occ))
+              .filter((occ): occ is z.infer<typeof PlanOccurrenceSchema> =>
+                Boolean(occ)
+              )
+          }
+
+          await this.handlePlanningChange(null, parsedEvent as SyncEvent, {
+            persist: false,
+            userId,
+          })
+          delivered++
+        } else if (parsedEvent.type === 'PLAN_OCCURRENCE_COMPLETED') {
+          if (!parsedEvent.occurrence) {
+            continue
+          }
+          const sanitizedOccurrence = sanitizePlanOccurrence(
+            parsedEvent.occurrence
+          )
+          if (!sanitizedOccurrence) {
+            continue
+          }
+          parsedEvent.occurrence = sanitizedOccurrence
+
+          await this.handlePlanningChange(null, parsedEvent as SyncEvent, {
+            persist: false,
+            userId,
+          })
+          delivered++
+        }
+      }
+
+      return new Response(JSON.stringify({ success: true, delivered }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    } catch (error) {
+      console.error('Failed to process broadcast request:', error)
+      return new Response('Invalid payload', { status: 400 })
+    }
   }
 
   private sendToClient(clientId: string, data: any): void {
