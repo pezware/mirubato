@@ -141,6 +141,21 @@ export function PlanCheckInModal({
           item.prompt.length > 0 && item.response.length > 0
       )
 
+    const reflectionResponseMap = Object.fromEntries(
+      reflectionResponses.map(item => [item.prompt, item.response])
+    )
+
+    const reflectionHeading = t(
+      'reports:planningCheckIn.reflection',
+      'Reflection'
+    )
+
+    const notesWithReflection = reflectionResponses.length
+      ? `${summaryNotes}\n\n${reflectionHeading}\n${reflectionResponses
+          .map(({ prompt, response }) => `• ${prompt}: ${response}`)
+          .join('\n')}`
+      : summaryNotes
+
     const entryMetadata = sanitizeMetadataRecord({
       ...metadataBase,
       source: 'practice_plan',
@@ -170,7 +185,7 @@ export function PlanCheckInModal({
       pieces: [],
       techniques: aggregatedTechniques,
       goalIds: [],
-      notes: summaryNotes,
+      notes: notesWithReflection,
       mood: null,
       tags: [],
       metadata: entryMetadata,
@@ -183,7 +198,7 @@ export function PlanCheckInModal({
       await onComplete({
         occurrenceId: occurrence.id,
         logEntryId: entry.id,
-        responses,
+        responses: reflectionResponseMap,
         metrics: {
           actualDuration: duration,
         },
