@@ -12,8 +12,8 @@
     "pnpm --filter @mirubato/frontendv2 exec vitest related --run --no-coverage --passWithNoTests"
   ],
   "api/**/*.{ts,tsx}": [
-    "cd api && eslint --fix",
-    "cd api && vitest related --run --no-coverage --passWithNoTests"
+    "pnpm --filter @mirubato/api exec eslint --fix",
+    "pnpm --filter @mirubato/api exec vitest related --run --no-coverage --passWithNoTests"
   ],
   "dictionary/**/*.{ts,tsx}": [
     "cd dictionary && eslint --fix",

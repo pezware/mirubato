@@ -50,6 +50,10 @@ export default {
         return await handleWebSocketRequest(request, env)
       }
 
+      if (url.pathname === '/broadcast' && request.method === 'POST') {
+        return await handleBroadcastRequest(request, env)
+      }
+
       // Not found
       return new Response('Not Found', { status: 404 })
     } catch (error) {
@@ -117,4 +121,40 @@ async function handleWebSocketRequest(
 
   const authenticatedRequest = new Request(authenticatedUrl, request)
   return coordinator.fetch(authenticatedRequest)
+}
+
+async function handleBroadcastRequest(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  const authHeader = request.headers.get('X-Worker-Auth')
+  if (!authHeader || authHeader !== env.JWT_SECRET) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+
+  let payload: { userId?: string; events?: unknown[] }
+
+  try {
+    payload = await request.clone().json()
+  } catch (error) {
+    console.error('Broadcast payload parse failed:', error)
+    return new Response('Invalid payload', { status: 400 })
+  }
+
+  if (typeof payload.userId !== 'string') {
+    return new Response('Invalid payload', { status: 400 })
+  }
+
+  const coordinatorId = env.SYNC_COORDINATOR.idFromName(
+    `user:${payload.userId}`
+  )
+  const coordinator = env.SYNC_COORDINATOR.get(coordinatorId)
+
+  const forwardRequest = new Request('https://sync-worker.internal/broadcast', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  return coordinator.fetch(forwardRequest)
 }

@@ -18,6 +18,7 @@ import {
   isSameScore,
   normalizeExistingScoreId,
 } from '../utils/scoreIdNormalizer'
+import { usePlanningStore } from './planningStore'
 
 interface LogbookState {
   // Data - Using Maps for O(1) access
@@ -984,6 +985,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         set({ _wsHandlers: handlers })
       }
 
+      usePlanningStore.getState().attachRealtimeHandlers(webSocketSync)
+
       // Get auth token and user info
       const authToken = localStorage.getItem('auth-token')
       const userStr = localStorage.getItem('mirubato:user')
@@ -1030,6 +1033,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       webSocketSync.off('BULK_SYNC', state._wsHandlers.bulkSync!)
       set({ _wsHandlers: undefined })
     }
+
+    usePlanningStore.getState().detachRealtimeHandlers(webSocketSync)
 
     webSocketSync.disconnect()
     set({

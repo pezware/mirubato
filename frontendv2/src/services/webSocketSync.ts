@@ -14,6 +14,9 @@ export interface SyncEvent {
     | 'PIECE_UPDATED'
     | 'PIECE_REMOVED'
     | 'PIECE_DISSOCIATED'
+    | 'PLAN_CREATED'
+    | 'PLAN_UPDATED'
+    | 'PLAN_OCCURRENCE_COMPLETED'
     | 'BULK_SYNC'
     | 'REPERTOIRE_BULK_SYNC'
     | 'SYNC_REQUEST'
@@ -26,6 +29,9 @@ export interface SyncEvent {
   entryId?: string
   piece?: unknown // RepertoireItem - avoiding circular dependency
   pieces?: unknown[] // RepertoireItem[]
+  plan?: unknown // PracticePlan
+  occurrences?: unknown[]
+  occurrence?: unknown
   scoreId?: string
   lastSyncTime?: string
   lastSeq?: number
@@ -338,6 +344,9 @@ export class WebSocketSync {
       'PIECE_REMOVED',
       'PIECE_DISSOCIATED',
       'REPERTOIRE_BULK_SYNC',
+      'PLAN_CREATED',
+      'PLAN_UPDATED',
+      'PLAN_OCCURRENCE_COMPLETED',
     ]
 
     if (dataEvents.includes(event.type)) {
@@ -504,6 +513,9 @@ export class WebSocketSync {
       'PIECE_UPDATED',
       'PIECE_REMOVED',
       'PIECE_DISSOCIATED',
+      'PLAN_CREATED',
+      'PLAN_UPDATED',
+      'PLAN_OCCURRENCE_COMPLETED',
     ])
     return mutationTypes.has(event.type)
   }
@@ -531,6 +543,11 @@ export class WebSocketSync {
       case 'PIECE_REMOVED':
       case 'PIECE_DISSOCIATED':
         return event.scoreId || null
+      case 'PLAN_CREATED':
+      case 'PLAN_UPDATED':
+        return (event.plan as { id?: string })?.id || null
+      case 'PLAN_OCCURRENCE_COMPLETED':
+        return (event.occurrence as { id?: string })?.id || null
       default:
         return null
     }

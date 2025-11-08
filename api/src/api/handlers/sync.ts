@@ -17,6 +17,10 @@ import {
   generateNormalizedScoreId,
   normalizeExistingScoreId,
 } from '../../utils/scoreIdNormalizer'
+import {
+  broadcastPlanningEvents,
+  type PlanningBroadcastEvent,
+} from '../../services/syncWorkerBroadcaster'
 
 export const syncHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -162,6 +166,18 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       practicePlansProcessed: 0,
       planOccurrencesProcessed: 0,
     }
+
+    const planEventIndex = new Map<string, number>()
+    const planEvents: Array<{
+      type: 'PLAN_CREATED' | 'PLAN_UPDATED'
+      plan: Record<string, unknown>
+      occurrences: Record<string, unknown>[]
+      seqs: number[]
+    }> = []
+    const occurrenceCompletionEvents: Array<{
+      occurrence: Record<string, unknown>
+      seq?: number
+    }> = []
 
     // Process entries
     if (changes.entries && changes.entries.length > 0) {
@@ -432,7 +448,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
 
           const checksum = await calculateChecksum(transformedPlan)
 
-          await db.upsertSyncData({
+          const result = await db.upsertSyncData({
             userId,
             entityType: 'practice_plan',
             entityId: transformedPlan.id as string,
@@ -442,6 +458,34 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
           })
 
           stats.practicePlansProcessed++
+
+          if (
+            (result.action === 'created' || result.action === 'updated') &&
+            transformedPlan.id
+          ) {
+            const eventType =
+              result.action === 'created' ? 'PLAN_CREATED' : 'PLAN_UPDATED'
+            const recordIndex = planEventIndex.get(transformedPlan.id as string)
+
+            if (recordIndex !== undefined) {
+              const existing = planEvents[recordIndex]
+              existing.plan = transformedPlan
+              if (typeof result.seq === 'number') {
+                existing.seqs.push(result.seq)
+              }
+            } else {
+              planEventIndex.set(
+                transformedPlan.id as string,
+                planEvents.length
+              )
+              planEvents.push({
+                type: eventType,
+                plan: transformedPlan,
+                occurrences: [],
+                seqs: typeof result.seq === 'number' ? [result.seq] : [],
+              })
+            }
+          }
         } catch (planError) {
           conflicts.push({
             entityId: plan.id,
@@ -505,7 +549,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
 
           const checksum = await calculateChecksum(transformedOccurrence)
 
-          await db.upsertSyncData({
+          const result = await db.upsertSyncData({
             userId,
             entityType: 'plan_occurrence',
             entityId: transformedOccurrence.id as string,
@@ -515,6 +559,28 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
           })
 
           stats.planOccurrencesProcessed++
+
+          if (result.action === 'created' || result.action === 'updated') {
+            if (planLinkFields.plan_id) {
+              const recordIndex = planEventIndex.get(planLinkFields.plan_id)
+              if (recordIndex !== undefined) {
+                planEvents[recordIndex].occurrences.push(transformedOccurrence)
+                if (typeof result.seq === 'number') {
+                  planEvents[recordIndex].seqs.push(result.seq)
+                }
+              }
+            }
+
+            if (
+              transformedOccurrence.status === 'completed' &&
+              !transformedOccurrence.deletedAt
+            ) {
+              occurrenceCompletionEvents.push({
+                occurrence: transformedOccurrence,
+                seq: result.seq,
+              })
+            }
+          }
         } catch (occurrenceError) {
           conflicts.push({
             entityId: occurrence.id,
@@ -558,6 +624,118 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
           })
         }
       }
+    }
+
+    const planningBroadcastEvents: PlanningBroadcastEvent[] = []
+
+    for (const candidate of planEvents) {
+      const validSeqs = candidate.seqs.filter(seq =>
+        Number.isFinite(seq)
+      ) as number[]
+
+      if (validSeqs.length === 0) {
+        continue
+      }
+
+      const planRecord = candidate.plan as {
+        id?: unknown
+        [key: string]: unknown
+      }
+
+      if (typeof planRecord.id !== 'string' || planRecord.id.length === 0) {
+        continue
+      }
+
+      const occurrencesForEvent = candidate.occurrences
+        .map(rawOccurrence => {
+          const occurrenceRecord = rawOccurrence as {
+            id?: unknown
+            planId?: unknown
+            plan_id?: unknown
+            [key: string]: unknown
+          }
+
+          if (typeof occurrenceRecord.id !== 'string') {
+            return null
+          }
+
+          const occurrencePlanId =
+            typeof occurrenceRecord.planId === 'string'
+              ? occurrenceRecord.planId
+              : typeof occurrenceRecord.plan_id === 'string'
+                ? occurrenceRecord.plan_id
+                : null
+
+          if (!occurrencePlanId) {
+            return null
+          }
+
+          if (occurrenceRecord.planId !== occurrencePlanId) {
+            occurrenceRecord.planId = occurrencePlanId
+          }
+
+          if (occurrenceRecord.plan_id !== occurrencePlanId) {
+            occurrenceRecord.plan_id = occurrencePlanId
+          }
+
+          return occurrenceRecord
+        })
+        .filter((occ): occ is Record<string, unknown> => occ !== null)
+
+      const highestSeq = Math.max(...validSeqs)
+      planningBroadcastEvents.push({
+        type: candidate.type,
+        plan: candidate.plan,
+        occurrences:
+          occurrencesForEvent.length > 0 ? occurrencesForEvent : undefined,
+        seq: highestSeq,
+      })
+    }
+
+    for (const completion of occurrenceCompletionEvents) {
+      if (typeof completion.seq !== 'number') {
+        continue
+      }
+
+      const occurrenceRecord = completion.occurrence as {
+        id?: unknown
+        planId?: unknown
+        plan_id?: unknown
+        [key: string]: unknown
+      }
+
+      if (typeof occurrenceRecord.id !== 'string') {
+        continue
+      }
+
+      const occurrencePlanId =
+        typeof occurrenceRecord.planId === 'string'
+          ? occurrenceRecord.planId
+          : typeof occurrenceRecord.plan_id === 'string'
+            ? occurrenceRecord.plan_id
+            : null
+
+      if (!occurrencePlanId) {
+        continue
+      }
+
+      if (occurrenceRecord.planId !== occurrencePlanId) {
+        occurrenceRecord.planId = occurrencePlanId
+      }
+
+      if (occurrenceRecord.plan_id !== occurrencePlanId) {
+        occurrenceRecord.plan_id = occurrencePlanId
+      }
+
+      planningBroadcastEvents.push({
+        type: 'PLAN_OCCURRENCE_COMPLETED',
+        occurrence: occurrenceRecord,
+        seq: completion.seq,
+      })
+    }
+
+    if (planningBroadcastEvents.length > 0) {
+      await broadcastPlanningEvents(c.env, userId, planningBroadcastEvents)
     }
 
     // Update sync metadata with device info
