@@ -637,24 +637,101 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
         continue
       }
 
+      const planRecord = candidate.plan as {
+        id?: unknown
+        [key: string]: unknown
+      }
+
+      if (typeof planRecord.id !== 'string' || planRecord.id.length === 0) {
+        continue
+      }
+
+      const occurrencesForEvent = candidate.occurrences
+        .map(rawOccurrence => {
+          const occurrenceRecord = rawOccurrence as {
+            id?: unknown
+            planId?: unknown
+            plan_id?: unknown
+            [key: string]: unknown
+          }
+
+          if (typeof occurrenceRecord.id !== 'string') {
+            return null
+          }
+
+          const occurrencePlanId =
+            typeof occurrenceRecord.planId === 'string'
+              ? occurrenceRecord.planId
+              : typeof occurrenceRecord.plan_id === 'string'
+                ? occurrenceRecord.plan_id
+                : null
+
+          if (!occurrencePlanId) {
+            return null
+          }
+
+          if (occurrenceRecord.planId !== occurrencePlanId) {
+            occurrenceRecord.planId = occurrencePlanId
+          }
+
+          if (occurrenceRecord.plan_id !== occurrencePlanId) {
+            occurrenceRecord.plan_id = occurrencePlanId
+          }
+
+          return occurrenceRecord
+        })
+        .filter((occ): occ is Record<string, unknown> => occ !== null)
+
       const highestSeq = Math.max(...validSeqs)
       planningBroadcastEvents.push({
         type: candidate.type,
         plan: candidate.plan,
         occurrences:
-          candidate.occurrences.length > 0 ? candidate.occurrences : undefined,
+          occurrencesForEvent.length > 0 ? occurrencesForEvent : undefined,
         seq: highestSeq,
       })
     }
 
     for (const completion of occurrenceCompletionEvents) {
-      if (typeof completion.seq === 'number') {
-        planningBroadcastEvents.push({
-          type: 'PLAN_OCCURRENCE_COMPLETED',
-          occurrence: completion.occurrence,
-          seq: completion.seq,
-        })
+      if (typeof completion.seq !== 'number') {
+        continue
       }
+
+      const occurrenceRecord = completion.occurrence as {
+        id?: unknown
+        planId?: unknown
+        plan_id?: unknown
+        [key: string]: unknown
+      }
+
+      if (typeof occurrenceRecord.id !== 'string') {
+        continue
+      }
+
+      const occurrencePlanId =
+        typeof occurrenceRecord.planId === 'string'
+          ? occurrenceRecord.planId
+          : typeof occurrenceRecord.plan_id === 'string'
+            ? occurrenceRecord.plan_id
+            : null
+
+      if (!occurrencePlanId) {
+        continue
+      }
+
+      if (occurrenceRecord.planId !== occurrencePlanId) {
+        occurrenceRecord.planId = occurrencePlanId
+      }
+
+      if (occurrenceRecord.plan_id !== occurrencePlanId) {
+        occurrenceRecord.plan_id = occurrencePlanId
+      }
+
+      planningBroadcastEvents.push({
+        type: 'PLAN_OCCURRENCE_COMPLETED',
+        occurrence: occurrenceRecord,
+        seq: completion.seq,
+      })
     }
 
     if (planningBroadcastEvents.length > 0) {

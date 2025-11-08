@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { Hono } from 'hono'
 import { syncHandler } from './sync'
+import type { PlanningBroadcastEvent } from '../../services/syncWorkerBroadcaster'
 import type { Env } from '../../index'
 import type { Variables } from '../middleware'
 import type { D1Database } from '@cloudflare/workers-types'
@@ -251,6 +252,126 @@ describe('Sync Handlers', () => {
       expect(res.status).toBe(200)
       expect(mockDbInstance.upsertSyncData).toHaveBeenCalledTimes(3)
       expect(mockDbInstance.updateSyncMetadata).toHaveBeenCalledOnce()
+    })
+
+    it('should include plan identifiers when broadcasting planning occurrences', async () => {
+      mockDbInstance.upsertSyncData
+        .mockResolvedValueOnce({
+          id: 'sync-plan-id',
+          entity_id: 'plan-123',
+          action: 'created',
+          seq: 41,
+        })
+        .mockResolvedValueOnce({
+          id: 'sync-occurrence-id',
+          entity_id: 'occurrence-456',
+          action: 'created',
+          seq: 42,
+        })
+
+      mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
+
+      const req = new Request('http://localhost/api/sync/push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
+        },
+        body: JSON.stringify({
+          changes: {
+            practicePlans: [
+              {
+                id: 'plan-123',
+                title: 'Morning warmup',
+                type: 'custom',
+                visibility: 'private',
+                status: 'active',
+                schedule: {
+                  kind: 'single',
+                  metadata: {},
+                  target: '2024-01-01T08:00:00.000Z',
+                },
+                focusAreas: [],
+                techniques: [],
+                pieceRefs: [],
+                tags: [],
+                metadata: {},
+                createdAt: '2024-01-01T00:00:00.000Z',
+                updatedAt: '2024-01-01T00:00:00.000Z',
+              },
+            ],
+            planOccurrences: [
+              {
+                id: 'occurrence-456',
+                plan_id: 'plan-123',
+                status: 'completed',
+                reflectionPrompts: [],
+                segments: [],
+                targets: {},
+                checkIn: {},
+                createdAt: '2024-01-01T08:00:00.000Z',
+                updatedAt: '2024-01-01T09:00:00.000Z',
+              },
+            ],
+          },
+        }),
+      })
+
+      const res = await app.fetch(req, {
+        DB: { prepare: vi.fn() } as unknown as D1Database,
+      } as Env)
+
+      expect(res.status).toBe(200)
+      expect(mockBroadcastPlanningEvents).toHaveBeenCalledOnce()
+
+      const [, , events] = mockBroadcastPlanningEvents.mock.calls[0] as [
+        unknown,
+        unknown,
+        PlanningBroadcastEvent[],
+      ]
+      const planEvent = events.find(
+        (evt): evt is PlanningBroadcastEvent & { type: 'PLAN_CREATED' } =>
+          evt.type === 'PLAN_CREATED'
+      )
+      expect(planEvent).toBeDefined()
+      if (!planEvent) {
+        throw new Error('Expected PLAN_CREATED event to be present')
+      }
+      expect(planEvent).toMatchObject({
+        type: 'PLAN_CREATED',
+        plan: expect.objectContaining({ id: 'plan-123' }),
+        seq: 42,
+      })
+      expect(planEvent.occurrences).toEqual([
+        expect.objectContaining({
+          id: 'occurrence-456',
+          planId: 'plan-123',
+          plan_id: 'plan-123',
+        }),
+      ])
+
+      const completionEvent = events.find(
+        (
+          evt
+        ): evt is PlanningBroadcastEvent & {
+          type: 'PLAN_OCCURRENCE_COMPLETED'
+        } => evt.type === 'PLAN_OCCURRENCE_COMPLETED'
+      )
+      expect(completionEvent).toBeDefined()
+      if (!completionEvent) {
+        throw new Error(
+          'Expected PLAN_OCCURRENCE_COMPLETED event to be present'
+        )
+      }
+      expect(completionEvent).toMatchObject({
+        type: 'PLAN_OCCURRENCE_COMPLETED',
+        occurrence: expect.objectContaining({
+          id: 'occurrence-456',
+          planId: 'plan-123',
+          plan_id: 'plan-123',
+        }),
+        seq: 42,
+      })
     })
 
     it('should accept both goalIds and goal_ids field names', async () => {
