@@ -43,7 +43,12 @@ export const EntryDetailPanel: React.FC<EntryDetailPanelProps> = ({
   onNavigate,
   className,
 }) => {
-  const { t, i18n } = useTranslation(['logbook', 'common', 'repertoire'])
+  const { t, i18n } = useTranslation([
+    'logbook',
+    'common',
+    'repertoire',
+    'reports',
+  ])
   const [showMenu, setShowMenu] = useState(false)
 
   // Build menu items
@@ -109,6 +114,17 @@ export const EntryDetailPanel: React.FC<EntryDetailPanelProps> = ({
   }
 
   const entryDate = new Date(entry.timestamp)
+
+  const reflectionResponses = Array.isArray(entry.metadata?.reflectionResponses)
+    ? entry.metadata.reflectionResponses.filter(
+        (item): item is { prompt: string; response: string } =>
+          Boolean(item) &&
+          typeof item.prompt === 'string' &&
+          item.prompt.trim().length > 0 &&
+          typeof item.response === 'string' &&
+          item.response.trim().length > 0
+      )
+    : []
 
   // Check if we're on mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024
@@ -306,6 +322,24 @@ export const EntryDetailPanel: React.FC<EntryDetailPanelProps> = ({
             <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
               {entry.notes}
             </p>
+          </div>
+        )}
+
+        {reflectionResponses.length > 0 && (
+          <div>
+            <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+              {t('reports:planningCheckIn.reflection', 'Reflection')}
+            </h4>
+            <ul className="space-y-3">
+              {reflectionResponses.map(({ prompt, response }, index) => (
+                <li key={`${prompt}-${index}`} className="space-y-1">
+                  <p className="text-sm font-medium text-gray-700">{prompt}</p>
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                    {response}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

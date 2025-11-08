@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Button,
@@ -10,9 +10,11 @@ import {
   Typography,
 } from '@/components/ui'
 import type { PracticePlan, PlanOccurrence } from '@/api/planning'
+import type { LogEntryMetadata } from '@/api/logbook'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { toLogbookInstrument } from '@/utils/instrumentGuards'
+import { usePlanningStore } from '@/stores/planningStore'
 
 interface PlanCheckInModalProps {
   isOpen: boolean
@@ -25,6 +27,14 @@ interface PlanCheckInModalProps {
     responses: Record<string, string>
     metrics?: Record<string, unknown>
   }) => Promise<void>
+}
+
+const sanitizeMetadataRecord = (
+  metadata: Record<string, unknown>
+): Record<string, unknown> => {
+  return Object.fromEntries(
+    Object.entries(metadata).filter(([, value]) => value !== undefined)
+  )
 }
 
 const sumSegmentDuration = (occurrence: PlanOccurrence): number => {
@@ -44,6 +54,12 @@ export function PlanCheckInModal({
   const { t } = useTranslation(['reports'])
   const createEntry = useLogbookStore(state => state.createEntry)
   const { getPrimaryInstrument } = useUserPreferences()
+  const occurrencePrefill = usePlanningStore(
+    useCallback(
+      state => state.getOccurrencePrefillData(occurrence.id),
+      [occurrence.id]
+    )
+  )
 
   const defaultDuration = useMemo(() => {
     if (plan.schedule.durationMinutes && plan.schedule.durationMinutes > 0) {
@@ -98,9 +114,68 @@ export function PlanCheckInModal({
 
     const timestamp = new Date().toISOString()
 
-    const summaryNotes =
-      notes.trim() ||
-      `${plan.title} · ${t('reports:planningCheckIn.defaultNote', 'Logged from practice plan')}`
+    const trimmedNote = notes.trim()
+    const planTitle = plan.title?.trim()
+    const defaultNoteSuffix = t(
+      'reports:planningCheckIn.defaultNote',
+      'Logged from practice plan'
+    )
+
+    const summaryNotes = planTitle
+      ? trimmedNote
+        ? `${planTitle} · ${trimmedNote}`
+        : `${planTitle} · ${defaultNoteSuffix}`
+      : trimmedNote || defaultNoteSuffix
+
+    const metadataBase: Record<string, unknown> = occurrencePrefill?.metadata
+      ? { ...occurrencePrefill.metadata }
+      : {}
+
+    const reflectionResponses = Object.entries(responses)
+      .map(([prompt, value]) => ({
+        prompt: prompt.trim(),
+        response: value.trim(),
+      }))
+      .filter(
+        (item): item is { prompt: string; response: string } =>
+          item.prompt.length > 0 && item.response.length > 0
+      )
+
+    const reflectionResponseMap = Object.fromEntries(
+      reflectionResponses.map(item => [item.prompt, item.response])
+    )
+
+    const reflectionHeading = t(
+      'reports:planningCheckIn.reflection',
+      'Reflection'
+    )
+
+    const notesWithReflection = reflectionResponses.length
+      ? `${summaryNotes}\n\n${reflectionHeading}\n${reflectionResponses
+          .map(({ prompt, response }) => `• ${prompt}: ${response}`)
+          .join('\n')}`
+      : summaryNotes
+
+    const entryMetadata = sanitizeMetadataRecord({
+      ...metadataBase,
+      source: 'practice_plan',
+      planId: (metadataBase.planId as string | undefined) ?? plan.id,
+      planOccurrenceId: occurrence.id,
+      reflectionResponses:
+        reflectionResponses.length > 0 ? reflectionResponses : undefined,
+    }) as LogEntryMetadata
+
+    if (!entryMetadata.planTitle && plan.title) {
+      entryMetadata.planTitle = plan.title
+    }
+
+    if (!entryMetadata.scheduledStart && occurrence.scheduledStart) {
+      entryMetadata.scheduledStart = occurrence.scheduledStart
+    }
+
+    if (!entryMetadata.scheduledEnd && occurrence.scheduledEnd) {
+      entryMetadata.scheduledEnd = occurrence.scheduledEnd
+    }
 
     const entryPayload = {
       timestamp,
@@ -110,14 +185,10 @@ export function PlanCheckInModal({
       pieces: [],
       techniques: aggregatedTechniques,
       goalIds: [],
-      notes: summaryNotes,
+      notes: notesWithReflection,
       mood: null,
       tags: [],
-      metadata: {
-        source: 'practice_plan',
-        planId: plan.id,
-        planOccurrenceId: occurrence.id,
-      },
+      metadata: entryMetadata,
     }
 
     setIsSubmitting(true)
@@ -127,7 +198,7 @@ export function PlanCheckInModal({
       await onComplete({
         occurrenceId: occurrence.id,
         logEntryId: entry.id,
-        responses,
+        responses: reflectionResponseMap,
         metrics: {
           actualDuration: duration,
         },

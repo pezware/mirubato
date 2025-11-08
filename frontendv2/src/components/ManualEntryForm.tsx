@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { useLogbookStore } from '../stores/logbookStore'
@@ -7,6 +7,7 @@ import { useUserPreferences } from '../hooks/useUserPreferences'
 import { useFormValidation } from '../hooks/useFormValidation'
 import { ManualEntryFormSchema } from '../schemas/validation'
 import type { LogbookEntry } from '../api/logbook'
+import type { PlanOccurrencePrefillData } from '../stores/planningStore'
 import {
   generateNormalizedScoreId,
   isSameScore,
@@ -24,6 +25,270 @@ import { Modal } from './ui/Modal'
 import { FormError } from './ui/FormError'
 import { toLogbookInstrument } from '../utils/instrumentGuards'
 
+type PlanPiecePrefill = {
+  title: string
+  composer?: string | null
+  scoreId?: string
+}
+
+const sanitizeMetadataRecord = (
+  metadata: Record<string, unknown>
+): Record<string, unknown> => {
+  return Object.fromEntries(
+    Object.entries(metadata).filter(([, value]) => value !== undefined)
+  )
+}
+
+const prepareSegmentsForMetadata = (
+  segments?: PlanOccurrencePrefillData['segments']
+): PlanOccurrencePrefillData['segments'] => {
+  if (!Array.isArray(segments)) {
+    return []
+  }
+
+  return segments
+    .map(segment => {
+      if (!segment) {
+        return null
+      }
+
+      const normalized: Record<string, unknown> = {
+        label: segment.label,
+      }
+
+      if (segment.id) {
+        normalized.id = segment.id
+      }
+
+      if (
+        typeof segment.durationMinutes === 'number' &&
+        !Number.isNaN(segment.durationMinutes)
+      ) {
+        normalized.durationMinutes = segment.durationMinutes
+      }
+
+      if (Array.isArray(segment.pieceRefs) && segment.pieceRefs.length > 0) {
+        normalized.pieceRefs = segment.pieceRefs.map(piece => ({
+          scoreId: piece?.scoreId,
+          title: piece?.title,
+          composer: piece?.composer ?? null,
+        }))
+      }
+
+      if (Array.isArray(segment.techniques) && segment.techniques.length > 0) {
+        normalized.techniques = segment.techniques
+      }
+
+      if (segment.instructions) {
+        normalized.instructions = segment.instructions
+      }
+
+      if (
+        segment.tempoTargets &&
+        typeof segment.tempoTargets === 'object' &&
+        Object.keys(segment.tempoTargets).length > 0
+      ) {
+        normalized.tempoTargets = segment.tempoTargets
+      }
+
+      if (
+        segment.metadata &&
+        typeof segment.metadata === 'object' &&
+        Object.keys(segment.metadata).length > 0
+      ) {
+        normalized.metadata = segment.metadata
+      }
+
+      return sanitizeMetadataRecord(normalized)
+    })
+    .filter(
+      (segment): segment is PlanOccurrencePrefillData['segments'][number] =>
+        Boolean(segment)
+    )
+}
+
+const sumSegmentDurations = (
+  segments?: PlanOccurrencePrefillData['segments']
+): number => {
+  if (!Array.isArray(segments)) {
+    return 0
+  }
+
+  return segments.reduce((total, segment) => {
+    const minutes = Number(segment?.durationMinutes)
+    if (Number.isFinite(minutes) && minutes > 0) {
+      return total + minutes
+    }
+    return total
+  }, 0)
+}
+
+const collectPiecesFromSegments = (
+  segments?: PlanOccurrencePrefillData['segments']
+): PlanPiecePrefill[] => {
+  if (!Array.isArray(segments)) {
+    return []
+  }
+
+  const pieces: PlanPiecePrefill[] = []
+  const seen = new Set<string>()
+
+  segments.forEach(segment => {
+    segment?.pieceRefs?.forEach(piece => {
+      if (!piece) {
+        return
+      }
+
+      const title = piece.title?.trim()
+      if (!title) {
+        return
+      }
+
+      const composer = piece.composer ?? null
+      const key = piece.scoreId
+        ? piece.scoreId
+        : `${title.toLowerCase()}|${(composer ?? '').toLowerCase()}`
+
+      if (seen.has(key)) {
+        return
+      }
+
+      seen.add(key)
+      pieces.push({
+        title,
+        composer,
+        scoreId: piece.scoreId ?? undefined,
+      })
+    })
+  })
+
+  return pieces
+}
+
+const buildPiecesFromDetails = (
+  details?: PlanOccurrencePrefillData
+): PlanPiecePrefill[] => {
+  if (!details) {
+    return []
+  }
+
+  if (Array.isArray(details.pieces) && details.pieces.length > 0) {
+    return details.pieces
+      .filter(piece => typeof piece?.title === 'string' && piece.title.trim())
+      .map(piece => ({
+        title: piece.title.trim(),
+        composer: piece.composer ?? null,
+        scoreId: piece.scoreId ?? undefined,
+      }))
+  }
+
+  return collectPiecesFromSegments(details.segments)
+}
+
+const buildTechniquesFromDetails = (
+  details?: PlanOccurrencePrefillData
+): string[] => {
+  if (!details) {
+    return []
+  }
+
+  const aggregated = new Set<string>()
+
+  details.techniques?.forEach(technique => {
+    const trimmed = technique.trim()
+    if (trimmed) {
+      aggregated.add(trimmed)
+    }
+  })
+
+  details.segments?.forEach(segment => {
+    segment?.techniques?.forEach(technique => {
+      const trimmed = technique.trim()
+      if (trimmed) {
+        aggregated.add(trimmed)
+      }
+    })
+  })
+
+  return Array.from(aggregated)
+}
+
+const normalizePrompts = (details?: PlanOccurrencePrefillData): string[] => {
+  if (!details || !Array.isArray(details.reflectionPrompts)) {
+    return []
+  }
+
+  return details.reflectionPrompts
+    .map(prompt => prompt.trim())
+    .filter(prompt => prompt.length > 0)
+}
+
+const normalizeFocusAreas = (details?: PlanOccurrencePrefillData): string[] => {
+  if (!details || !Array.isArray(details.focusAreas)) {
+    return []
+  }
+
+  return details.focusAreas
+    .map(area => area.trim())
+    .filter(area => area.length > 0)
+}
+
+const computePlanDuration = (
+  details?: PlanOccurrencePrefillData
+): number | undefined => {
+  if (!details) {
+    return undefined
+  }
+
+  const providedDuration = Number(details.durationMinutes)
+  if (Number.isFinite(providedDuration) && providedDuration > 0) {
+    return providedDuration
+  }
+
+  const total = sumSegmentDurations(details.segments)
+  return total > 0 ? total : undefined
+}
+
+const buildPlanMetadata = (
+  planOccurrenceId: string,
+  details: PlanOccurrencePrefillData
+): Record<string, unknown> => {
+  const segments = prepareSegmentsForMetadata(details.segments)
+  const reflectionPrompts = normalizePrompts(details)
+  const focusAreas = normalizeFocusAreas(details)
+  const planTechniques = buildTechniquesFromDetails(details)
+
+  const baseMetadata: Record<string, unknown> = {
+    ...(details.metadata ?? {}),
+    planId: details.planId,
+    planOccurrenceId,
+    source: 'practice_plan',
+    planTitle: details.planTitle,
+    scheduledStart: details.scheduledStart ?? null,
+    scheduledEnd: details.scheduledEnd ?? null,
+    segments,
+    reflectionPrompts,
+  }
+
+  if (focusAreas.length > 0) {
+    baseMetadata.focusAreas = focusAreas
+  }
+
+  if (planTechniques.length > 0) {
+    baseMetadata.planTechniques = planTechniques
+  }
+
+  if (details.targets && Object.keys(details.targets).length > 0) {
+    baseMetadata.targets = details.targets
+  }
+
+  if (details.metadata?.occurrenceNotes) {
+    baseMetadata.occurrenceNotes = details.metadata.occurrenceNotes
+  }
+
+  return sanitizeMetadataRecord(baseMetadata)
+}
+
 interface ManualEntryFormProps {
   onClose: () => void
   onSave: () => void
@@ -33,6 +298,8 @@ interface ManualEntryFormProps {
   initialPieces?: Array<{ title: string; composer?: string; scoreId?: string }>
   metadataOverrides?: Record<string, unknown>
   onEntryCreated?: (entry: LogbookEntry) => void
+  planOccurrenceId?: string
+  planOccurrenceDetails?: PlanOccurrencePrefillData
 }
 
 export default function ManualEntryForm({
@@ -44,6 +311,8 @@ export default function ManualEntryForm({
   initialPieces,
   metadataOverrides,
   onEntryCreated,
+  planOccurrenceId,
+  planOccurrenceDetails,
 }: ManualEntryFormProps) {
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
@@ -76,10 +345,28 @@ export default function ManualEntryForm({
     loadRepertoire()
   }, [loadRepertoire])
 
-  // Form state
-  const [duration, setDuration] = useState<number>(
-    entry?.duration || initialDuration || 30
+  const planPrefillDuration = computePlanDuration(planOccurrenceDetails)
+  const planPrefillPieces = buildPiecesFromDetails(planOccurrenceDetails)
+  const planPrefillTechniques = buildTechniquesFromDetails(
+    planOccurrenceDetails
   )
+
+  // Form state
+  const [duration, setDuration] = useState<number>(() => {
+    if (entry?.duration && entry.duration > 0) {
+      return entry.duration
+    }
+
+    if (planPrefillDuration && planPrefillDuration > 0) {
+      return planPrefillDuration
+    }
+
+    if (initialDuration && initialDuration > 0) {
+      return initialDuration
+    }
+
+    return 30
+  })
   const [type, setType] = useState<LogbookEntry['type']>(
     entry?.type || 'practice'
   )
@@ -90,12 +377,63 @@ export default function ManualEntryForm({
   const [pieces, setPieces] = useState(
     entry?.pieces && entry.pieces.length > 0
       ? entry.pieces
-      : initialPieces || [{ title: '', composer: '' }]
+      : planPrefillPieces.length > 0
+        ? planPrefillPieces.map(piece => ({
+            title: piece.title,
+            composer: piece.composer ?? '',
+            scoreId: piece.scoreId,
+          }))
+        : initialPieces && initialPieces.length > 0
+          ? initialPieces
+          : [{ title: '', composer: '' }]
   )
   const [techniques, setTechniques] = useState<string[]>(
-    entry?.techniques || []
+    entry?.techniques && entry.techniques.length > 0
+      ? entry.techniques
+      : planPrefillTechniques.length > 0
+        ? planPrefillTechniques
+        : []
   )
   const [tags] = useState<string[]>(entry?.tags || [])
+
+  const planPrefillAppliedRef = useRef(false)
+
+  useEffect(() => {
+    planPrefillAppliedRef.current = false
+  }, [planOccurrenceId])
+
+  useEffect(() => {
+    if (entry || !planOccurrenceId || !planOccurrenceDetails) {
+      return
+    }
+
+    if (planPrefillAppliedRef.current) {
+      return
+    }
+
+    const durationFromPlan = computePlanDuration(planOccurrenceDetails)
+    if (durationFromPlan && durationFromPlan > 0) {
+      setDuration(durationFromPlan)
+    }
+
+    const piecesFromPlan = buildPiecesFromDetails(planOccurrenceDetails)
+    if (piecesFromPlan.length > 0) {
+      setPieces(
+        piecesFromPlan.map(piece => ({
+          title: piece.title,
+          composer: piece.composer ?? '',
+          scoreId: piece.scoreId,
+        }))
+      )
+    }
+
+    const techniquesFromPlan = buildTechniquesFromDetails(planOccurrenceDetails)
+    if (techniquesFromPlan.length > 0) {
+      setTechniques(techniquesFromPlan)
+    }
+
+    planPrefillAppliedRef.current = true
+  }, [entry, planOccurrenceId, planOccurrenceDetails])
 
   // Date state - use initialStartTime date, existing entry date, or default to today
   const [practiceDate, setPracticeDate] = useState(() => {
@@ -164,6 +502,22 @@ export default function ManualEntryForm({
       // Create the date directly with the correct time to avoid timezone issues
       const selectedDate = new Date(year, month - 1, day, hours, minutes, 0, 0)
 
+      const planMetadata =
+        planOccurrenceId && planOccurrenceDetails
+          ? buildPlanMetadata(planOccurrenceId, planOccurrenceDetails)
+          : null
+
+      const mergedMetadata = sanitizeMetadataRecord({
+        ...(planMetadata ?? { source: 'manual' }),
+        ...(metadataOverrides ?? {}),
+      })
+
+      if (planMetadata) {
+        mergedMetadata.source = 'practice_plan'
+        mergedMetadata.planId = planMetadata.planId
+        mergedMetadata.planOccurrenceId = planMetadata.planOccurrenceId
+      }
+
       const entryData = {
         timestamp: selectedDate.toISOString(),
         duration: Math.max(1, duration), // Ensure minimum duration of 1
@@ -180,10 +534,7 @@ export default function ManualEntryForm({
         notes: notes ? notes : null, // Convert empty string to null for D1 compatibility
         mood: null, // Mood feature removed for better mobile UX
         tags: tags.length > 0 ? tags : [],
-        metadata: {
-          source: 'manual',
-          ...(metadataOverrides ?? {}),
-        },
+        metadata: mergedMetadata as LogbookEntry['metadata'],
         // If we have a scoreId from initialPieces (from piece detail page), include it
         ...(initialPieces &&
           initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),

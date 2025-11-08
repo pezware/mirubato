@@ -1,5 +1,10 @@
 import { create } from 'zustand'
-import { logbookApi, type LogbookEntry, type Goal } from '../api/logbook'
+import {
+  logbookApi,
+  type LogbookEntry,
+  type Goal,
+  type LogEntryMetadata,
+} from '../api/logbook'
 import { nanoid } from 'nanoid'
 import {
   removeDuplicates,
@@ -209,6 +214,26 @@ function normalizeToIsoString(
   return undefined
 }
 
+function sanitizeMetadata(
+  metadata?: LogbookEntry['metadata']
+): LogbookEntry['metadata'] {
+  if (!metadata || typeof metadata !== 'object') {
+    return { source: 'manual' }
+  }
+
+  const sanitized = Object.fromEntries(
+    Object.entries(metadata).filter(([, value]) => value !== undefined)
+  ) as LogEntryMetadata
+
+  if (sanitized.planId && sanitized.planOccurrenceId) {
+    sanitized.source = 'practice_plan'
+  } else if (!sanitized.source) {
+    sanitized.source = 'manual'
+  }
+
+  return sanitized
+}
+
 function sanitizeEntryForSync(entry: LogbookEntry): LogbookEntry {
   const cleanEntry = Object.fromEntries(
     Object.entries(entry).filter(([_, value]) => value !== undefined)
@@ -286,7 +311,7 @@ function sanitizeEntryForSync(entry: LogbookEntry): LogbookEntry {
     techniques: cleanEntry.techniques || [],
     goalIds: cleanEntry.goalIds || [],
     tags: cleanEntry.tags || [],
-    metadata: cleanEntry.metadata || { source: 'manual' },
+    metadata: sanitizeMetadata(cleanEntry.metadata),
   }
 }
 
@@ -430,6 +455,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         id: nanoid(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        metadata: sanitizeMetadata(entryData.metadata),
       }
 
       // Cache score metadata if present
