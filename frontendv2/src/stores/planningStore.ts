@@ -23,6 +23,7 @@ export type RecurrenceFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY'
 
 const ICS_UNTIL_REGEX = /^\d{8}T\d{6}Z$/i
 const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/
+const MS_IN_HOUR = 60 * 60 * 1000
 
 const RECURRENCE_CODE_TO_DAY: Record<RecurrenceWeekday, number> = {
   MO: 1,
@@ -693,6 +694,192 @@ const collectPiecesFromSegments = (
   })
 
   return pieces
+}
+
+const parseIsoDate = (value?: string | null): Date | null => {
+  if (!value) {
+    return null
+  }
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    return null
+  }
+
+  return parsed
+}
+
+const parseLocalDateBoundary = (
+  value?: string | null,
+  boundary: 'start' | 'end' = 'start'
+): Date | null => {
+  if (!value) {
+    return null
+  }
+
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  if (DATE_ONLY_REGEX.test(trimmed)) {
+    const [year, month, day] = trimmed.split('-').map(part => Number(part))
+    if ([year, month, day].some(part => Number.isNaN(part))) {
+      return null
+    }
+
+    const date = new Date(year, month - 1, day)
+    if (boundary === 'end') {
+      date.setHours(23, 59, 59, 999)
+    } else {
+      date.setHours(0, 0, 0, 0)
+    }
+    return date
+  }
+
+  const parsed = new Date(trimmed)
+  if (Number.isNaN(parsed.getTime())) {
+    return null
+  }
+
+  return parsed
+}
+
+const getLocalDayBounds = (reference: Date) => {
+  const startOfDay = new Date(
+    reference.getFullYear(),
+    reference.getMonth(),
+    reference.getDate(),
+    0,
+    0,
+    0,
+    0
+  )
+
+  const endOfDay = new Date(
+    reference.getFullYear(),
+    reference.getMonth(),
+    reference.getDate(),
+    23,
+    59,
+    59,
+    999
+  )
+
+  return { startOfDay, endOfDay }
+}
+
+const getLocalDayKey = (reference: Date) =>
+  `${reference.getFullYear()}-${reference.getMonth()}-${reference.getDate()}`
+
+const getCurrentMinuteKey = (reference: Date) =>
+  `${reference.getFullYear()}-${reference.getMonth()}-${reference.getDate()}-${reference.getHours()}-${reference.getMinutes()}`
+
+interface OccurrenceWindow {
+  start: Date
+  end: Date
+}
+
+const getOccurrenceWindow = (
+  occurrence: PlanOccurrence
+): OccurrenceWindow | null => {
+  const start = parseIsoDate(occurrence.scheduledStart ?? undefined)
+  if (!start) {
+    return null
+  }
+
+  let end = parseIsoDate(occurrence.scheduledEnd ?? undefined)
+
+  if (!end || end.getTime() < start.getTime()) {
+    if (occurrence.flexWindow === 'overnight') {
+      end = new Date(start.getTime() + 12 * MS_IN_HOUR)
+    } else if (occurrence.flexWindow === 'anytime') {
+      end = new Date(start)
+      end.setHours(23, 59, 59, 999)
+    } else {
+      end = new Date(start)
+    }
+  }
+
+  return { start, end }
+}
+
+const getPlanRecurrenceBounds = (
+  plan?: PracticePlan
+): { start?: Date | null; end?: Date | null } => {
+  if (!plan) {
+    return { start: null, end: null }
+  }
+
+  const start = parseLocalDateBoundary(plan.schedule.startDate, 'start')
+
+  const metadata =
+    plan.schedule.metadata && typeof plan.schedule.metadata === 'object'
+      ? (plan.schedule.metadata as { recurrence?: unknown })
+      : null
+
+  const metadataRecurrence = normalizeRecurrenceMetadata(metadata?.recurrence)
+
+  const recurrenceFromRule = metadataRecurrence
+    ? null
+    : parseRecurrenceRule(plan.schedule.rule)
+
+  const endCandidate =
+    parseLocalDateBoundary(plan.schedule.endDate, 'end') ||
+    (metadataRecurrence?.until
+      ? parseLocalDateBoundary(metadataRecurrence.until, 'end')
+      : null) ||
+    (recurrenceFromRule?.until
+      ? parseLocalDateBoundary(recurrenceFromRule.until, 'end')
+      : null)
+
+  return { start, end: endCandidate }
+}
+
+const isOccurrenceCompleted = (occurrence: PlanOccurrence): boolean => {
+  if (occurrence.status === 'completed') {
+    return true
+  }
+
+  const metrics = occurrence.metrics
+  if (metrics && typeof metrics === 'object' && 'pendingLog' in metrics) {
+    return Boolean((metrics as Record<string, unknown>).pendingLog ?? undefined)
+  }
+
+  return false
+}
+
+const isOccurrenceActionable = (occurrence: PlanOccurrence): boolean => {
+  return occurrence.status === 'scheduled'
+}
+
+const isWithinRecurrenceWindow = (
+  occurrence: PlanOccurrence,
+  plan: PracticePlan | undefined,
+  occurrenceWindow: OccurrenceWindow | null
+) => {
+  if (!plan) {
+    return true
+  }
+
+  const bounds = getPlanRecurrenceBounds(plan)
+  const occurrenceStart =
+    occurrenceWindow?.start ||
+    parseIsoDate(occurrence.scheduledStart ?? undefined)
+
+  if (bounds.start && occurrenceStart) {
+    if (occurrenceStart.getTime() < bounds.start.getTime()) {
+      return false
+    }
+  }
+
+  if (bounds.end && occurrenceStart) {
+    if (occurrenceStart.getTime() > bounds.end.getTime()) {
+      return false
+    }
+  }
+
+  return true
 }
 
 const aggregateTechniques = (
@@ -1712,3 +1899,259 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     set({ _wsHandlers: undefined })
   },
 }))
+
+const computeCompletedOccurrences = (occurrences: PlanOccurrence[]) =>
+  occurrences.filter(isOccurrenceCompleted)
+
+let completedOccurrencesCache: {
+  occurrencesRef: PlanOccurrence[] | null
+  result: PlanOccurrence[]
+} = {
+  occurrencesRef: null,
+  result: [],
+}
+
+export const selectCompletedOccurrences = (
+  state: PlanningState
+): PlanOccurrence[] => {
+  if (completedOccurrencesCache.occurrencesRef === state.occurrences) {
+    return completedOccurrencesCache.result
+  }
+
+  const result = computeCompletedOccurrences(state.occurrences)
+  completedOccurrencesCache = {
+    occurrencesRef: state.occurrences,
+    result,
+  }
+
+  return result
+}
+
+const computeDueTodayOccurrences = (
+  occurrences: PlanOccurrence[],
+  plansMap: Map<string, PracticePlan>,
+  todayKey: string
+) => {
+  const referenceDateParts = todayKey.split('-').map(part => Number(part))
+  const [year, month, day] = referenceDateParts
+  const referenceDate =
+    Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)
+      ? new Date(year, month, day)
+      : new Date()
+  const { startOfDay, endOfDay } = getLocalDayBounds(referenceDate)
+
+  return occurrences.filter(occurrence => {
+    if (!isOccurrenceActionable(occurrence)) {
+      return false
+    }
+
+    if (isOccurrenceCompleted(occurrence)) {
+      return false
+    }
+
+    const occurrenceWindow = getOccurrenceWindow(occurrence)
+    if (
+      !isWithinRecurrenceWindow(
+        occurrence,
+        plansMap.get(occurrence.planId),
+        occurrenceWindow
+      )
+    ) {
+      return false
+    }
+
+    if (!occurrenceWindow) {
+      return true
+    }
+
+    return (
+      occurrenceWindow.start.getTime() <= endOfDay.getTime() &&
+      occurrenceWindow.end.getTime() >= startOfDay.getTime()
+    )
+  })
+}
+
+let dueTodayCache: {
+  occurrencesRef: PlanOccurrence[] | null
+  plansMapRef: Map<string, PracticePlan> | null
+  dayKey: string | null
+  result: PlanOccurrence[]
+} = {
+  occurrencesRef: null,
+  plansMapRef: null,
+  dayKey: null,
+  result: [],
+}
+
+export const selectDueTodayOccurrences = (
+  state: PlanningState
+): PlanOccurrence[] => {
+  const todayKey = getLocalDayKey(new Date())
+
+  if (
+    dueTodayCache.occurrencesRef === state.occurrences &&
+    dueTodayCache.plansMapRef === state.plansMap &&
+    dueTodayCache.dayKey === todayKey
+  ) {
+    return dueTodayCache.result
+  }
+
+  const result = computeDueTodayOccurrences(
+    state.occurrences,
+    state.plansMap,
+    todayKey
+  )
+
+  dueTodayCache = {
+    occurrencesRef: state.occurrences,
+    plansMapRef: state.plansMap,
+    dayKey: todayKey,
+    result,
+  }
+
+  return result
+}
+
+const computeUpcomingOccurrences = (
+  occurrences: PlanOccurrence[],
+  plansMap: Map<string, PracticePlan>,
+  todayKey: string
+) => {
+  const referenceDateParts = todayKey.split('-').map(part => Number(part))
+  const [year, month, day] = referenceDateParts
+  const referenceDate =
+    Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)
+      ? new Date(year, month, day)
+      : new Date()
+  const { endOfDay } = getLocalDayBounds(referenceDate)
+
+  return occurrences.filter(occurrence => {
+    if (!isOccurrenceActionable(occurrence)) {
+      return false
+    }
+
+    if (isOccurrenceCompleted(occurrence)) {
+      return false
+    }
+
+    const occurrenceWindow = getOccurrenceWindow(occurrence)
+    if (
+      !isWithinRecurrenceWindow(
+        occurrence,
+        plansMap.get(occurrence.planId),
+        occurrenceWindow
+      )
+    ) {
+      return false
+    }
+
+    if (!occurrenceWindow) {
+      return false
+    }
+
+    return occurrenceWindow.start.getTime() > endOfDay.getTime()
+  })
+}
+
+let upcomingCache: {
+  occurrencesRef: PlanOccurrence[] | null
+  plansMapRef: Map<string, PracticePlan> | null
+  dayKey: string | null
+  result: PlanOccurrence[]
+} = {
+  occurrencesRef: null,
+  plansMapRef: null,
+  dayKey: null,
+  result: [],
+}
+
+export const selectUpcomingOccurrences = (
+  state: PlanningState
+): PlanOccurrence[] => {
+  const todayKey = getLocalDayKey(new Date())
+
+  if (
+    upcomingCache.occurrencesRef === state.occurrences &&
+    upcomingCache.plansMapRef === state.plansMap &&
+    upcomingCache.dayKey === todayKey
+  ) {
+    return upcomingCache.result
+  }
+
+  const result = computeUpcomingOccurrences(
+    state.occurrences,
+    state.plansMap,
+    todayKey
+  )
+
+  upcomingCache = {
+    occurrencesRef: state.occurrences,
+    plansMapRef: state.plansMap,
+    dayKey: todayKey,
+    result,
+  }
+
+  return result
+}
+
+let nextActionableCache: {
+  occurrencesRef: PlanOccurrence[] | null
+  plansMapRef: Map<string, PracticePlan> | null
+  minuteKey: string | null
+  result: PlanOccurrence | undefined
+} = {
+  occurrencesRef: null,
+  plansMapRef: null,
+  minuteKey: null,
+  result: undefined,
+}
+
+export const selectNextActionableOccurrence = (
+  state: PlanningState
+): PlanOccurrence | undefined => {
+  const minuteKey = getCurrentMinuteKey(new Date())
+
+  if (
+    nextActionableCache.occurrencesRef === state.occurrences &&
+    nextActionableCache.plansMapRef === state.plansMap &&
+    nextActionableCache.minuteKey === minuteKey
+  ) {
+    return nextActionableCache.result
+  }
+
+  const dueToday = selectDueTodayOccurrences(state)
+  const upcoming = selectUpcomingOccurrences(state)
+  const now = Date.now()
+
+  const nextDue = dueToday.find(occurrence => {
+    const window = getOccurrenceWindow(occurrence)
+    if (!window) {
+      return true
+    }
+
+    return window.end.getTime() >= now
+  })
+
+  const result = nextDue ?? upcoming[0]
+
+  nextActionableCache = {
+    occurrencesRef: state.occurrences,
+    plansMapRef: state.plansMap,
+    minuteKey,
+    result,
+  }
+
+  return result
+}
+
+export const useCompletedOccurrences = () =>
+  usePlanningStore(selectCompletedOccurrences)
+
+export const useDueTodayOccurrences = () =>
+  usePlanningStore(selectDueTodayOccurrences)
+
+export const useUpcomingOccurrences = () =>
+  usePlanningStore(selectUpcomingOccurrences)
+
+export const useNextActionableOccurrence = () =>
+  usePlanningStore(selectNextActionableOccurrence)
