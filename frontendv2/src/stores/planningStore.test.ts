@@ -49,8 +49,10 @@ describe('usePlanningStore', () => {
       occurrences: [],
     })
 
-    // Clear localStorage data
-    localStorageData = {}
+    // Clear localStorage data and set auth token
+    localStorageData = {
+      'auth-token': 'test-auth-token',
+    }
 
     // Setup localStorage mock
     const localStorageMock = global.localStorage as unknown as {
