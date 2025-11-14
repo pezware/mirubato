@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
 import type { PlanOccurrence } from '@/api/planning'
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, startOfDay } from 'date-fns'
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  addDays,
+  startOfDay,
+} from 'date-fns'
 
 export interface AdherenceMetrics {
   overall: number // % of all occurrences completed
@@ -102,9 +110,7 @@ function calculateAdherenceMetrics(
   const totalDueOrCompleted =
     completed.length + dueToday.length + overdueOccurrences.length
   const overall =
-    totalDueOrCompleted > 0
-      ? (completed.length / totalDueOrCompleted) * 100
-      : 0
+    totalDueOrCompleted > 0 ? (completed.length / totalDueOrCompleted) * 100 : 0
 
   // This week's adherence
   const weekCompleted = completed.filter(occ => {
@@ -152,9 +158,7 @@ function calculateAdherenceMetrics(
 }
 
 // Helper: Calculate streak metrics
-function calculateStreakMetrics(
-  completed: PlanOccurrence[]
-): StreakMetrics {
+function calculateStreakMetrics(completed: PlanOccurrence[]): StreakMetrics {
   if (completed.length === 0) {
     return {
       currentStreak: 0,
@@ -342,10 +346,7 @@ function calculateWorkloadForecast(
   forecastDays.sort((a, b) => a.date.localeCompare(b.date))
 
   // Calculate totals
-  const totalOccurrences = forecastDays.reduce(
-    (sum, day) => sum + day.count,
-    0
-  )
+  const totalOccurrences = forecastDays.reduce((sum, day) => sum + day.count, 0)
   const totalMinutes = forecastDays.reduce(
     (sum, day) => sum + day.totalMinutes,
     0

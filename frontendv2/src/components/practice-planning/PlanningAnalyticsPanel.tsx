@@ -1,8 +1,21 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TrendingUp, Calendar, Target, AlertTriangle, Clock } from 'lucide-react'
+import {
+  TrendingUp,
+  Calendar,
+  Target,
+  AlertTriangle,
+  Clock,
+} from 'lucide-react'
 import type { PlanningAnalyticsData } from '@/hooks/usePlanningAnalytics'
-import { Card, CardContent, CardHeader, CardTitle, Typography, Tag } from '@/components/ui'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Typography,
+  Tag,
+} from '@/components/ui'
 import { cn } from '@/utils/cn'
 import { format, parseISO } from 'date-fns'
 
@@ -35,7 +48,10 @@ const PlanningAnalyticsPanel = ({
     : null
 
   return (
-    <div className={cn('space-y-4', className)} aria-labelledby={`${panelId}-title`}>
+    <div
+      className={cn('space-y-4', className)}
+      aria-labelledby={`${panelId}-title`}
+    >
       {/* Panel Title */}
       <div id={`${panelId}-title`}>
         <Typography variant="h4" className="text-morandi-stone-900">
@@ -59,22 +75,23 @@ const PlanningAnalyticsPanel = ({
                 <Typography variant="h2" className="text-morandi-stone-900">
                   {adherence.overall}%
                 </Typography>
-                <Tag
-                  variant={adherenceStatus}
-                  size="sm"
-                  className="text-xs"
-                >
-                  {adherenceStatus === 'success' && t('planningView.analytics.excellent', 'Excellent')}
-                  {adherenceStatus === 'warning' && t('planningView.analytics.good', 'Good')}
-                  {adherenceStatus === 'danger' && t('planningView.analytics.needsWork', 'Needs Work')}
+                <Tag variant={adherenceStatus} size="sm" className="text-xs">
+                  {adherenceStatus === 'success' &&
+                    t('planningView.analytics.excellent', 'Excellent')}
+                  {adherenceStatus === 'warning' &&
+                    t('planningView.analytics.good', 'Good')}
+                  {adherenceStatus === 'danger' &&
+                    t('planningView.analytics.needsWork', 'Needs Work')}
                 </Tag>
               </div>
               <div className="text-xs text-morandi-stone-600 space-y-1">
                 <p>
-                  {t('planningView.analytics.thisWeek', 'This week')}: <span className="font-medium">{adherence.thisWeek}%</span>
+                  {t('planningView.analytics.thisWeek', 'This week')}:{' '}
+                  <span className="font-medium">{adherence.thisWeek}%</span>
                 </p>
                 <p>
-                  {t('planningView.analytics.thisMonth', 'This month')}: <span className="font-medium">{adherence.thisMonth}%</span>
+                  {t('planningView.analytics.thisMonth', 'This month')}:{' '}
+                  <span className="font-medium">{adherence.thisMonth}%</span>
                 </p>
               </div>
             </div>
@@ -94,16 +111,28 @@ const PlanningAnalyticsPanel = ({
               <Typography variant="h2" className="text-morandi-stone-900">
                 {streak.currentStreak}
                 <span className="text-base font-normal text-morandi-stone-600 ml-2">
-                  {t('planningView.analytics.days', { count: streak.currentStreak })}
+                  {t('planningView.analytics.days', {
+                    count: streak.currentStreak,
+                  })}
                 </span>
               </Typography>
               <div className="text-xs text-morandi-stone-600 space-y-1">
                 <p>
-                  {t('planningView.analytics.longestStreak', 'Longest')}: <span className="font-medium">{streak.longestStreak} {t('planningView.analytics.days', { count: streak.longestStreak })}</span>
+                  {t('planningView.analytics.longestStreak', 'Longest')}:{' '}
+                  <span className="font-medium">
+                    {streak.longestStreak}{' '}
+                    {t('planningView.analytics.days', {
+                      count: streak.longestStreak,
+                    })}
+                  </span>
                 </p>
                 {streak.lastCompletedDate && (
                   <p className="text-morandi-stone-500">
-                    {t('planningView.analytics.lastCompleted', 'Last completed')}: {format(parseISO(streak.lastCompletedDate), 'MMM d')}
+                    {t(
+                      'planningView.analytics.lastCompleted',
+                      'Last completed'
+                    )}
+                    : {format(parseISO(streak.lastCompletedDate), 'MMM d')}
                   </p>
                 )}
               </div>
@@ -112,31 +141,45 @@ const PlanningAnalyticsPanel = ({
         </Card>
 
         {/* Missed Occurrences Card */}
-        <Card className={cn(
-          'border-morandi-stone-200',
-          missed.overdueCount > 0 && 'border-morandi-saffron-300'
-        )}>
+        <Card
+          className={cn(
+            'border-morandi-stone-200',
+            missed.overdueCount > 0 && 'border-morandi-saffron-300'
+          )}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle size={16} className={cn(
-                missed.overdueCount > 0 ? 'text-morandi-saffron-600' : 'text-morandi-stone-400'
-              )} />
+              <AlertTriangle
+                size={16}
+                className={cn(
+                  missed.overdueCount > 0
+                    ? 'text-morandi-saffron-600'
+                    : 'text-morandi-stone-400'
+                )}
+              />
               {t('planningView.analytics.missed', 'Missed')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Typography variant="h2" className={cn(
-                missed.overdueCount > 0 ? 'text-morandi-saffron-700' : 'text-morandi-stone-900'
-              )}>
+              <Typography
+                variant="h2"
+                className={cn(
+                  missed.overdueCount > 0
+                    ? 'text-morandi-saffron-700'
+                    : 'text-morandi-stone-900'
+                )}
+              >
                 {missed.overdueCount}
               </Typography>
               <div className="text-xs text-morandi-stone-600 space-y-1">
                 <p>
-                  {t('planningView.analytics.missedThisWeek', 'This week')}: <span className="font-medium">{missed.missedThisWeek}</span>
+                  {t('planningView.analytics.missedThisWeek', 'This week')}:{' '}
+                  <span className="font-medium">{missed.missedThisWeek}</span>
                 </p>
                 <p>
-                  {t('planningView.analytics.missedThisMonth', 'This month')}: <span className="font-medium">{missed.missedThisMonth}</span>
+                  {t('planningView.analytics.missedThisMonth', 'This month')}:{' '}
+                  <span className="font-medium">{missed.missedThisMonth}</span>
                 </p>
               </div>
               {missed.overdueCount > 0 && (
@@ -161,19 +204,23 @@ const PlanningAnalyticsPanel = ({
               <Typography variant="h2" className="text-morandi-stone-900">
                 {forecast.totalOccurrences}
                 <span className="text-base font-normal text-morandi-stone-600 ml-2">
-                  {t('planningView.analytics.sessions', { count: forecast.totalOccurrences })}
+                  {t('planningView.analytics.sessions', {
+                    count: forecast.totalOccurrences,
+                  })}
                 </span>
               </Typography>
               <div className="text-xs text-morandi-stone-600 space-y-1">
                 <div className="flex items-center gap-1">
                   <Clock size={12} />
                   <span>
-                    {forecast.totalMinutes} {t('planningView.analytics.minutes', 'min')}
+                    {forecast.totalMinutes}{' '}
+                    {t('planningView.analytics.minutes', 'min')}
                   </span>
                 </div>
                 {formattedPeakDay && (
                   <p className="text-morandi-stone-700 font-medium">
-                    {t('planningView.analytics.peakDay', 'Peak')}: {formattedPeakDay}
+                    {t('planningView.analytics.peakDay', 'Peak')}:{' '}
+                    {formattedPeakDay}
                   </p>
                 )}
               </div>
@@ -187,7 +234,10 @@ const PlanningAnalyticsPanel = ({
         <Card className="border-morandi-stone-200">
           <CardHeader>
             <CardTitle className="text-sm">
-              {t('planningView.analytics.upcomingSchedule', 'Upcoming Schedule')}
+              {t(
+                'planningView.analytics.upcomingSchedule',
+                'Upcoming Schedule'
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -210,10 +260,14 @@ const PlanningAnalyticsPanel = ({
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-sm">
-                        <p className={cn(
-                          'font-medium',
-                          isToday ? 'text-morandi-sage-900' : 'text-morandi-stone-900'
-                        )}>
+                        <p
+                          className={cn(
+                            'font-medium',
+                            isToday
+                              ? 'text-morandi-sage-900'
+                              : 'text-morandi-stone-900'
+                          )}
+                        >
                           {format(dayDate, 'EEEE')}
                         </p>
                         <p className="text-xs text-morandi-stone-600">
@@ -225,7 +279,9 @@ const PlanningAnalyticsPanel = ({
                       <div className="flex items-center gap-1 text-morandi-stone-700">
                         <span className="font-medium">{day.count}</span>
                         <span className="text-xs text-morandi-stone-600">
-                          {t('planningView.analytics.sessions', { count: day.count })}
+                          {t('planningView.analytics.sessions', {
+                            count: day.count,
+                          })}
                         </span>
                       </div>
                       <div className="flex items-center gap-1 text-morandi-stone-600">
@@ -242,20 +298,28 @@ const PlanningAnalyticsPanel = ({
       )}
 
       {/* Empty State */}
-      {forecast.totalOccurrences === 0 && missed.overdueCount === 0 && streak.currentStreak === 0 && (
-        <Card className="border-morandi-stone-200">
-          <CardContent className="py-8">
-            <div className="text-center space-y-2">
-              <Typography variant="body" className="text-morandi-stone-600">
-                {t('planningView.analytics.noData', 'No practice sessions scheduled yet')}
-              </Typography>
-              <p className="text-sm text-morandi-stone-500">
-                {t('planningView.analytics.createPlan', 'Create a practice plan to get started')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {forecast.totalOccurrences === 0 &&
+        missed.overdueCount === 0 &&
+        streak.currentStreak === 0 && (
+          <Card className="border-morandi-stone-200">
+            <CardContent className="py-8">
+              <div className="text-center space-y-2">
+                <Typography variant="body" className="text-morandi-stone-600">
+                  {t(
+                    'planningView.analytics.noData',
+                    'No practice sessions scheduled yet'
+                  )}
+                </Typography>
+                <p className="text-sm text-morandi-stone-500">
+                  {t(
+                    'planningView.analytics.createPlan',
+                    'Create a practice plan to get started'
+                  )}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
     </div>
   )
 }
