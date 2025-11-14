@@ -47,6 +47,7 @@ describe('usePlanningStore', () => {
       hasLoaded: false,
       plans: [],
       occurrences: [],
+      isLocalMode: false, // Set to online mode for API-dependent tests
     })
 
     // Clear localStorage data and set auth token
@@ -353,15 +354,15 @@ describe('usePlanningStore', () => {
         new Error('API Error')
       )
 
-      await expect(
-        act(async () => {
-          await usePlanningStore.getState().createPlan(draft)
-        })
-      ).rejects.toThrow('API Error')
+      // With offline-first pattern, this should NOT throw
+      const result = await act(async () => {
+        return await usePlanningStore.getState().createPlan(draft)
+      })
 
-      // Store should not be updated
+      // Plan should still be created locally even if API fails
+      expect(result.plan.id).toBeDefined()
       const state = usePlanningStore.getState()
-      expect(state.plansMap.size).toBe(0)
+      expect(state.plansMap.size).toBe(1)
     })
 
     it('should limit reflection prompts to 10', async () => {
@@ -731,15 +732,14 @@ describe('usePlanningStore', () => {
         new Error('Delete failed')
       )
 
-      await expect(
-        act(async () => {
-          await usePlanningStore.getState().deletePlan('plan1')
-        })
-      ).rejects.toThrow('Delete failed')
+      // With offline-first pattern, this should NOT throw
+      await act(async () => {
+        await usePlanningStore.getState().deletePlan('plan1')
+      })
 
-      // Plan should still be in store after failed deletion
+      // Plan should be deleted locally even if API fails
       const state = usePlanningStore.getState()
-      expect(state.plansMap.has('plan1')).toBe(true)
+      expect(state.plansMap.has('plan1')).toBe(false)
     })
   })
 

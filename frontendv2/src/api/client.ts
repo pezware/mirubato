@@ -111,6 +111,7 @@ apiClient.interceptors.response.use(
       // Import dynamically to avoid circular dependencies
       const { useAuthStore } = await import('../stores/authStore')
       const { useLogbookStore } = await import('../stores/logbookStore')
+      const { usePlanningStore } = await import('../stores/planningStore')
 
       // Update auth state
       useAuthStore.setState({
@@ -125,9 +126,14 @@ apiClient.interceptors.response.use(
         logbookStore.setLocalMode(true)
       }
 
+      const planningStore = usePlanningStore.getState()
+      if (planningStore?.setLocalMode) {
+        planningStore.setLocalMode(true)
+      }
+
       // Redirect to login if not on public pages or allowed paths
       const publicPaths = ['/', '/auth/verify']
-      const allowedPaths = ['/logbook', '/repertoire'] // These pages work offline
+      const allowedPaths = ['/logbook', '/repertoire', '/planning'] // These pages work offline
       const currentPath = window.location.pathname
 
       // Don't redirect if on public paths or allowed offline paths
