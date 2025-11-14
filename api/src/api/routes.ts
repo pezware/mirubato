@@ -7,6 +7,7 @@ import { autocompleteHandler } from './handlers/autocomplete'
 import { repertoireHandler } from './handlers/repertoire'
 import { goalsHandler } from './handlers/goals'
 import { piecesHandler } from './handlers/pieces'
+import { templatesHandler } from './handlers/templates'
 import {
   normalizeScoreIdBody,
   normalizeScoreIdParam,
@@ -65,6 +66,9 @@ api.get('/', c => {
       pieces: {
         'PUT /api/pieces/update-name': 'Update piece name across all entries',
       },
+      templates: {
+        'POST /api/templates/adopt': 'Adopt a template as a new practice plan',
+      },
     },
   })
 })
@@ -91,3 +95,4 @@ api.route('/autocomplete', autocompleteHandler)
 api.route('/repertoire', repertoireHandler)
 api.route('/goals', goalsHandler)
 api.route('/pieces', piecesHandler)
+api.route('/templates', templatesHandler)
