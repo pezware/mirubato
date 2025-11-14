@@ -4,17 +4,28 @@ import {
   Button,
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
   LoadingSkeleton,
   Typography,
 } from '@/components/ui'
 import type { PracticePlan, PlanOccurrence } from '@/api/planning'
 import PlanEditorModal from './PlanEditorModal'
 import PlanCheckInModal from './PlanCheckInModal'
-import { usePlanningStore, type CreatePlanDraft } from '@/stores/planningStore'
+import {
+  usePlanningStore,
+  useCompletedOccurrences,
+  useDueTodayOccurrences,
+  useUpcomingOccurrences,
+  useNextActionableOccurrence,
+  type CreatePlanDraft,
+} from '@/stores/planningStore'
 import { Calendar, Plus } from 'lucide-react'
+import PlanReminderCard, { type PlanReminderStatus } from './PlanReminderCard'
+import PlanProgressRail from './PlanProgressRail'
+import { useUserPreferences } from '@/hooks/useUserPreferences'
+import { trackPlanningEvent } from '@/lib/analytics/planning'
 
 interface PlanningViewProps {
   plans: PracticePlan[]
@@ -48,6 +59,14 @@ const formatTimeOnly = (value?: string | null, locale?: string) => {
 const getSegmentCount = (occurrence?: PlanOccurrence) =>
   occurrence?.segments?.length ?? 0
 
+const buildCountMap = (occurrences: PlanOccurrence[]) => {
+  const map = new Map<string, number>()
+  occurrences.forEach(occurrence => {
+    map.set(occurrence.planId, (map.get(occurrence.planId) ?? 0) + 1)
+  })
+  return map
+}
+
 const PlanningView = ({
   plans,
   occurrences,
@@ -62,6 +81,13 @@ const PlanningView = ({
   const deletePlan = usePlanningStore(state => state.deletePlan)
   const completeOccurrence = usePlanningStore(state => state.completeOccurrence)
 
+  const dueTodayOccurrences = useDueTodayOccurrences()
+  const upcomingOccurrences = useUpcomingOccurrences()
+  const completedOccurrences = useCompletedOccurrences()
+  const nextActionableOccurrence = useNextActionableOccurrence()
+  const { getPrimaryInstrument } = useUserPreferences()
+  const fallbackInstrument = getPrimaryInstrument()
+
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create')
   const [editorInitial, setEditorInitial] = useState<{
@@ -74,6 +100,12 @@ const PlanningView = ({
     plan: PracticePlan
     occurrence: PlanOccurrence
   } | null>(null)
+
+  const planLookup = useMemo(() => {
+    const map = new Map<string, PracticePlan>()
+    plans.forEach(plan => map.set(plan.id, plan))
+    return map
+  }, [plans])
 
   const occurrencesByPlan = useMemo(() => {
     const map = new Map<string, PlanOccurrence[]>()
@@ -98,6 +130,53 @@ const PlanningView = ({
 
     return map
   }, [occurrences])
+
+  const reminderQueue = useMemo(() => {
+    const queue: Array<{
+      occurrence: PlanOccurrence
+      status: PlanReminderStatus
+    }> = [
+      ...dueTodayOccurrences.map(occurrence => ({
+        occurrence,
+        status: 'due' as const,
+      })),
+      ...upcomingOccurrences.map(occurrence => ({
+        occurrence,
+        status: 'upcoming' as const,
+      })),
+    ]
+
+    const seen = new Set<string>()
+    return queue.filter(item => {
+      if (seen.has(item.occurrence.id)) {
+        return false
+      }
+      seen.add(item.occurrence.id)
+      return true
+    })
+  }, [dueTodayOccurrences, upcomingOccurrences])
+
+  const reminderItems = useMemo(
+    () =>
+      reminderQueue.map(item => ({
+        ...item,
+        plan: planLookup.get(item.occurrence.planId),
+      })),
+    [planLookup, reminderQueue]
+  )
+
+  const completedCountsByPlan = useMemo(
+    () => buildCountMap(completedOccurrences),
+    [completedOccurrences]
+  )
+  const dueCountsByPlan = useMemo(
+    () => buildCountMap(dueTodayOccurrences),
+    [dueTodayOccurrences]
+  )
+  const upcomingCountsByPlan = useMemo(
+    () => buildCountMap(upcomingOccurrences),
+    [upcomingOccurrences]
+  )
 
   const handleModalClose = () => {
     if (isSaving) return
@@ -160,7 +239,13 @@ const PlanningView = ({
     setActiveCheckIn(null)
   }
 
-  const openCreateModal = () => {
+  const openCreateModal = (source: 'hero' | 'header' | 'empty' = 'header') => {
+    if (source === 'hero') {
+      trackPlanningEvent('planning.hero.create', { source })
+      trackPlanningEvent('planning.plan.create', { source })
+    } else {
+      trackPlanningEvent('planning.plan.create', { source })
+    }
     setEditorMode('create')
     setEditorInitial(null)
     setEditorError(null)
@@ -173,6 +258,40 @@ const PlanningView = ({
     setEditorError(null)
     setIsEditorOpen(true)
   }
+
+  const startCheckIn = (
+    plan: PracticePlan,
+    occurrence: PlanOccurrence,
+    source: 'plan-card' | 'reminder'
+  ) => {
+    const eventName =
+      source === 'reminder'
+        ? 'planning.plan.reminder.checkIn'
+        : 'planning.plan.checkIn'
+    trackPlanningEvent(eventName, {
+      planId: plan.id,
+      occurrenceId: occurrence.id,
+      source,
+    })
+    setActiveCheckIn({ plan, occurrence })
+  }
+
+  const heroReminders = reminderItems.slice(0, 3)
+
+  const heroStats = [
+    {
+      label: t('reports:planningView.hero.stats.due', 'Due today'),
+      value: dueTodayOccurrences.length,
+    },
+    {
+      label: t('reports:planningView.hero.stats.upcoming', 'Upcoming'),
+      value: upcomingOccurrences.length,
+    },
+    {
+      label: t('reports:planningView.hero.stats.plans', 'Active plans'),
+      value: plans.length,
+    },
+  ]
 
   if (isLoading && plans.length === 0) {
     return (
@@ -189,7 +308,7 @@ const PlanningView = ({
       <div className="p-3 sm:p-4">
         <Card>
           <CardContent className="py-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Typography variant="h3" className="text-morandi-stone-900">
                   {t('reports:planningView.error')}
@@ -233,20 +352,28 @@ const PlanningView = ({
 
   if (!isLoading && plans.length === 0) {
     return (
-      <div className="p-3 sm:p-4">
-        <Card className="border-dashed">
+      <div className="p-3 sm:p-4 space-y-4">
+        <Card className="border-dashed bg-morandi-stone-50/70">
           <CardHeader>
-            <CardTitle>{t('reports:planningView.emptyState.title')}</CardTitle>
+            <CardTitle>
+              {t(
+                'reports:planningView.emptyState.title',
+                "You don't have any practice plans yet"
+              )}
+            </CardTitle>
             <CardDescription>
-              {t('reports:planningView.emptyState.description')}
+              {t(
+                'reports:planningView.emptyState.description',
+                'Create a routine and Mirubato will remind you when it is time to play.'
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button
-              onClick={openCreateModal}
-              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => openCreateModal('empty')}
+              leftIcon={<Plus className="h-4 w-4" />}
             >
-              {t('reports:planningView.emptyState.createPlan')}
+              {t('reports:planningView.emptyState.createPlan', 'Create plan')}
             </Button>
           </CardContent>
         </Card>
@@ -258,12 +385,98 @@ const PlanningView = ({
 
   return (
     <div className="p-3 sm:p-4 space-y-4">
+      <Card className="border-none bg-gradient-to-br from-morandi-sage-50 via-white to-morandi-stone-50 shadow-sm">
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
+            <div className="space-y-4 lg:max-w-sm">
+              <div className="space-y-2">
+                <Typography
+                  variant="body-sm"
+                  className="text-xs uppercase tracking-wide text-morandi-sage-700"
+                >
+                  {t('reports:planningView.hero.eyebrow', 'Practice planning')}
+                </Typography>
+                <Typography variant="h2" className="text-morandi-stone-900">
+                  {t(
+                    'reports:planningView.hero.title',
+                    'Stay on track this week'
+                  )}
+                </Typography>
+                <Typography variant="body" className="text-morandi-stone-600">
+                  {t(
+                    'reports:planningView.hero.description',
+                    'Review what is due, log progress, and let Mirubato nudge you when it is time to practice.'
+                  )}
+                </Typography>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {heroStats.map(stat => (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl bg-white/80 px-4 py-3 shadow-inner"
+                  >
+                    <p className="text-xs uppercase text-morandi-stone-500">
+                      {stat.label}
+                    </p>
+                    <p className="text-2xl font-semibold text-morandi-stone-900">
+                      {stat.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={() => openCreateModal('hero')}
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                {t('reports:planningView.createPlan', 'Create plan')}
+              </Button>
+            </div>
+            <div className="flex-1 space-y-3">
+              {heroReminders.length > 0 ? (
+                heroReminders.map(item => (
+                  <PlanReminderCard
+                    key={item.occurrence.id}
+                    occurrence={item.occurrence}
+                    plan={item.plan}
+                    status={item.status}
+                    isPrimary={Boolean(
+                      nextActionableOccurrence &&
+                        nextActionableOccurrence.id === item.occurrence.id
+                    )}
+                    fallbackInstrument={fallbackInstrument}
+                    onCheckIn={(plan, occurrence) =>
+                      startCheckIn(plan, occurrence, 'reminder')
+                    }
+                    onOpenPlan={(plan, occurrence) => {
+                      trackPlanningEvent('planning.plan.reminder.open', {
+                        planId: plan.id,
+                        occurrenceId: occurrence.id,
+                      })
+                      openEditModal(plan, occurrence)
+                    }}
+                  />
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-morandi-stone-200 bg-white/60 p-4">
+                  <Typography variant="body" className="text-morandi-stone-600">
+                    {t(
+                      'reports:planningView.reminders.none',
+                      "You're all set. We'll surface new reminders once sessions are scheduled."
+                    )}
+                  </Typography>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <Typography variant="h2">
-            {t('reports:planningView.heading', 'Practice planning')}
+          <Typography variant="h3" className="text-morandi-stone-900">
+            {t('reports:planningView.activePlans', 'Active plans')}
           </Typography>
-          <Typography variant="body" className="text-morandi-stone-600">
+          <Typography variant="body-sm" className="text-morandi-stone-600">
             {t(
               'reports:planningView.headingDescription',
               'Schedule upcoming sessions and track progress as you go.'
@@ -271,8 +484,8 @@ const PlanningView = ({
           </Typography>
         </div>
         <Button
-          onClick={openCreateModal}
-          leftIcon={<Plus className="w-4 h-4" />}
+          onClick={() => openCreateModal('header')}
+          leftIcon={<Plus className="h-4 w-4" />}
         >
           {t('reports:planningView.createPlan', 'Create plan')}
         </Button>
@@ -298,14 +511,14 @@ const PlanningView = ({
             <CardHeader className="pb-3">
               <div className="flex gap-3 sm:gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-lg bg-morandi-sage-100 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-morandi-sage-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-morandi-sage-100">
+                    <Calendar className="h-5 w-5 text-morandi-sage-600" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg sm:text-xl mb-1">
+                      <CardTitle className="text-lg sm:text-xl">
                         {plan.title}
                       </CardTitle>
                       {plan.description && (
@@ -314,14 +527,11 @@ const PlanningView = ({
                         </CardDescription>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2 flex-shrink-0">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         onClick={() => {
                           if (!primaryOccurrence) return
-                          setActiveCheckIn({
-                            plan,
-                            occurrence: primaryOccurrence,
-                          })
+                          startCheckIn(plan, primaryOccurrence, 'plan-card')
                         }}
                         disabled={!primaryOccurrence}
                         size="sm"
@@ -331,7 +541,12 @@ const PlanningView = ({
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => openEditModal(plan, primaryOccurrence)}
+                        onClick={() => {
+                          trackPlanningEvent('planning.plan.edit', {
+                            planId: plan.id,
+                          })
+                          openEditModal(plan, primaryOccurrence)
+                        }}
                       >
                         {t('reports:planningView.editPlan', 'Edit plan')}
                       </Button>
@@ -341,7 +556,12 @@ const PlanningView = ({
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Metadata section */}
+              <PlanProgressRail
+                completedCount={completedCountsByPlan.get(plan.id) ?? 0}
+                dueCount={dueCountsByPlan.get(plan.id) ?? 0}
+                upcomingCount={upcomingCountsByPlan.get(plan.id) ?? 0}
+              />
+
               <div className="flex flex-wrap gap-3 text-sm text-morandi-stone-600">
                 <div>
                   <span className="font-medium text-morandi-stone-900">
@@ -358,7 +578,6 @@ const PlanningView = ({
                 </div>
               </div>
 
-              {/* Plan details */}
               <div className="flex flex-wrap gap-4 text-sm text-morandi-stone-600">
                 {plan.schedule?.durationMinutes && (
                   <div>
@@ -403,7 +622,7 @@ const PlanningView = ({
                   <Typography variant="h5" className="text-morandi-stone-700">
                     {t('reports:planningView.segmentsLabel', 'Segments')}
                     {timeOfDay && (
-                      <span className="text-morandi-stone-500 font-normal text-sm ml-2">
+                      <span className="ml-2 text-sm font-normal text-morandi-stone-500">
                         {timeOfDay}
                       </span>
                     )}
@@ -414,7 +633,7 @@ const PlanningView = ({
                         key={segment.id ?? segment.label}
                         className="rounded-lg border border-morandi-stone-200 bg-morandi-stone-50/50 p-3"
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                           <Typography
                             variant="h6"
                             className="text-morandi-stone-900"
@@ -433,7 +652,7 @@ const PlanningView = ({
                         {segment.instructions && (
                           <Typography
                             variant="body-sm"
-                            className="text-morandi-stone-600 mt-2"
+                            className="mt-2 text-morandi-stone-600"
                           >
                             {segment.instructions}
                           </Typography>
@@ -451,7 +670,7 @@ const PlanningView = ({
               )}
 
               {allOccurrences.length > 0 && (
-                <div className="text-xs text-morandi-stone-500 pt-2 border-t border-morandi-stone-200">
+                <div className="border-t border-morandi-stone-200 pt-2 text-xs text-morandi-stone-500">
                   {t('reports:planningView.scheduledSessions', {
                     count: allOccurrences.length,
                   })}
