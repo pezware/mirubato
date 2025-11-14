@@ -366,20 +366,44 @@
     "table": "Table"
   },
   "planningView": {
+    "activePlans": "Active plans",
     "checkIn": "Check In",
     "createPlan": "Create plan",
     "durationLabel": "Duration",
     "emptyState": {
-      "createPlan": "Create Plan",
-      "description": "Create a practice plan or adopt a template to schedule future sessions.",
-      "title": "No active plans"
+      "createPlan": "Create plan",
+      "description": "Create a routine and Mirubato will remind you when it's time to play.",
+      "title": "You don't have any practice plans yet"
     },
     "error": "Unable to load practice plans",
     "flexibilityLabel": "Flexibility",
+    "hero": {
+      "description": "Review what is due, log progress, and let Mirubato nudge you when it's time to practice.",
+      "eyebrow": "Practice planning",
+      "stats": {
+        "due": "Due today",
+        "plans": "Active plans",
+        "upcoming": "Upcoming"
+      },
+      "title": "Stay on track this week"
+    },
     "heading": "Practice planning",
     "headingDescription": "Schedule upcoming sessions and track progress as you go.",
     "nextSession": "Next session",
     "noUpcoming": "No upcoming session",
+    "progress": {
+      "completed": "Logged",
+      "due": "Due soon",
+      "legend": "Plan progress legend",
+      "summary": "Plan progress: {{completed}} completed, {{due}} due, {{upcoming}} upcoming",
+      "upcoming": "Upcoming"
+    },
+    "reminders": {
+      "dueToday": "Due today",
+      "none": "You're all set. We'll surface new reminders once sessions are scheduled.",
+      "overdue": "Overdue",
+      "upcoming": "Upcoming"
+    },
     "retry": "Retry",
     "scheduledSessions_one": "{{count}} scheduled session",
     "scheduledSessions_other": "{{count}} scheduled sessions",
@@ -387,6 +411,7 @@
     "segmentCount_other": "{{count}} segments",
     "segmentsLabel": "Segments",
     "upcoming": "Upcoming",
+    "untitledPlan": "Practice plan",
     "editPlan": "Edit plan",
     "viewPlan": "Open Plan"
   },

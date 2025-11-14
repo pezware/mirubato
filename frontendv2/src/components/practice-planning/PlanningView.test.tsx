@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import PlanningView from './PlanningView'
 import type { PracticePlan, PlanOccurrence } from '@/api/planning'
+import { usePlanningStore } from '@/stores/planningStore'
 import {
   buildPracticePlan,
   buildPlanOccurrence,
@@ -26,24 +27,68 @@ describe('PlanningView', () => {
     getNextOccurrenceForPlan: vi.fn(),
   }
 
+  const seedPlanningStore = (
+    plans: PracticePlan[] = [],
+    occurrences: PlanOccurrence[] = []
+  ) => {
+    usePlanningStore.setState(state => ({
+      ...state,
+      plans,
+      occurrences,
+      plansMap: new Map(plans.map(plan => [plan.id, plan])),
+      occurrencesMap: new Map(occurrences.map(occ => [occ.id, occ])),
+      isLoading: false,
+      error: null,
+      hasLoaded: true,
+    }))
+  }
+
+  const resetPlanningStore = () => {
+    usePlanningStore.setState(state => ({
+      ...state,
+      plans: [],
+      occurrences: [],
+      plansMap: new Map(),
+      occurrencesMap: new Map(),
+      isLoading: false,
+      error: null,
+      hasLoaded: true,
+    }))
+  }
+
+  const renderPlanningView = (
+    overrideProps: Partial<typeof mockProps> = {}
+  ) => {
+    const props = { ...mockProps, ...overrideProps }
+    seedPlanningStore(props.plans, props.occurrences)
+    return render(<PlanningView {...props} />)
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
     resetIdCounter()
+    resetPlanningStore()
+  })
+
+  afterEach(() => {
+    resetPlanningStore()
   })
 
   describe('Empty state', () => {
     it('should render empty state when no plans are available', () => {
-      render(<PlanningView {...mockProps} />)
+      renderPlanningView()
 
-      expect(screen.getByText('No plans yet')).toBeInTheDocument()
-      expect(screen.getByText('Create Your First Plan')).toBeInTheDocument()
+      expect(
+        screen.getByText("You don't have any practice plans yet")
+      ).toBeInTheDocument()
+      expect(screen.getByText('Create plan')).toBeInTheDocument()
     })
 
     it('should show create button in empty state', () => {
-      render(<PlanningView {...mockProps} />)
+      renderPlanningView()
 
       const createButton = screen.getByRole('button', {
-        name: 'Create Your First Plan',
+        name: 'Create plan',
       })
       expect(createButton).toBeInTheDocument()
     })
@@ -51,9 +96,7 @@ describe('PlanningView', () => {
 
   describe('Loading state', () => {
     it('should render loading skeletons when loading', () => {
-      const { container } = render(
-        <PlanningView {...mockProps} isLoading={true} />
-      )
+      const { container } = renderPlanningView({ isLoading: true })
 
       // Check for loading skeletons by class name since LoadingSkeleton doesn't use role="status"
       const loadingElements = container.querySelectorAll('.animate-pulse')
@@ -61,16 +104,18 @@ describe('PlanningView', () => {
     })
 
     it('should not show empty state while loading', () => {
-      render(<PlanningView {...mockProps} isLoading={true} />)
+      renderPlanningView({ isLoading: true })
 
-      expect(screen.queryByText('No plans yet')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText("You don't have any practice plans yet")
+      ).not.toBeInTheDocument()
     })
   })
 
   describe('Error state', () => {
     it('should render error message when error is present', () => {
       const errorMessage = 'Network connection failed'
-      render(<PlanningView {...mockProps} error={errorMessage} />)
+      renderPlanningView({ error: errorMessage })
 
       // Check for the error title (h3)
       expect(
@@ -81,7 +126,7 @@ describe('PlanningView', () => {
     })
 
     it('should show retry button on error', () => {
-      render(<PlanningView {...mockProps} error="Network error" />)
+      renderPlanningView({ error: 'Network error' })
 
       const retryButton = screen.getByRole('button', { name: 'Retry' })
       expect(retryButton).toBeInTheDocument()
@@ -103,12 +148,10 @@ describe('PlanningView', () => {
         buildPlanOccurrence({ planId: 'plan2' }),
       ]
 
-      render(
-        <PlanningView {...mockProps} plans={plans} occurrences={occurrences} />
-      )
+      renderPlanningView({ plans, occurrences })
 
-      expect(screen.getByText('Daily Practice')).toBeInTheDocument()
-      expect(screen.getByText('Weekly Routine')).toBeInTheDocument()
+      expect(screen.getAllByText('Daily Practice').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Weekly Routine').length).toBeGreaterThan(0)
     })
 
     it('should display plan metadata', () => {
@@ -128,7 +171,7 @@ describe('PlanningView', () => {
         },
       })
 
-      render(<PlanningView {...mockProps} plans={[plan]} />)
+      renderPlanningView({ plans: [plan] })
 
       expect(screen.getByText('Test Plan')).toBeInTheDocument()
       expect(screen.getByText('Test description')).toBeInTheDocument()
@@ -141,16 +184,13 @@ describe('PlanningView', () => {
 
       mockProps.getNextOccurrenceForPlan.mockReturnValue(undefined)
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-          occurrences={[]}
-          getNextOccurrenceForPlan={mockProps.getNextOccurrenceForPlan}
-        />
-      )
+      renderPlanningView({
+        plans: [plan],
+        occurrences: [],
+        getNextOccurrenceForPlan: mockProps.getNextOccurrenceForPlan,
+      })
 
-      expect(screen.getByText(plan.title)).toBeInTheDocument()
+      expect(screen.getAllByText(plan.title).length).toBeGreaterThan(0)
       // Should not crash when no occurrences exist
     })
   })
@@ -167,19 +207,16 @@ describe('PlanningView', () => {
 
       mockProps.getNextOccurrenceForPlan.mockReturnValue(futureOcc)
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-          occurrences={[futureOcc]}
-          getNextOccurrenceForPlan={mockProps.getNextOccurrenceForPlan}
-        />
-      )
+      renderPlanningView({
+        plans: [plan],
+        occurrences: [futureOcc],
+        getNextOccurrenceForPlan: mockProps.getNextOccurrenceForPlan,
+      })
 
       // Check that the next session info is displayed
       expect(screen.getByText('Next session')).toBeInTheDocument()
       // Should show the plan title
-      expect(screen.getByText(plan.title)).toBeInTheDocument()
+      expect(screen.getAllByText(plan.title).length).toBeGreaterThan(0)
     })
 
     it('should show completed occurrences', () => {
@@ -189,16 +226,10 @@ describe('PlanningView', () => {
         planId: 'plan1',
       })
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-          occurrences={[completedOcc]}
-        />
-      )
+      renderPlanningView({ plans: [plan], occurrences: [completedOcc] })
 
       // Plan title should be visible
-      expect(screen.getByText(plan.title)).toBeInTheDocument()
+      expect(screen.getAllByText(plan.title).length).toBeGreaterThan(0)
       // The component shows the occurrence count at the bottom
       expect(screen.getByText('1 scheduled session')).toBeInTheDocument()
     })
@@ -216,14 +247,11 @@ describe('PlanningView', () => {
 
       mockProps.getNextOccurrenceForPlan.mockReturnValue(occurrence)
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-          occurrences={[occurrence]}
-          getNextOccurrenceForPlan={mockProps.getNextOccurrenceForPlan}
-        />
-      )
+      renderPlanningView({
+        plans: [plan],
+        occurrences: [occurrence],
+        getNextOccurrenceForPlan: mockProps.getNextOccurrenceForPlan,
+      })
 
       expect(screen.getByText('Warm-up')).toBeInTheDocument()
       expect(screen.getByText('Technical Work')).toBeInTheDocument()
@@ -255,14 +283,29 @@ describe('PlanningView', () => {
         }),
       ]
 
-      render(
-        <PlanningView {...mockProps} plans={[plan]} occurrences={occurrences} />
-      )
+      renderPlanningView({ plans: [plan], occurrences })
 
       // The component shows the count of scheduled sessions
       expect(screen.getByText('4 scheduled sessions')).toBeInTheDocument()
       // Plan title should be visible
-      expect(screen.getByText(plan.title)).toBeInTheDocument()
+      expect(screen.getAllByText(plan.title).length).toBeGreaterThan(0)
+    })
+
+    it('should surface hero reminder cards for due occurrences', () => {
+      const plan = buildPracticePlan({
+        id: 'reminder-plan',
+        title: 'Reminder Plan',
+      })
+      const occurrence = buildPlanOccurrence({
+        planId: plan.id,
+        status: 'scheduled',
+        scheduledStart: new Date().toISOString(),
+      })
+
+      renderPlanningView({ plans: [plan], occurrences: [occurrence] })
+
+      expect(screen.getByText('Reminder Plan')).toBeInTheDocument()
+      expect(screen.getByText('Due today')).toBeInTheDocument()
     })
   })
 
@@ -279,17 +322,11 @@ describe('PlanningView', () => {
 
       const allOccurrences = [...plan1Occurrences, ...plan2Occurrences]
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan1, plan2]}
-          occurrences={allOccurrences}
-        />
-      )
+      renderPlanningView({ plans: [plan1, plan2], occurrences: allOccurrences })
 
       // Both plans should be visible
-      expect(screen.getByText('Plan 1')).toBeInTheDocument()
-      expect(screen.getByText('Plan 2')).toBeInTheDocument()
+      expect(screen.getAllByText('Plan 1').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Plan 2').length).toBeGreaterThan(0)
     })
 
     it('should sort plans by most recently updated', () => {
@@ -304,11 +341,11 @@ describe('PlanningView', () => {
         updatedAt: new Date().toISOString(),
       })
 
-      render(<PlanningView {...mockProps} plans={[olderPlan, newerPlan]} />)
+      renderPlanningView({ plans: [olderPlan, newerPlan] })
 
       // Just verify both plans are rendered
-      expect(screen.getByText('Older Plan')).toBeInTheDocument()
-      expect(screen.getByText('Newer Plan')).toBeInTheDocument()
+      expect(screen.getAllByText('Older Plan').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Newer Plan').length).toBeGreaterThan(0)
       // Note: The component doesn't actually sort plans by updatedAt, it renders them in the order provided
     })
   })
@@ -318,16 +355,10 @@ describe('PlanningView', () => {
       const plan = buildPracticePlan({ id: 'plan1' })
       const occurrence = buildPlanOccurrence({ planId: 'plan1' })
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-          occurrences={[occurrence]}
-        />
-      )
+      renderPlanningView({ plans: [plan], occurrences: [occurrence] })
 
       // Click on plan to select/expand
-      const planElement = screen.getByText(plan.title)
+      const planElement = screen.getAllByText(plan.title)[0]
       fireEvent.click(planElement)
 
       // Check if plan details are expanded (implementation specific)
@@ -343,14 +374,11 @@ describe('PlanningView', () => {
 
       mockProps.getNextOccurrenceForPlan.mockReturnValue(occurrence)
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-          occurrences={[occurrence]}
-          getNextOccurrenceForPlan={mockProps.getNextOccurrenceForPlan}
-        />
-      )
+      renderPlanningView({
+        plans: [plan],
+        occurrences: [occurrence],
+        getNextOccurrenceForPlan: mockProps.getNextOccurrenceForPlan,
+      })
 
       // Look for check-in button or action
       // This depends on the actual component implementation
@@ -377,13 +405,11 @@ describe('PlanningView', () => {
         return { plans: plansList, occurrences: occurrencesList }
       })()
 
-      render(
-        <PlanningView {...mockProps} plans={plans} occurrences={occurrences} />
-      )
+      renderPlanningView({ plans, occurrences })
 
       // All plans should be rendered
       plans.forEach(plan => {
-        expect(screen.getByText(plan.title)).toBeInTheDocument()
+        expect(screen.getAllByText(plan.title).length).toBeGreaterThan(0)
       })
     })
 
@@ -402,16 +428,13 @@ describe('PlanningView', () => {
 
       mockProps.getNextOccurrenceForPlan.mockReturnValue(undefined)
 
-      render(
-        <PlanningView
-          {...mockProps}
-          plans={[plan]}
-          occurrences={pastOccurrences}
-          getNextOccurrenceForPlan={mockProps.getNextOccurrenceForPlan}
-        />
-      )
+      renderPlanningView({
+        plans: [plan],
+        occurrences: pastOccurrences,
+        getNextOccurrenceForPlan: mockProps.getNextOccurrenceForPlan,
+      })
 
-      expect(screen.getByText(plan.title)).toBeInTheDocument()
+      expect(screen.getAllByText(plan.title).length).toBeGreaterThan(0)
       // When there's no next occurrence but there are past occurrences,
       // the component still shows segments from the first occurrence
       expect(screen.getByText('Warm-up')).toBeInTheDocument()
@@ -420,32 +443,33 @@ describe('PlanningView', () => {
     })
 
     it('should update when props change', async () => {
-      const { rerender } = render(<PlanningView {...mockProps} />)
+      const { rerender } = renderPlanningView()
 
-      expect(screen.getByText('No plans yet')).toBeInTheDocument()
+      expect(
+        screen.getByText("You don't have any practice plans yet")
+      ).toBeInTheDocument()
 
       // Update with new plans
       const newPlans = [buildPracticePlan({ title: 'New Plan' })]
+      seedPlanningStore(newPlans, [])
       rerender(<PlanningView {...mockProps} plans={newPlans} />)
 
       await waitFor(() => {
         expect(screen.getByText('New Plan')).toBeInTheDocument()
-        expect(screen.queryByText('No plans yet')).not.toBeInTheDocument()
+        expect(
+          screen.queryByText("You don't have any practice plans yet")
+        ).not.toBeInTheDocument()
       })
     })
 
     it('should handle rapid loading state changes', async () => {
-      const { rerender, container } = render(
-        <PlanningView {...mockProps} isLoading={true} />
-      )
+      const { rerender, container } = renderPlanningView({ isLoading: true })
 
       // Quick transition from loading to loaded
+      const updatedPlans = [buildPracticePlan()]
+      seedPlanningStore(updatedPlans, [])
       rerender(
-        <PlanningView
-          {...mockProps}
-          isLoading={false}
-          plans={[buildPracticePlan()]}
-        />
+        <PlanningView {...mockProps} isLoading={false} plans={updatedPlans} />
       )
 
       await waitFor(() => {
@@ -459,7 +483,7 @@ describe('PlanningView', () => {
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
       const plan = buildPracticePlan()
-      render(<PlanningView {...mockProps} plans={[plan]} />)
+      renderPlanningView({ plans: [plan] })
 
       // Check for semantic HTML and ARIA attributes
       const buttons = screen.getAllByRole('button')
@@ -479,9 +503,7 @@ describe('PlanningView', () => {
         buildPlanOccurrence({ planId: plans[1].id }),
       ]
 
-      render(
-        <PlanningView {...mockProps} plans={plans} occurrences={occurrences} />
-      )
+      renderPlanningView({ plans, occurrences })
 
       // Tab through interactive elements - focus on buttons instead of text
       const buttons = screen.getAllByRole('button')
