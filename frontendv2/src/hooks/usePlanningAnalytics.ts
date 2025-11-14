@@ -295,27 +295,28 @@ function calculateWorkloadForecast(
   upcoming: PlanOccurrence[]
 ): WorkloadForecast {
   const now = new Date()
+  const tomorrow = addDays(startOfDay(now), 1)
   const forecastDays: WorkloadForecast['days'] = []
   const dayMap = new Map<
     string,
     { count: number; totalMinutes: number; occurrenceIds: string[] }
   >()
 
-  // Initialize 7 days
+  // Initialize 7 days starting from tomorrow
   for (let i = 0; i < 7; i++) {
-    const date = addDays(startOfDay(now), i)
+    const date = addDays(tomorrow, i)
     const dateStr = format(date, 'yyyy-MM-dd')
     dayMap.set(dateStr, { count: 0, totalMinutes: 0, occurrenceIds: [] })
   }
 
-  // Filter to next 7 days and group
-  const sevenDaysFromNow = addDays(now, 7)
+  // Filter to next 7 days (starting from tomorrow) and group
+  const sevenDaysFromTomorrow = addDays(tomorrow, 7)
 
   upcoming.forEach(occ => {
     if (!occ.scheduledStart) return
 
     const start = new Date(occ.scheduledStart)
-    if (start >= now && start < sevenDaysFromNow) {
+    if (start >= tomorrow && start < sevenDaysFromTomorrow) {
       const dateStr = format(start, 'yyyy-MM-dd')
       const dayData = dayMap.get(dateStr)
 
