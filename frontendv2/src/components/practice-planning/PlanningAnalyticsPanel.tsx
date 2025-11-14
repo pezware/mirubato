@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TrendingUp, TrendingDown, Calendar, Target, AlertTriangle, Clock } from 'lucide-react'
+import { TrendingUp, Calendar, Target, AlertTriangle, Clock } from 'lucide-react'
 import type { PlanningAnalyticsData } from '@/hooks/usePlanningAnalytics'
 import { Card, CardContent, CardHeader, CardTitle, Typography, Tag } from '@/components/ui'
 import { cn } from '@/utils/cn'
@@ -37,9 +37,11 @@ const PlanningAnalyticsPanel = ({
   return (
     <div className={cn('space-y-4', className)} aria-labelledby={`${panelId}-title`}>
       {/* Panel Title */}
-      <Typography id={`${panelId}-title`} variant="h4" className="text-morandi-stone-900">
-        {t('planningView.analytics.title', 'Practice Analytics')}
-      </Typography>
+      <div id={`${panelId}-title`}>
+        <Typography variant="h4" className="text-morandi-stone-900">
+          {t('planningView.analytics.title', 'Practice Analytics')}
+        </Typography>
+      </div>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
