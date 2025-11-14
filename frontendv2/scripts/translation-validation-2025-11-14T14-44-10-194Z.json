@@ -1,0 +1,650 @@
+{
+  "missingKeys": {
+    "common:es": [],
+    "common:fr": [],
+    "common:de": [],
+    "common:zh-TW": [],
+    "common:zh-CN": [],
+    "auth:es": [],
+    "auth:fr": [],
+    "auth:de": [],
+    "auth:zh-TW": [],
+    "auth:zh-CN": [],
+    "errors:es": [],
+    "errors:fr": [],
+    "errors:de": [],
+    "errors:zh-TW": [],
+    "errors:zh-CN": [],
+    "logbook:es": [],
+    "logbook:fr": [],
+    "logbook:de": [],
+    "logbook:zh-TW": [],
+    "logbook:zh-CN": [],
+    "reports:es": [
+      "planningView.activePlans",
+      "planningView.hero.description",
+      "planningView.hero.eyebrow",
+      "planningView.hero.stats.due",
+      "planningView.hero.stats.plans",
+      "planningView.hero.stats.upcoming",
+      "planningView.hero.title",
+      "planningView.progress.completed",
+      "planningView.progress.due",
+      "planningView.progress.legend",
+      "planningView.progress.summary",
+      "planningView.progress.upcoming",
+      "planningView.reminders.dueToday",
+      "planningView.reminders.none",
+      "planningView.reminders.overdue",
+      "planningView.reminders.upcoming",
+      "planningView.untitledPlan"
+    ],
+    "reports:fr": [
+      "planningView.activePlans",
+      "planningView.hero.description",
+      "planningView.hero.eyebrow",
+      "planningView.hero.stats.due",
+      "planningView.hero.stats.plans",
+      "planningView.hero.stats.upcoming",
+      "planningView.hero.title",
+      "planningView.progress.completed",
+      "planningView.progress.due",
+      "planningView.progress.legend",
+      "planningView.progress.summary",
+      "planningView.progress.upcoming",
+      "planningView.reminders.dueToday",
+      "planningView.reminders.none",
+      "planningView.reminders.overdue",
+      "planningView.reminders.upcoming",
+      "planningView.untitledPlan"
+    ],
+    "reports:de": [
+      "planningView.activePlans",
+      "planningView.hero.description",
+      "planningView.hero.eyebrow",
+      "planningView.hero.stats.due",
+      "planningView.hero.stats.plans",
+      "planningView.hero.stats.upcoming",
+      "planningView.hero.title",
+      "planningView.progress.completed",
+      "planningView.progress.due",
+      "planningView.progress.legend",
+      "planningView.progress.summary",
+      "planningView.progress.upcoming",
+      "planningView.reminders.dueToday",
+      "planningView.reminders.none",
+      "planningView.reminders.overdue",
+      "planningView.reminders.upcoming",
+      "planningView.untitledPlan"
+    ],
+    "reports:zh-TW": [
+      "planningView.activePlans",
+      "planningView.hero.description",
+      "planningView.hero.eyebrow",
+      "planningView.hero.stats.due",
+      "planningView.hero.stats.plans",
+      "planningView.hero.stats.upcoming",
+      "planningView.hero.title",
+      "planningView.progress.completed",
+      "planningView.progress.due",
+      "planningView.progress.legend",
+      "planningView.progress.summary",
+      "planningView.progress.upcoming",
+      "planningView.reminders.dueToday",
+      "planningView.reminders.none",
+      "planningView.reminders.overdue",
+      "planningView.reminders.upcoming",
+      "planningView.untitledPlan"
+    ],
+    "reports:zh-CN": [
+      "planningView.activePlans",
+      "planningView.hero.description",
+      "planningView.hero.eyebrow",
+      "planningView.hero.stats.due",
+      "planningView.hero.stats.plans",
+      "planningView.hero.stats.upcoming",
+      "planningView.hero.title",
+      "planningView.progress.completed",
+      "planningView.progress.due",
+      "planningView.progress.legend",
+      "planningView.progress.summary",
+      "planningView.progress.upcoming",
+      "planningView.reminders.dueToday",
+      "planningView.reminders.none",
+      "planningView.reminders.overdue",
+      "planningView.reminders.upcoming",
+      "planningView.untitledPlan"
+    ],
+    "scorebook:es": [],
+    "scorebook:fr": [],
+    "scorebook:de": [],
+    "scorebook:zh-TW": [],
+    "scorebook:zh-CN": [],
+    "toolbox:es": [],
+    "toolbox:fr": [],
+    "toolbox:de": [],
+    "toolbox:zh-TW": [],
+    "toolbox:zh-CN": [],
+    "repertoire:es": [],
+    "repertoire:fr": [],
+    "repertoire:de": [],
+    "repertoire:zh-TW": [],
+    "repertoire:zh-CN": [],
+    "about:es": [],
+    "about:fr": [],
+    "about:de": [],
+    "about:zh-TW": [],
+    "about:zh-CN": [],
+    "ui:es": [],
+    "ui:fr": [],
+    "ui:de": [],
+    "ui:zh-TW": [],
+    "ui:zh-CN": []
+  },
+  "extraKeys": {
+    "common:es": [],
+    "common:fr": [],
+    "common:de": [],
+    "common:zh-TW": [],
+    "common:zh-CN": [],
+    "auth:es": [],
+    "auth:fr": [],
+    "auth:de": [],
+    "auth:zh-TW": [],
+    "auth:zh-CN": [],
+    "errors:es": [],
+    "errors:fr": [],
+    "errors:de": [],
+    "errors:zh-TW": [],
+    "errors:zh-CN": [],
+    "logbook:es": [],
+    "logbook:fr": [],
+    "logbook:de": [],
+    "logbook:zh-TW": [],
+    "logbook:zh-CN": [],
+    "reports:es": [],
+    "reports:fr": [],
+    "reports:de": [],
+    "reports:zh-TW": [],
+    "reports:zh-CN": [],
+    "scorebook:es": [],
+    "scorebook:fr": [],
+    "scorebook:de": [],
+    "scorebook:zh-TW": [],
+    "scorebook:zh-CN": [],
+    "toolbox:es": [],
+    "toolbox:fr": [],
+    "toolbox:de": [],
+    "toolbox:zh-TW": [],
+    "toolbox:zh-CN": [],
+    "repertoire:es": [],
+    "repertoire:fr": [],
+    "repertoire:de": [],
+    "repertoire:zh-TW": [],
+    "repertoire:zh-CN": [],
+    "about:es": [],
+    "about:fr": [],
+    "about:de": [],
+    "about:zh-TW": [],
+    "about:zh-CN": [],
+    "ui:es": [],
+    "ui:fr": [],
+    "ui:de": [],
+    "ui:zh-TW": [],
+    "ui:zh-CN": []
+  },
+  "emptyValues": {
+    "common:es": [],
+    "common:fr": [],
+    "common:de": [],
+    "common:zh-TW": [],
+    "common:zh-CN": [],
+    "auth:es": [],
+    "auth:fr": [],
+    "auth:de": [],
+    "auth:zh-TW": [],
+    "auth:zh-CN": [],
+    "errors:es": [],
+    "errors:fr": [],
+    "errors:de": [],
+    "errors:zh-TW": [],
+    "errors:zh-CN": [],
+    "logbook:es": [],
+    "logbook:fr": [],
+    "logbook:de": [],
+    "logbook:zh-TW": [],
+    "logbook:zh-CN": [],
+    "reports:es": [],
+    "reports:fr": [],
+    "reports:de": [],
+    "reports:zh-TW": [],
+    "reports:zh-CN": [],
+    "scorebook:es": [],
+    "scorebook:fr": [],
+    "scorebook:de": [],
+    "scorebook:zh-TW": [],
+    "scorebook:zh-CN": [],
+    "toolbox:es": [],
+    "toolbox:fr": [],
+    "toolbox:de": [],
+    "toolbox:zh-TW": [],
+    "toolbox:zh-CN": [],
+    "repertoire:es": [],
+    "repertoire:fr": [],
+    "repertoire:de": [],
+    "repertoire:zh-TW": [],
+    "repertoire:zh-CN": [],
+    "about:es": [],
+    "about:fr": [],
+    "about:de": [],
+    "about:zh-TW": [],
+    "about:zh-CN": [],
+    "ui:es": [],
+    "ui:fr": [],
+    "ui:de": [],
+    "ui:zh-TW": [],
+    "ui:zh-CN": []
+  },
+  "statistics": {
+    "common": {
+      "referenceKeyCount": 271,
+      "languages": {
+        "es": {
+          "totalKeys": 271,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 271,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 271,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 271,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 271,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    },
+    "auth": {
+      "referenceKeyCount": 40,
+      "languages": {
+        "es": {
+          "totalKeys": 40,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 40,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 40,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 40,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 40,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    },
+    "errors": {
+      "referenceKeyCount": 26,
+      "languages": {
+        "es": {
+          "totalKeys": 26,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 26,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 26,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 26,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 26,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    },
+    "logbook": {
+      "referenceKeyCount": 115,
+      "languages": {
+        "es": {
+          "totalKeys": 115,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 115,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 115,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 115,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 115,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    },
+    "reports": {
+      "referenceKeyCount": 421,
+      "languages": {
+        "es": {
+          "totalKeys": 404,
+          "missingKeys": 17,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "91.92"
+        },
+        "fr": {
+          "totalKeys": 404,
+          "missingKeys": 17,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "91.92"
+        },
+        "de": {
+          "totalKeys": 404,
+          "missingKeys": 17,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "91.92"
+        },
+        "zh-TW": {
+          "totalKeys": 404,
+          "missingKeys": 17,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "91.92"
+        },
+        "zh-CN": {
+          "totalKeys": 404,
+          "missingKeys": 17,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "91.92"
+        }
+      }
+    },
+    "scorebook": {
+      "referenceKeyCount": 105,
+      "languages": {
+        "es": {
+          "totalKeys": 105,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 105,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 105,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 105,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 105,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    },
+    "toolbox": {
+      "referenceKeyCount": 215,
+      "languages": {
+        "es": {
+          "totalKeys": 215,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 215,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 215,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 215,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 215,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    },
+    "repertoire": {
+      "referenceKeyCount": 170,
+      "languages": {
+        "es": {
+          "totalKeys": 170,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 170,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 170,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 170,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 170,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    },
+    "about": {
+      "referenceKeyCount": 101,
+      "languages": {
+        "es": {
+          "totalKeys": 101,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 101,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 101,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 101,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 101,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    },
+    "ui": {
+      "referenceKeyCount": 53,
+      "languages": {
+        "es": {
+          "totalKeys": 53,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "fr": {
+          "totalKeys": 53,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "de": {
+          "totalKeys": 53,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-TW": {
+          "totalKeys": 53,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        },
+        "zh-CN": {
+          "totalKeys": 53,
+          "missingKeys": 0,
+          "extraKeys": 0,
+          "emptyValues": 0,
+          "completeness": "100.00"
+        }
+      }
+    }
+  }
+}

@@ -284,6 +284,7 @@
     }
   },
   "planningView": {
+    "activePlans": "Plans actifs",
     "checkIn": "Enregistrer",
     "createPlan": "Créer un plan",
     "durationLabel": "Durée",
@@ -297,8 +298,31 @@
     "flexibilityLabel": "Flexibilité",
     "heading": "Planification de la pratique",
     "headingDescription": "Programmez les sessions à venir et suivez vos progrès.",
+    "hero": {
+      "description": "Passez en revue ce qui est dû, enregistrez vos progrès et laissez Mirubato vous avertir quand il est temps de pratiquer.",
+      "eyebrow": "Planification de la pratique",
+      "stats": {
+        "due": "Dû aujourd'hui",
+        "plans": "Plans actifs",
+        "upcoming": "À venir"
+      },
+      "title": "Gardez le cap cette semaine"
+    },
     "nextSession": "Prochaine session",
     "noUpcoming": "Aucune session à venir",
+    "progress": {
+      "completed": "Enregistré",
+      "due": "Dû bientôt",
+      "legend": "Légende de la progression du plan",
+      "summary": "Progression du plan : {{completed}} terminé, {{due}} dû, {{upcoming}} à venir",
+      "upcoming": "À venir"
+    },
+    "reminders": {
+      "dueToday": "Dû aujourd'hui",
+      "none": "Vous êtes prêt. Nous afficherons de nouveaux rappels une fois les sessions planifiées.",
+      "overdue": "En retard",
+      "upcoming": "À venir"
+    },
     "retry": "Réessayer",
     "scheduledSessions_one": "{{count}} session programmée",
     "scheduledSessions_other": "{{count}} sessions programmées",
@@ -306,6 +330,7 @@
     "segmentCount_other": "{{count}} segments",
     "segmentsLabel": "Segments",
     "upcoming": "À venir",
+    "untitledPlan": "Plan de pratique",
     "viewPlan": "Ouvrir le plan"
   },
   "practiceCalendar": "Calendrier de pratique",

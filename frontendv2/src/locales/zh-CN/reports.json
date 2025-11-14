@@ -284,6 +284,7 @@
     }
   },
   "planningView": {
+    "activePlans": "进行中的计划",
     "checkIn": "签到",
     "createPlan": "创建计划",
     "durationLabel": "时长",
@@ -297,8 +298,31 @@
     "flexibilityLabel": "灵活性",
     "heading": "练习计划",
     "headingDescription": "安排即将到来的练习并随时跟踪进度。",
+    "hero": {
+      "description": "查看应完成项目、记录进度，并让 Mirubato 在练习时间提醒您。",
+      "eyebrow": "练习规划",
+      "stats": {
+        "due": "今日到期",
+        "plans": "进行中的计划",
+        "upcoming": "即将到来"
+      },
+      "title": "本周保持进度"
+    },
     "nextSession": "下次练习",
     "noUpcoming": "没有即将到来的练习",
+    "progress": {
+      "completed": "已记录",
+      "due": "即将到期",
+      "legend": "计划进度图例",
+      "summary": "计划进度：{{completed}} 已完成，{{due}} 应完成，{{upcoming}} 即将到来",
+      "upcoming": "即将到来"
+    },
+    "reminders": {
+      "dueToday": "今日到期",
+      "none": "您已全部完成。安排新的练习后，我们会显示新的提醒。",
+      "overdue": "已逾期",
+      "upcoming": "即将到来"
+    },
     "retry": "重试",
     "scheduledSessions_one": "{{count}} 个已安排的练习",
     "scheduledSessions_other": "{{count}} 个已安排的练习",
@@ -306,6 +330,7 @@
     "segmentCount_other": "{{count}} 个环节",
     "segmentsLabel": "环节",
     "upcoming": "即将到来",
+    "untitledPlan": "练习计划",
     "viewPlan": "打开计划"
   },
   "practiceCalendar": "练习日历",
