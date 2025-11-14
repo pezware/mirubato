@@ -1018,6 +1018,15 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       }
     }
 
+    // Check if user is authenticated before calling API
+    const token = localStorage.getItem('auth-token')
+    if (!token) {
+      // Not authenticated - only use localStorage data
+      console.log('[Planning] Not authenticated, using local data only')
+      set({ hasLoaded: true, isLoading: false })
+      return
+    }
+
     set({ isLoading: true, error: null })
 
     try {
