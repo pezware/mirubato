@@ -284,6 +284,7 @@
     }
   },
   "planningView": {
+    "activePlans": "Aktive Pläne",
     "checkIn": "Einchecken",
     "createPlan": "Plan erstellen",
     "durationLabel": "Dauer",
@@ -297,8 +298,31 @@
     "flexibilityLabel": "Flexibilität",
     "heading": "Übungsplanung",
     "headingDescription": "Planen Sie kommende Einheiten und verfolgen Sie Ihren Fortschritt.",
+    "hero": {
+      "description": "Überprüfen Sie, was fällig ist, protokollieren Sie den Fortschritt und lassen Sie sich von Mirubato benachrichtigen, wenn es Zeit zum Üben ist.",
+      "eyebrow": "Übungsplanung",
+      "stats": {
+        "due": "Heute fällig",
+        "plans": "Aktive Pläne",
+        "upcoming": "Anstehend"
+      },
+      "title": "Bleiben Sie diese Woche auf Kurs"
+    },
     "nextSession": "Nächste Einheit",
     "noUpcoming": "Keine kommende Einheit",
+    "progress": {
+      "completed": "Protokolliert",
+      "due": "Bald fällig",
+      "legend": "Legende zum Planfortschritt",
+      "summary": "Planfortschritt: {{completed}} abgeschlossen, {{due}} fällig, {{upcoming}} anstehend",
+      "upcoming": "Anstehend"
+    },
+    "reminders": {
+      "dueToday": "Heute fällig",
+      "none": "Sie sind startklar. Wir werden neue Erinnerungen anzeigen, sobald Sitzungen geplant sind.",
+      "overdue": "Überfällig",
+      "upcoming": "Anstehend"
+    },
     "retry": "Wiederholen",
     "scheduledSessions_one": "{{count}} geplante Einheit",
     "scheduledSessions_other": "{{count}} geplante Einheiten",
@@ -306,6 +330,7 @@
     "segmentCount_other": "{{count}} Abschnitte",
     "segmentsLabel": "Abschnitte",
     "upcoming": "Bevorstehend",
+    "untitledPlan": "Übungsplan",
     "viewPlan": "Plan öffnen"
   },
   "practiceCalendar": "Übungskalender",

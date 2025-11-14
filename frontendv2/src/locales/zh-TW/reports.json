@@ -284,6 +284,7 @@
     }
   },
   "planningView": {
+    "activePlans": "進行中的計畫",
     "checkIn": "簽到",
     "createPlan": "建立計畫",
     "durationLabel": "持續時間",
@@ -297,8 +298,31 @@
     "flexibilityLabel": "彈性",
     "heading": "練習計畫",
     "headingDescription": "安排即將到來的練習並追蹤進度。",
+    "hero": {
+      "description": "查看應完成項目、記錄進度，並讓 Mirubato 在練習時間提醒您。",
+      "eyebrow": "練習規劃",
+      "stats": {
+        "due": "今日到期",
+        "plans": "進行中的計畫",
+        "upcoming": "即將到來"
+      },
+      "title": "本週保持進度"
+    },
     "nextSession": "下次練習",
     "noUpcoming": "沒有即將到來的練習",
+    "progress": {
+      "completed": "已記錄",
+      "due": "即將到期",
+      "legend": "計畫進度圖例",
+      "summary": "計畫進度：{{completed}} 已完成，{{due}} 應完成，{{upcoming}} 即將到來",
+      "upcoming": "即將到來"
+    },
+    "reminders": {
+      "dueToday": "今日到期",
+      "none": "您已全部完成。安排新的練習後，我們會顯示新的提醒。",
+      "overdue": "已逾期",
+      "upcoming": "即將到來"
+    },
     "retry": "重試",
     "scheduledSessions_one": "{{count}} 個已安排的練習",
     "scheduledSessions_other": "{{count}} 個已安排的練習",
@@ -306,6 +330,7 @@
     "segmentCount_other": "{{count}} 個環節",
     "segmentsLabel": "環節",
     "upcoming": "即將到來",
+    "untitledPlan": "練習計畫",
     "viewPlan": "開啟計畫"
   },
   "practiceCalendar": "練習日曆",

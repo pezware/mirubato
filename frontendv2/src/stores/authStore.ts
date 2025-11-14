@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { authApi, type User } from '../api/auth'
 import { useLogbookStore } from './logbookStore'
+import { usePlanningStore } from './planningStore'
 import { userApi } from '../api/user'
 
 // Type for repertoire store to avoid circular imports
@@ -317,6 +318,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         setLocalMode(false) // Switch to online mode when authenticated
 
+        // Also switch planning store to online mode
+        const planningStore = usePlanningStore.getState()
+        if (planningStore?.setLocalMode) {
+          planningStore.setLocalMode(false)
+        }
+
         // Push local entries to server before WebSocket sync
         // This ensures local-first data is preserved
         if (logbookStore.pushLocalEntriesToServer) {
@@ -435,6 +442,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         setLocalMode(false) // Switch to online mode when authenticated
+
+        // Also switch planning store to online mode
+        const planningStore = usePlanningStore.getState()
+        if (planningStore?.setLocalMode) {
+          planningStore.setLocalMode(false)
+        }
 
         // Push local entries to server before WebSocket sync
         // This ensures local-first data is preserved
@@ -650,6 +663,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             disableRealtimeSync()
           }
         }
+
+        // Also switch planning store to local mode
+        const planningStore = usePlanningStore.getState()
+        if (planningStore?.setLocalMode) {
+          planningStore.setLocalMode(true)
+        }
       } catch (error) {
         console.warn('Could not set local mode after logout:', error)
       }
@@ -718,6 +737,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           }
 
           setLocalMode(false)
+
+          // Also switch planning store to online mode
+          const planningStore = usePlanningStore.getState()
+          if (planningStore?.setLocalMode) {
+            planningStore.setLocalMode(false)
+          }
 
           // Push local entries to server before WebSocket sync
           // This ensures local-first data is preserved
@@ -799,6 +824,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             if (disableRealtimeSync) {
               disableRealtimeSync()
             }
+          }
+
+          // Also switch planning store to local mode
+          const planningStore = usePlanningStore.getState()
+          if (planningStore?.setLocalMode) {
+            planningStore.setLocalMode(true)
           }
         } catch (error) {
           console.warn('Could not set local mode when auth fails:', error)

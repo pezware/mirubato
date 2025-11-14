@@ -534,11 +534,13 @@ interface PlanningState {
   hasLoaded: boolean
   plans: PracticePlan[]
   occurrences: PlanOccurrence[]
+  isLocalMode: boolean
   _wsHandlers?: {
     planCreated?: (event: SyncEvent) => void
     planUpdated?: (event: SyncEvent) => void
     occurrenceCompleted?: (event: SyncEvent) => void
   }
+  setLocalMode: (isLocal: boolean) => void
   loadPlanningData: () => Promise<void>
   createPlan: (draft: CreatePlanDraft) => Promise<{
     plan: PracticePlan
@@ -991,7 +993,13 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
   hasLoaded: false,
   plans: [],
   occurrences: [],
+  isLocalMode: true,
   _wsHandlers: undefined,
+
+  setLocalMode: (isLocal: boolean) => {
+    console.log(`[Planning] ${isLocal ? 'Entering' : 'Exiting'} local mode`)
+    set({ isLocalMode: isLocal })
+  },
 
   loadPlanningData: async () => {
     const { hasLoaded, plansMap, occurrencesMap } = get()
@@ -1016,6 +1024,13 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
           hasLoaded: true,
         })
       }
+    }
+
+    // Check if we're in local mode
+    if (get().isLocalMode) {
+      console.log('[Planning] In local mode, using local data only')
+      set({ hasLoaded: true, isLoading: false })
+      return
     }
 
     set({ isLoading: true, error: null })
@@ -1281,43 +1296,49 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       sanitizeForStorage(occ)
     )
 
-    try {
-      await planningApi.createPlan(sanitizedPlan, sanitizedOccurrences)
+    // ALWAYS create locally first (offline-first pattern)
+    const nextPlansMap = new Map(plansMap)
+    const nextOccurrencesMap = new Map(occurrencesMap)
 
-      const nextPlansMap = new Map(plansMap)
-      const nextOccurrencesMap = new Map(occurrencesMap)
+    nextPlansMap.set(sanitizedPlan.id, sanitizedPlan)
+    sanitizedOccurrences.forEach(occ => {
+      nextOccurrencesMap.set(occ.id, occ)
+    })
 
-      nextPlansMap.set(sanitizedPlan.id, sanitizedPlan)
-      sanitizedOccurrences.forEach(occ => {
-        nextOccurrencesMap.set(occ.id, occ)
-      })
+    const nextPlansList = toSortedPlans(nextPlansMap)
+    const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
 
-      const nextPlansList = toSortedPlans(nextPlansMap)
-      const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+    // ALWAYS save to localStorage
+    writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+    writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
 
-      writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
-      writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+    // Update state immediately
+    set({
+      plansMap: nextPlansMap,
+      occurrencesMap: nextOccurrencesMap,
+      plans: nextPlansList,
+      occurrences: nextOccurrencesList,
+      hasLoaded: true,
+      error: null,
+    })
 
-      set({
-        plansMap: nextPlansMap,
-        occurrencesMap: nextOccurrencesMap,
-        plans: nextPlansList,
-        occurrences: nextOccurrencesList,
-        hasLoaded: true,
-        error: null,
-      })
-
-      return {
-        plan: sanitizedPlan,
-        occurrence: sanitizedOccurrences[0],
+    // ONLY sync to server if not in local mode and auth token exists
+    if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+      try {
+        await planningApi.createPlan(sanitizedPlan, sanitizedOccurrences)
+        console.log('[Planning] Plan synced to server:', sanitizedPlan.id)
+      } catch (syncError) {
+        console.warn(
+          '[Planning] Failed to sync plan to server, keeping local copy:',
+          syncError
+        )
+        // Plan is already saved locally, so don't throw
       }
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to create practice plan'
-      console.error('[Planning] Failed to create plan:', error)
-      throw error instanceof Error ? error : new Error(message)
+    }
+
+    return {
+      plan: sanitizedPlan,
+      occurrence: sanitizedOccurrences[0],
     }
   },
 
@@ -1530,36 +1551,49 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     const sanitizedPlan = sanitizeForStorage(updatedPlan)
     const sanitizedOccurrence = sanitizeForStorage(updatedOccurrence)
 
-    try {
-      await planningApi.updatePlan(sanitizedPlan, [sanitizedOccurrence])
+    // ALWAYS update locally first (offline-first pattern)
+    const nextPlansMap = new Map(plansMap)
+    const nextOccurrencesMap = new Map(occurrencesMap)
 
-      const nextPlansMap = new Map(plansMap)
-      const nextOccurrencesMap = new Map(occurrencesMap)
+    nextPlansMap.set(sanitizedPlan.id, sanitizedPlan)
+    nextOccurrencesMap.set(sanitizedOccurrence.id, sanitizedOccurrence)
 
-      nextPlansMap.set(sanitizedPlan.id, sanitizedPlan)
-      nextOccurrencesMap.set(sanitizedOccurrence.id, sanitizedOccurrence)
+    const nextPlansList = toSortedPlans(nextPlansMap)
+    const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
 
-      const nextPlansList = toSortedPlans(nextPlansMap)
-      const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+    // ALWAYS save to localStorage
+    writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+    writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
 
-      writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
-      writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+    // Update state immediately
+    set({
+      plansMap: nextPlansMap,
+      occurrencesMap: nextOccurrencesMap,
+      plans: nextPlansList,
+      occurrences: nextOccurrencesList,
+      error: null,
+    })
 
-      set({
-        plansMap: nextPlansMap,
-        occurrencesMap: nextOccurrencesMap,
-        plans: nextPlansList,
-        occurrences: nextOccurrencesList,
-        error: null,
-      })
-
-      return {
-        plan: sanitizedPlan,
-        occurrence: sanitizedOccurrence,
+    // ONLY sync to server if not in local mode and auth token exists
+    if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+      try {
+        await planningApi.updatePlan(sanitizedPlan, [sanitizedOccurrence])
+        console.log(
+          '[Planning] Plan update synced to server:',
+          sanitizedPlan.id
+        )
+      } catch (syncError) {
+        console.warn(
+          '[Planning] Failed to sync plan update to server, keeping local copy:',
+          syncError
+        )
+        // Plan is already saved locally, so don't throw
       }
-    } catch (error) {
-      console.error('[Planning] Failed to update plan:', error)
-      throw error instanceof Error ? error : new Error('Failed to update plan')
+    }
+
+    return {
+      plan: sanitizedPlan,
+      occurrence: sanitizedOccurrence,
     }
   },
 
@@ -1574,32 +1608,42 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       occurrence => occurrence.planId === planId
     )
 
-    try {
-      await planningApi.deletePlan(existingPlan, relatedOccurrences)
+    // ALWAYS delete locally first (offline-first pattern)
+    const nextPlansMap = new Map(plansMap)
+    nextPlansMap.delete(planId)
 
-      const nextPlansMap = new Map(plansMap)
-      nextPlansMap.delete(planId)
+    const nextOccurrencesMap = new Map(occurrencesMap)
+    relatedOccurrences.forEach(occurrence => {
+      nextOccurrencesMap.delete(occurrence.id)
+    })
 
-      const nextOccurrencesMap = new Map(occurrencesMap)
-      relatedOccurrences.forEach(occurrence => {
-        nextOccurrencesMap.delete(occurrence.id)
-      })
+    const nextPlansList = toSortedPlans(nextPlansMap)
+    const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
 
-      const nextPlansList = toSortedPlans(nextPlansMap)
-      const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+    // ALWAYS save to localStorage
+    writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+    writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
 
-      writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
-      writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+    // Update state immediately
+    set({
+      plansMap: nextPlansMap,
+      occurrencesMap: nextOccurrencesMap,
+      plans: nextPlansList,
+      occurrences: nextOccurrencesList,
+    })
 
-      set({
-        plansMap: nextPlansMap,
-        occurrencesMap: nextOccurrencesMap,
-        plans: nextPlansList,
-        occurrences: nextOccurrencesList,
-      })
-    } catch (error) {
-      console.error('[Planning] Failed to delete plan:', error)
-      throw error instanceof Error ? error : new Error('Failed to delete plan')
+    // ONLY sync to server if not in local mode and auth token exists
+    if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+      try {
+        await planningApi.deletePlan(existingPlan, relatedOccurrences)
+        console.log('[Planning] Plan deletion synced to server:', planId)
+      } catch (syncError) {
+        console.warn(
+          '[Planning] Failed to sync plan deletion to server, local copy already deleted:',
+          syncError
+        )
+        // Plan is already deleted locally, so don't throw
+      }
     }
   },
 
@@ -1742,37 +1786,48 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
 
     const sanitizedOccurrence = sanitizeForStorage(updatedOccurrence)
 
-    try {
-      await planningApi.updateOccurrence(sanitizedOccurrence)
+    // ALWAYS update locally first (offline-first pattern)
+    const nextOccurrencesMap = new Map(occurrencesMap)
+    nextOccurrencesMap.set(occurrenceId, sanitizedOccurrence)
 
-      const nextOccurrencesMap = new Map(occurrencesMap)
-      nextOccurrencesMap.set(occurrenceId, sanitizedOccurrence)
-
-      const nextPlansMap = new Map(plansMap)
-      if (plan) {
-        nextPlansMap.set(occurrence.planId, {
-          ...plan,
-          updatedAt: nowIso,
-        })
-      }
-
-      const nextPlansList = toSortedPlans(nextPlansMap)
-      const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
-
-      writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
-      writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
-
-      set({
-        plansMap: nextPlansMap,
-        occurrencesMap: nextOccurrencesMap,
-        plans: nextPlansList,
-        occurrences: nextOccurrencesList,
+    const nextPlansMap = new Map(plansMap)
+    if (plan) {
+      nextPlansMap.set(occurrence.planId, {
+        ...plan,
+        updatedAt: nowIso,
       })
-    } catch (error) {
-      console.error('[Planning] Failed to complete occurrence:', error)
-      throw error instanceof Error
-        ? error
-        : new Error('Failed to update occurrence')
+    }
+
+    const nextPlansList = toSortedPlans(nextPlansMap)
+    const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+    // ALWAYS save to localStorage
+    writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+    writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+
+    // Update state immediately
+    set({
+      plansMap: nextPlansMap,
+      occurrencesMap: nextOccurrencesMap,
+      plans: nextPlansList,
+      occurrences: nextOccurrencesList,
+    })
+
+    // ONLY sync to server if not in local mode and auth token exists
+    if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+      try {
+        await planningApi.updateOccurrence(sanitizedOccurrence)
+        console.log(
+          '[Planning] Occurrence completion synced to server:',
+          occurrenceId
+        )
+      } catch (syncError) {
+        console.warn(
+          '[Planning] Failed to sync occurrence completion to server, keeping local copy:',
+          syncError
+        )
+        // Occurrence is already updated locally, so don't throw
+      }
     }
   },
 
