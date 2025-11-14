@@ -101,11 +101,21 @@ export const i18nMock = {
       if (key === 'reports:planningView.loading') return 'Loading plans...'
       if (key === 'reports:planningView.error') return 'Failed to load plans'
       if (key === 'reports:planningView.retry') return 'Retry'
-      if (key === 'reports:planningView.emptyState.title') return 'No plans yet'
+      if (key === 'reports:planningView.emptyState.title')
+        return "You don't have any practice plans yet"
       if (key === 'reports:planningView.emptyState.description')
-        return 'Start scheduling your practice sessions'
+        return "Create a routine and Mirubato will remind you when it's time to play."
       if (key === 'reports:planningView.emptyState.createPlan')
-        return 'Create Your First Plan'
+        return 'Create plan'
+      if (key === 'reports:planningView.hero.eyebrow')
+        return 'Practice planning'
+      if (key === 'reports:planningView.hero.title')
+        return 'Stay on track this week'
+      if (key === 'reports:planningView.hero.description')
+        return 'Review what is due, log progress, and let Mirubato nudge you when it is time to practice.'
+      if (key === 'reports:planningView.hero.stats.due') return 'Due today'
+      if (key === 'reports:planningView.hero.stats.upcoming') return 'Upcoming'
+      if (key === 'reports:planningView.hero.stats.plans') return 'Active plans'
       if (key === 'reports:planningView.heading') return 'Practice planning'
       if (key === 'reports:planningView.headingDescription')
         return 'Schedule upcoming sessions and track progress as you go.'
@@ -120,9 +130,22 @@ export const i18nMock = {
       if (key === 'reports:planningView.segmentsLabel') return 'Segments'
       if (key === 'reports:planningView.upcomingOccurrences')
         return 'Upcoming Sessions'
-      if (key === 'reports:planningView.activePlans') return 'Active Plans'
+      if (key === 'reports:planningView.activePlans') return 'Active plans'
       if (key === 'reports:planningView.completedOccurrences')
         return 'Completed Sessions'
+      if (key === 'reports:planningView.progress.completed') return 'Logged'
+      if (key === 'reports:planningView.progress.due') return 'Due soon'
+      if (key === 'reports:planningView.progress.upcoming') return 'Upcoming'
+      if (key === 'reports:planningView.progress.summary')
+        return 'Plan progress summary'
+      if (key === 'reports:planningView.progress.legend')
+        return 'Plan progress legend'
+      if (key === 'reports:planningView.reminders.none')
+        return "You're all set. We'll surface new reminders once sessions are scheduled."
+      if (key === 'reports:planningView.reminders.overdue') return 'Overdue'
+      if (key === 'reports:planningView.reminders.dueToday') return 'Due today'
+      if (key === 'reports:planningView.reminders.upcoming') return 'Upcoming'
+      if (key === 'reports:planningView.untitledPlan') return 'Practice plan'
       if (key === 'reports:planningView.occurrence.scheduled')
         return 'Scheduled'
       if (key === 'reports:planningView.occurrence.completed')
