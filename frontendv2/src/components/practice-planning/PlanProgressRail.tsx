@@ -51,17 +51,17 @@ const PlanProgressRail = ({
     label: string
   }> = [
     {
-      key: 'completed',
+      key: 'completed' as const,
       value: normalizedCompleted,
       label: t('planningView.progress.completed', 'Logged'),
     },
     {
-      key: 'due',
+      key: 'due' as const,
       value: normalizedDue,
       label: t('planningView.progress.due', 'Due soon'),
     },
     {
-      key: 'upcoming',
+      key: 'upcoming' as const,
       value: normalizedUpcoming,
       label: t('planningView.progress.upcoming', 'Upcoming'),
     },
@@ -73,17 +73,17 @@ const PlanProgressRail = ({
     label: string
   }> = [
     {
-      key: 'completed',
+      key: 'completed' as const,
       value: normalizedCompleted,
       label: t('planningView.progress.completed', 'Logged'),
     },
     {
-      key: 'due',
+      key: 'due' as const,
       value: normalizedDue,
       label: t('planningView.progress.due', 'Due soon'),
     },
     {
-      key: 'upcoming',
+      key: 'upcoming' as const,
       value: normalizedUpcoming,
       label: t('planningView.progress.upcoming', 'Upcoming'),
     },
