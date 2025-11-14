@@ -235,6 +235,35 @@ export const PartialPlanOccurrenceSchema =
     planId: true,
   })
 
+// Plan template schemas
+export const TemplateVisibility = z.enum(['public', 'private'])
+
+export const PlanTemplateSchema = z.object({
+  id: z.string(),
+  authorId: z.string(),
+  sourcePlanId: z.string().optional(),
+  title: z.string().min(1),
+  description: z.string().nullable().optional(),
+  type: PracticePlanType.default('custom'),
+  focusAreas: z.array(z.string()).default([]).optional(),
+  techniques: z.array(z.string()).default([]).optional(),
+  pieceRefs: z.array(PlanPieceRefSchema).default([]).optional(),
+  schedule: PracticePlanScheduleSchema,
+  tags: z.array(z.string()).optional(),
+  templateVersion: z.number().int().default(1),
+  visibility: TemplateVisibility.default('private'),
+  adoptionCount: z.number().int().default(0).optional(),
+  metadata: z.record(z.unknown()).optional(),
+  publishedAt: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  deletedAt: z.string().nullable().optional(),
+})
+
+export const PartialPlanTemplateSchema = PlanTemplateSchema.partial().required({
+  id: true,
+})
+
 // Type exports for TypeScript
 export type LogbookEntry = z.infer<typeof LogbookEntrySchema>
 export type Goal = z.infer<typeof GoalSchema>
@@ -244,3 +273,4 @@ export type PartialLogbookEntry = z.infer<typeof PartialLogbookEntrySchema>
 export type PartialGoal = z.infer<typeof PartialGoalSchema>
 export type PracticePlan = z.infer<typeof PracticePlanSchema>
 export type PlanOccurrence = z.infer<typeof PlanOccurrenceSchema>
+export type PlanTemplate = z.infer<typeof PlanTemplateSchema>

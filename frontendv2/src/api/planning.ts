@@ -3,6 +3,7 @@ import { apiClient } from './client'
 export type PracticePlanVisibility = 'private' | 'shared' | 'template'
 export type PracticePlanStatus = 'draft' | 'active' | 'completed' | 'archived'
 export type PracticePlanType = 'bootcamp' | 'course' | 'custom'
+export type TemplateVisibility = 'public' | 'private'
 
 export interface PlanPieceRef {
   scoreId?: string
@@ -61,6 +62,28 @@ export interface PracticePlan {
   createdAt: string
   updatedAt: string
   archivedAt?: string | null
+  deletedAt?: string | null
+}
+
+export interface PlanTemplate {
+  id: string
+  authorId: string
+  sourcePlanId?: string
+  title: string
+  description?: string | null
+  type: PracticePlanType
+  focusAreas?: string[]
+  techniques?: string[]
+  pieceRefs?: PlanPieceRef[]
+  schedule: PracticePlanSchedule
+  tags?: string[]
+  templateVersion: number
+  visibility: TemplateVisibility
+  adoptionCount?: number
+  metadata?: Record<string, unknown>
+  publishedAt: string
+  createdAt: string
+  updatedAt: string
   deletedAt?: string | null
 }
 
@@ -130,6 +153,27 @@ const normalizeOccurrence = (occurrence: PlanOccurrence): PlanOccurrence => ({
   checkIn: occurrence.checkIn ?? undefined,
   reminderState: occurrence.reminderState ?? undefined,
   metrics: occurrence.metrics ?? undefined,
+})
+
+const normalizeTemplate = (template: PlanTemplate): PlanTemplate => ({
+  ...template,
+  focusAreas: Array.isArray(template.focusAreas) ? template.focusAreas : [],
+  techniques: Array.isArray(template.techniques) ? template.techniques : [],
+  pieceRefs: Array.isArray(template.pieceRefs) ? template.pieceRefs : [],
+  tags: Array.isArray(template.tags) ? template.tags : [],
+  schedule: {
+    ...template.schedule,
+    metadata:
+      template.schedule?.metadata &&
+      typeof template.schedule.metadata === 'object'
+        ? template.schedule.metadata
+        : {},
+  },
+  metadata:
+    template.metadata && typeof template.metadata === 'object'
+      ? template.metadata
+      : {},
+  adoptionCount: template.adoptionCount ?? 0,
 })
 
 const sanitize = <T>(value: T): T => {
@@ -262,5 +306,66 @@ export const planningApi = {
     }
 
     return payloadOccurrence
+  },
+
+  // Template API methods
+  getTemplates: async (filters?: {
+    visibility?: TemplateVisibility
+    type?: PracticePlanType
+    tags?: string[]
+  }) => {
+    const response = await apiClient.post<{
+      planTemplates?: PlanTemplate[]
+      syncToken?: string
+    }>('/api/sync/pull', {
+      types: ['plan_template'],
+      since: null,
+      filters,
+    })
+
+    return {
+      templates: (response.data.planTemplates ?? []).map(normalizeTemplate),
+      syncToken: response.data.syncToken,
+    }
+  },
+
+  publishTemplate: async (template: PlanTemplate) => {
+    const payloadTemplate = sanitize(template)
+
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          planTemplates: [payloadTemplate],
+        },
+      }
+    )
+
+    if (!response.data.success) {
+      throw new Error('Failed to publish plan template')
+    }
+
+    return payloadTemplate
+  },
+
+  adoptTemplate: async (
+    templateId: string,
+    customization?: {
+      title?: string
+      schedule?: Partial<PracticePlanSchedule>
+    }
+  ) => {
+    const response = await apiClient.post<{
+      plan: PracticePlan
+      occurrences: PlanOccurrence[]
+    }>('/api/templates/adopt', {
+      templateId,
+      customization,
+    })
+
+    return {
+      plan: normalizePlan(response.data.plan),
+      occurrences: response.data.occurrences.map(normalizeOccurrence),
+    }
   },
 }

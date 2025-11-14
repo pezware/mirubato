@@ -47,6 +47,7 @@ syncHandler.post('/pull', async c => {
     const goals = []
     const practicePlans = []
     const planOccurrences = []
+    const planTemplates = []
 
     // Handle the results properly
     const results = (syncData as { results?: unknown[] }).results || []
@@ -83,6 +84,8 @@ syncHandler.post('/pull', async c => {
           practicePlans.push(data)
         } else if (item.entity_type === 'plan_occurrence') {
           planOccurrences.push(data)
+        } else if (item.entity_type === 'plan_template') {
+          planTemplates.push(data)
         }
       } catch {
         // Error: Failed to parse sync data
@@ -97,6 +100,7 @@ syncHandler.post('/pull', async c => {
       goals,
       practicePlans,
       planOccurrences,
+      planTemplates,
       syncToken,
       timestamp: new Date().toISOString(),
     })
@@ -117,6 +121,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       goals?: unknown[]
       practicePlans?: unknown[]
       planOccurrences?: unknown[]
+      planTemplates?: unknown[]
     }
   }
   const db = new DatabaseHelpers(c.env.DB)
@@ -165,6 +170,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       goalsProcessed: 0,
       practicePlansProcessed: 0,
       planOccurrencesProcessed: 0,
+      planTemplatesProcessed: 0,
     }
 
     const planEventIndex = new Map<string, number>()
@@ -588,6 +594,118 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             reason:
               occurrenceError instanceof Error
                 ? occurrenceError.message
+                : 'Unknown error',
+          })
+        }
+      }
+    }
+
+    // Process plan templates
+    if (changes.planTemplates && changes.planTemplates.length > 0) {
+      for (const template of changes.planTemplates as Array<{
+        id: string
+        authorId?: string
+        [key: string]: unknown
+      }>) {
+        try {
+          const transformedTemplate = { ...template }
+
+          // Set authorId to current userId if not provided
+          if (!transformedTemplate.authorId) {
+            transformedTemplate.authorId = userId
+          }
+
+          // Handle soft delete
+          if (transformedTemplate.deletedAt) {
+            await db.softDeleteSyncData(
+              userId,
+              'plan_template',
+              transformedTemplate.id as string,
+              transformedTemplate.deletedAt as string
+            )
+
+            stats.planTemplatesProcessed++
+            continue
+          }
+
+          // Normalize timestamp fields
+          const timestampFields = transformedTemplate as {
+            createdAt?: string
+            created_at?: string
+            updatedAt?: string
+            updated_at?: string
+          }
+
+          if (timestampFields.createdAt && !timestampFields.created_at) {
+            timestampFields.created_at = timestampFields.createdAt
+          }
+
+          if (timestampFields.updatedAt && !timestampFields.updated_at) {
+            timestampFields.updated_at = timestampFields.updatedAt
+          }
+
+          // Validate schedule structure (same as practice plans)
+          const schedule = transformedTemplate.schedule as
+            | {
+                kind?: string
+                rule?: unknown
+                metadata?: unknown
+              }
+            | undefined
+
+          if (schedule) {
+            if (schedule.metadata && typeof schedule.metadata !== 'object') {
+              schedule.metadata = {}
+            }
+
+            if (schedule.kind === 'recurring') {
+              if (
+                typeof schedule.rule !== 'string' ||
+                schedule.rule.trim().length === 0
+              ) {
+                throw new Error('Invalid recurrence rule')
+              }
+
+              const normalizedRule = parseRecurrenceRule(schedule.rule)
+              if (!normalizedRule) {
+                throw new Error('Invalid recurrence rule')
+              }
+
+              const recurrenceMetadata = (
+                schedule.metadata as {
+                  recurrence?: unknown
+                }
+              )?.recurrence
+
+              if (recurrenceMetadata) {
+                const normalizedMetadata =
+                  normalizeRecurrenceMetadata(recurrenceMetadata)
+                if (!normalizedMetadata) {
+                  throw new Error('Invalid recurrence metadata')
+                }
+              }
+            }
+          }
+
+          const checksum = await calculateChecksum(transformedTemplate)
+
+          await db.upsertSyncData({
+            userId,
+            entityType: 'plan_template',
+            entityId: transformedTemplate.id as string,
+            data: transformedTemplate,
+            checksum,
+            deviceId,
+          })
+
+          stats.planTemplatesProcessed++
+        } catch (templateError) {
+          conflicts.push({
+            entityId: template.id,
+            entityType: 'plan_template',
+            reason:
+              templateError instanceof Error
+                ? templateError.message
                 : 'Unknown error',
           })
         }
