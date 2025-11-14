@@ -6,6 +6,8 @@ import {
   type PlanOccurrence,
   type PlanSegment,
   type PlanTargets,
+  type PlanTemplate,
+  type TemplateVisibility,
 } from '../api/planning'
 import type { SyncEvent, WebSocketSync } from '../services/webSocketSync'
 
@@ -529,11 +531,13 @@ export interface PlanOccurrencePrefillData {
 interface PlanningState {
   plansMap: Map<string, PracticePlan>
   occurrencesMap: Map<string, PlanOccurrence>
+  templatesMap: Map<string, PlanTemplate>
   isLoading: boolean
   error: string | null
   hasLoaded: boolean
   plans: PracticePlan[]
   occurrences: PlanOccurrence[]
+  templates: PlanTemplate[]
   isLocalMode: boolean
   _wsHandlers?: {
     planCreated?: (event: SyncEvent) => void
@@ -570,10 +574,42 @@ interface PlanningState {
   ) => Promise<void>
   attachRealtimeHandlers: (webSocketSync: WebSocketSync) => void
   detachRealtimeHandlers: (webSocketSync: WebSocketSync) => void
+  // Template methods
+  loadTemplates: (filters?: {
+    visibility?: TemplateVisibility
+    tags?: string[]
+  }) => Promise<void>
+  publishTemplate: (
+    planId: string,
+    options: {
+      title?: string
+      description?: string
+      visibility?: TemplateVisibility
+      tags?: string[]
+    }
+  ) => Promise<PlanTemplate>
+  adoptTemplate: (
+    templateId: string,
+    customization?: {
+      title?: string
+      schedule?: {
+        startDate?: string
+        endDate?: string
+        timeOfDay?: string
+        durationMinutes?: number
+      }
+    }
+  ) => Promise<{ plan: PracticePlan; occurrences: PlanOccurrence[] }>
+  updateTemplate: (
+    templateId: string,
+    updates: Partial<PlanTemplate>
+  ) => Promise<void>
+  deleteTemplate: (templateId: string) => Promise<void>
 }
 
 const PLANS_STORAGE_KEY = 'mirubato:planning:plans'
 const OCCURRENCES_STORAGE_KEY = 'mirubato:planning:occurrences'
+const TEMPLATES_STORAGE_KEY = 'mirubato:planning:templates'
 
 const readFromStorage = <T>(key: string): T[] => {
   try {
@@ -612,6 +648,19 @@ const toSortedOccurrences = (
       ? new Date(b.scheduledStart).getTime()
       : Number.MAX_SAFE_INTEGER
     return aTime - bTime
+  })
+}
+
+const toSortedTemplates = (
+  templatesMap: Map<string, PlanTemplate>
+): PlanTemplate[] => {
+  return Array.from(templatesMap.values()).sort((a, b) => {
+    // Sort by adoption count (descending) then by updated date (descending)
+    const adoptionDiff = (b.adoptionCount || 0) - (a.adoptionCount || 0)
+    if (adoptionDiff !== 0) {
+      return adoptionDiff
+    }
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   })
 }
 
@@ -988,11 +1037,13 @@ const serializeSegmentsForMetadata = (
 export const usePlanningStore = create<PlanningState>((set, get) => ({
   plansMap: new Map(),
   occurrencesMap: new Map(),
+  templatesMap: new Map(),
   isLoading: false,
   error: null,
   hasLoaded: false,
   plans: [],
   occurrences: [],
+  templates: [],
   isLocalMode: true,
   _wsHandlers: undefined,
 
@@ -1952,6 +2003,213 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     }
 
     set({ _wsHandlers: undefined })
+  },
+
+  // Template methods
+  loadTemplates: async filters => {
+    // Check if we're in local mode
+    if (get().isLocalMode) {
+      console.log('[Planning] In local mode, templates not available')
+      return
+    }
+
+    set({ isLoading: true, error: null })
+
+    try {
+      const { templates } = await planningApi.getTemplates(filters)
+
+      const templatesMap = new Map(
+        templates.map(template => [template.id, template])
+      )
+
+      writeToStorage(TEMPLATES_STORAGE_KEY, templates)
+
+      set({
+        templatesMap,
+        templates: toSortedTemplates(templatesMap),
+        isLoading: false,
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to load templates'
+      set({
+        error: message,
+        isLoading: false,
+      })
+    }
+  },
+
+  publishTemplate: async (planId, options) => {
+    const { plansMap, templatesMap } = get()
+    const plan = plansMap.get(planId)
+
+    if (!plan) {
+      throw new Error('Plan not found')
+    }
+
+    // Create template from plan
+    const now = new Date().toISOString()
+    const templateId = `template_${nanoid()}`
+
+    const template: PlanTemplate = {
+      id: templateId,
+      authorId: '', // Will be set by server
+      sourcePlanId: planId,
+      title: options.title || plan.title,
+      description: options.description || plan.description,
+      type: plan.type,
+      focusAreas: plan.focusAreas,
+      techniques: plan.techniques,
+      pieceRefs: plan.pieceRefs,
+      schedule: plan.schedule,
+      tags: options.tags || plan.tags || [],
+      templateVersion: 1,
+      visibility: options.visibility || 'private',
+      adoptionCount: 0,
+      metadata: {},
+      publishedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    }
+
+    // Save locally first
+    const nextTemplatesMap = new Map(templatesMap)
+    nextTemplatesMap.set(template.id, template)
+    const nextTemplates = toSortedTemplates(nextTemplatesMap)
+
+    writeToStorage(TEMPLATES_STORAGE_KEY, nextTemplates)
+
+    set({
+      templatesMap: nextTemplatesMap,
+      templates: nextTemplates,
+    })
+
+    // Sync to server if online
+    if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+      try {
+        await planningApi.publishTemplate(template)
+        console.log('[Planning] Template published:', template.id)
+      } catch (syncError) {
+        console.warn(
+          '[Planning] Failed to sync template to server, keeping local copy:',
+          syncError
+        )
+      }
+    }
+
+    return template
+  },
+
+  adoptTemplate: async (templateId, customization) => {
+    // Call the API endpoint
+    const { plan, occurrences } = await planningApi.adoptTemplate(
+      templateId,
+      customization
+    )
+
+    const { plansMap, occurrencesMap } = get()
+
+    // Update local state
+    const nextPlansMap = new Map(plansMap)
+    const nextOccurrencesMap = new Map(occurrencesMap)
+
+    nextPlansMap.set(plan.id, plan)
+    occurrences.forEach(occ => {
+      nextOccurrencesMap.set(occ.id, occ)
+    })
+
+    const nextPlansList = toSortedPlans(nextPlansMap)
+    const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+    // Save to localStorage
+    writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+    writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+
+    // Update state
+    set({
+      plansMap: nextPlansMap,
+      occurrencesMap: nextOccurrencesMap,
+      plans: nextPlansList,
+      occurrences: nextOccurrencesList,
+    })
+
+    return { plan, occurrences }
+  },
+
+  updateTemplate: async (templateId, updates) => {
+    const { templatesMap } = get()
+    const template = templatesMap.get(templateId)
+
+    if (!template) {
+      throw new Error('Template not found')
+    }
+
+    const updatedTemplate: PlanTemplate = {
+      ...template,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }
+
+    // Update locally
+    const nextTemplatesMap = new Map(templatesMap)
+    nextTemplatesMap.set(templateId, updatedTemplate)
+    const nextTemplates = toSortedTemplates(nextTemplatesMap)
+
+    writeToStorage(TEMPLATES_STORAGE_KEY, nextTemplates)
+
+    set({
+      templatesMap: nextTemplatesMap,
+      templates: nextTemplates,
+    })
+
+    // Sync to server if online
+    if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+      try {
+        await planningApi.publishTemplate(updatedTemplate)
+        console.log('[Planning] Template updated:', templateId)
+      } catch (syncError) {
+        console.warn(
+          '[Planning] Failed to sync template update to server:',
+          syncError
+        )
+      }
+    }
+  },
+
+  deleteTemplate: async templateId => {
+    const { templatesMap } = get()
+    const template = templatesMap.get(templateId)
+
+    if (!template) {
+      throw new Error('Template not found')
+    }
+
+    // Soft delete locally
+    const nextTemplatesMap = new Map(templatesMap)
+    nextTemplatesMap.delete(templateId)
+    const nextTemplates = toSortedTemplates(nextTemplatesMap)
+
+    writeToStorage(TEMPLATES_STORAGE_KEY, nextTemplates)
+
+    set({
+      templatesMap: nextTemplatesMap,
+      templates: nextTemplates,
+    })
+
+    // Sync deletion to server if online
+    if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+      try {
+        const deletedTemplate: PlanTemplate = {
+          ...template,
+          deletedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        await planningApi.publishTemplate(deletedTemplate)
+        console.log('[Planning] Template deleted:', templateId)
+      } catch (syncError) {
+        console.warn('[Planning] Failed to sync template deletion:', syncError)
+      }
+    }
   },
 }))
 
