@@ -1578,7 +1578,10 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     if (!get().isLocalMode && localStorage.getItem('auth-token')) {
       try {
         await planningApi.updatePlan(sanitizedPlan, [sanitizedOccurrence])
-        console.log('[Planning] Plan update synced to server:', sanitizedPlan.id)
+        console.log(
+          '[Planning] Plan update synced to server:',
+          sanitizedPlan.id
+        )
       } catch (syncError) {
         console.warn(
           '[Planning] Failed to sync plan update to server, keeping local copy:',
@@ -1814,7 +1817,10 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     if (!get().isLocalMode && localStorage.getItem('auth-token')) {
       try {
         await planningApi.updateOccurrence(sanitizedOccurrence)
-        console.log('[Planning] Occurrence completion synced to server:', occurrenceId)
+        console.log(
+          '[Planning] Occurrence completion synced to server:',
+          occurrenceId
+        )
       } catch (syncError) {
         console.warn(
           '[Planning] Failed to sync occurrence completion to server, keeping local copy:',
