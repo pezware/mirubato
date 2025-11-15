@@ -294,6 +294,7 @@
     },
     "publish": "Publish Template",
     "publishAsTemplate": "Publish as Template",
+    "publishedAsTemplate": "Published",
     "publishSuccess": "Template published successfully!",
     "publishSuccessDetail": "Your plan is now available as a template",
     "publishTitle": "Publish as Template",

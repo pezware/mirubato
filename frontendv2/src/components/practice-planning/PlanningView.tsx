@@ -165,6 +165,17 @@ const PlanningView = ({
     )
   }, [templates, user])
 
+  // Track which plans have been published as templates
+  const publishedPlanIds = useMemo(() => {
+    const ids = new Set<string>()
+    templates.forEach(template => {
+      if (template.sourcePlanId) {
+        ids.add(template.sourcePlanId)
+      }
+    })
+    return ids
+  }, [templates])
+
   const planLookup = useMemo(() => {
     const map = new Map<string, PracticePlan>()
     plans.forEach(plan => map.set(plan.id, plan))
@@ -354,6 +365,9 @@ const PlanningView = ({
       setIsPublishModalOpen(false)
       setPlanToPublish(null)
 
+      // Reload templates to show the newly published one
+      await loadTemplates()
+
       toast.success(
         t(
           'common:templates.publishSuccess',
@@ -364,6 +378,10 @@ const PlanningView = ({
           'Your plan is now available as a template'
         )
       )
+
+      // Switch to Templates → My Templates tab to show the newly published template
+      setActiveTab('templates')
+      setTemplateSubtab('mine')
     } catch (err) {
       const message =
         err instanceof Error
@@ -717,6 +735,15 @@ const PlanningView = ({
                               {t(
                                 'common:templates.fromTemplate',
                                 'From Template'
+                              )}
+                            </span>
+                          )}
+                          {publishedPlanIds.has(plan.id) && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-morandi-blue-100 text-morandi-blue-700">
+                              <Share2 className="h-3 w-3" />
+                              {t(
+                                'common:templates.publishedAsTemplate',
+                                'Published'
                               )}
                             </span>
                           )}

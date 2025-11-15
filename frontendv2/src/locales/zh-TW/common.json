@@ -359,6 +359,7 @@
     },
     "publish": "[NEEDS TRANSLATION] Publish Template",
     "publishAsTemplate": "Publish as Template",
+    "publishedAsTemplate": "已發布",
     "publishSuccess": "Template published successfully!",
     "publishSuccessDetail": "Your plan is now available as a template",
     "publishTitle": "[NEEDS TRANSLATION] Publish as Template",
