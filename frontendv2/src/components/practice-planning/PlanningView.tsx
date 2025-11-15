@@ -25,7 +25,13 @@ import {
   useNextActionableOccurrence,
   type CreatePlanDraft,
 } from '@/stores/planningStore'
-import { Calendar, Plus, MoreVertical, BookTemplate, Share2 } from 'lucide-react'
+import {
+  Calendar,
+  Plus,
+  MoreVertical,
+  BookTemplate,
+  Share2,
+} from 'lucide-react'
 import PlanReminderCard, { type PlanReminderStatus } from './PlanReminderCard'
 import PlanProgressRail from './PlanProgressRail'
 import PlanningAnalyticsPanel from './PlanningAnalyticsPanel'
@@ -329,14 +335,23 @@ const PlanningView = ({
       setPlanToPublish(null)
 
       toast.success(
-        t('common:templates.publishSuccess', 'Template published successfully!'),
-        t('common:templates.publishSuccessDetail', 'Your plan is now available as a template')
+        t(
+          'common:templates.publishSuccess',
+          'Template published successfully!'
+        ),
+        t(
+          'common:templates.publishSuccessDetail',
+          'Your plan is now available as a template'
+        )
       )
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
-          : t('common:templates.errors.publishFailed', 'Failed to publish template')
+          : t(
+              'common:templates.errors.publishFailed',
+              'Failed to publish template'
+            )
       toast.error(message)
       throw err
     }
@@ -590,7 +605,9 @@ const PlanningView = ({
           },
         ]}
         activeTab={activeTab}
-        onTabChange={(tabId: string) => setActiveTab(tabId as 'plans' | 'templates')}
+        onTabChange={(tabId: string) =>
+          setActiveTab(tabId as 'plans' | 'templates')
+        }
       />
 
       {/* Plans Tab Content */}
@@ -618,220 +635,231 @@ const PlanningView = ({
         </>
       )}
 
-      {activeTab === 'plans' && plans.map(plan => {
-        const nextOccurrence = getNextOccurrenceForPlan(plan.id)
-        const allOccurrences = occurrencesByPlan.get(plan.id) ?? []
-        const primaryOccurrence = nextOccurrence ?? allOccurrences[0]
-        const segmentCount = getSegmentCount(primaryOccurrence)
+      {activeTab === 'plans' &&
+        plans.map(plan => {
+          const nextOccurrence = getNextOccurrenceForPlan(plan.id)
+          const allOccurrences = occurrencesByPlan.get(plan.id) ?? []
+          const primaryOccurrence = nextOccurrence ?? allOccurrences[0]
+          const segmentCount = getSegmentCount(primaryOccurrence)
 
-        const startTime = formatDateTime(
-          primaryOccurrence?.scheduledStart,
-          i18n.language
-        )
-        const timeOfDay = formatTimeOnly(
-          primaryOccurrence?.scheduledStart,
-          i18n.language
-        )
+          const startTime = formatDateTime(
+            primaryOccurrence?.scheduledStart,
+            i18n.language
+          )
+          const timeOfDay = formatTimeOnly(
+            primaryOccurrence?.scheduledStart,
+            i18n.language
+          )
 
-        return (
-          <Card key={plan.id}>
-            <CardHeader className="pb-3">
-              <div className="flex gap-3 sm:gap-4">
-                <div className="flex-shrink-0">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-morandi-sage-100">
-                    <Calendar className="h-5 w-5 text-morandi-sage-600" />
+          return (
+            <Card key={plan.id}>
+              <CardHeader className="pb-3">
+                <div className="flex gap-3 sm:gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-morandi-sage-100">
+                      <Calendar className="h-5 w-5 text-morandi-sage-600" />
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-lg sm:text-xl">
-                          {plan.title}
-                        </CardTitle>
-                        {plan.templateVersion && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-morandi-sage-100 text-morandi-sage-700">
-                            <BookTemplate className="h-3 w-3" />
-                            {t('common:templates.fromTemplate', 'From Template')}
-                          </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <CardTitle className="text-lg sm:text-xl">
+                            {plan.title}
+                          </CardTitle>
+                          {plan.templateVersion && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-morandi-sage-100 text-morandi-sage-700">
+                              <BookTemplate className="h-3 w-3" />
+                              {t(
+                                'common:templates.fromTemplate',
+                                'From Template'
+                              )}
+                            </span>
+                          )}
+                        </div>
+                        {plan.description && (
+                          <CardDescription className="mt-1">
+                            {plan.description}
+                          </CardDescription>
                         )}
                       </div>
-                      {plan.description && (
-                        <CardDescription className="mt-1">
-                          {plan.description}
-                        </CardDescription>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() => {
-                          if (!primaryOccurrence) return
-                          startCheckIn(plan, primaryOccurrence, 'plan-card')
-                        }}
-                        disabled={!primaryOccurrence}
-                        size="sm"
-                      >
-                        {t('reports:planningView.checkIn', 'Check In')}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          trackPlanningEvent('planning.plan.edit', {
-                            planId: plan.id,
-                          })
-                          openEditModal(plan, primaryOccurrence)
-                        }}
-                      >
-                        {t('reports:planningView.editPlan', 'Edit plan')}
-                      </Button>
-                      <DropdownMenu
-                        items={[
-                          {
-                            label: t('common:templates.publishAsTemplate', 'Publish as Template'),
-                            icon: <Share2 className="h-4 w-4" />,
-                            onClick: () => {
-                              openPublishModal(plan)
-                              setOpenDropdownId(null)
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          onClick={() => {
+                            if (!primaryOccurrence) return
+                            startCheckIn(plan, primaryOccurrence, 'plan-card')
+                          }}
+                          disabled={!primaryOccurrence}
+                          size="sm"
+                        >
+                          {t('reports:planningView.checkIn', 'Check In')}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            trackPlanningEvent('planning.plan.edit', {
+                              planId: plan.id,
+                            })
+                            openEditModal(plan, primaryOccurrence)
+                          }}
+                        >
+                          {t('reports:planningView.editPlan', 'Edit plan')}
+                        </Button>
+                        <DropdownMenu
+                          items={[
+                            {
+                              label: t(
+                                'common:templates.publishAsTemplate',
+                                'Publish as Template'
+                              ),
+                              icon: <Share2 className="h-4 w-4" />,
+                              onClick: () => {
+                                openPublishModal(plan)
+                                setOpenDropdownId(null)
+                              },
                             },
-                          },
-                        ]}
-                        isOpen={openDropdownId === plan.id}
-                        onToggle={() => setOpenDropdownId(openDropdownId === plan.id ? null : plan.id)}
-                        onClose={() => setOpenDropdownId(null)}
-                        icon={<MoreVertical className="h-4 w-4" />}
-                        ariaLabel={t('common:more', 'More')}
-                      />
+                          ]}
+                          isOpen={openDropdownId === plan.id}
+                          onToggle={() =>
+                            setOpenDropdownId(
+                              openDropdownId === plan.id ? null : plan.id
+                            )
+                          }
+                          onClose={() => setOpenDropdownId(null)}
+                          icon={<MoreVertical className="h-4 w-4" />}
+                          ariaLabel={t('common:more', 'More')}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <PlanProgressRail
-                completedCount={completedCountsByPlan.get(plan.id) ?? 0}
-                dueCount={dueCountsByPlan.get(plan.id) ?? 0}
-                upcomingCount={upcomingCountsByPlan.get(plan.id) ?? 0}
-              />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <PlanProgressRail
+                  completedCount={completedCountsByPlan.get(plan.id) ?? 0}
+                  dueCount={dueCountsByPlan.get(plan.id) ?? 0}
+                  upcomingCount={upcomingCountsByPlan.get(plan.id) ?? 0}
+                />
 
-              <div className="flex flex-wrap gap-3 text-sm text-morandi-stone-600">
-                <div>
-                  <span className="font-medium text-morandi-stone-900">
-                    {t('reports:planningView.nextSession', 'Next session')}
-                  </span>
-                  {' · '}
-                  <span>
-                    {startTime ??
-                      t(
-                        'reports:planningView.noUpcoming',
-                        'No upcoming session'
-                      )}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-4 text-sm text-morandi-stone-600">
-                {plan.schedule?.durationMinutes && (
+                <div className="flex flex-wrap gap-3 text-sm text-morandi-stone-600">
                   <div>
                     <span className="font-medium text-morandi-stone-900">
-                      {t('reports:planningView.durationLabel', 'Duration')}
-                    </span>
-                    {' · '}
-                    <span>{plan.schedule.durationMinutes}m</span>
-                  </div>
-                )}
-                {plan.schedule?.flexibility && (
-                  <div>
-                    <span className="font-medium text-morandi-stone-900">
-                      {t(
-                        'reports:planningView.flexibilityLabel',
-                        'Flexibility'
-                      )}
-                    </span>
-                    {' · '}
-                    <span className="capitalize">
-                      {plan.schedule.flexibility.replace('-', ' ')}
-                    </span>
-                  </div>
-                )}
-                {segmentCount > 0 && (
-                  <div>
-                    <span className="font-medium text-morandi-stone-900">
-                      {t('reports:planningView.segmentsLabel', 'Segments')}
+                      {t('reports:planningView.nextSession', 'Next session')}
                     </span>
                     {' · '}
                     <span>
-                      {t('reports:planningView.segmentCount', {
-                        count: segmentCount,
-                      })}
+                      {startTime ??
+                        t(
+                          'reports:planningView.noUpcoming',
+                          'No upcoming session'
+                        )}
                     </span>
                   </div>
-                )}
-              </div>
+                </div>
 
-              {primaryOccurrence && primaryOccurrence.segments && (
-                <div className="space-y-3 pt-2">
-                  <Typography variant="h5" className="text-morandi-stone-700">
-                    {t('reports:planningView.segmentsLabel', 'Segments')}
-                    {timeOfDay && (
-                      <span className="ml-2 text-sm font-normal text-morandi-stone-500">
-                        {timeOfDay}
+                <div className="flex flex-wrap gap-4 text-sm text-morandi-stone-600">
+                  {plan.schedule?.durationMinutes && (
+                    <div>
+                      <span className="font-medium text-morandi-stone-900">
+                        {t('reports:planningView.durationLabel', 'Duration')}
                       </span>
-                    )}
-                  </Typography>
-                  <ul className="space-y-2">
-                    {primaryOccurrence.segments.map(segment => (
-                      <li
-                        key={segment.id ?? segment.label}
-                        className="rounded-lg border border-morandi-stone-200 bg-morandi-stone-50/50 p-3"
-                      >
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <Typography
-                            variant="h6"
-                            className="text-morandi-stone-900"
-                          >
-                            {segment.label}
-                          </Typography>
-                          {segment.durationMinutes && (
+                      {' · '}
+                      <span>{plan.schedule.durationMinutes}m</span>
+                    </div>
+                  )}
+                  {plan.schedule?.flexibility && (
+                    <div>
+                      <span className="font-medium text-morandi-stone-900">
+                        {t(
+                          'reports:planningView.flexibilityLabel',
+                          'Flexibility'
+                        )}
+                      </span>
+                      {' · '}
+                      <span className="capitalize">
+                        {plan.schedule.flexibility.replace('-', ' ')}
+                      </span>
+                    </div>
+                  )}
+                  {segmentCount > 0 && (
+                    <div>
+                      <span className="font-medium text-morandi-stone-900">
+                        {t('reports:planningView.segmentsLabel', 'Segments')}
+                      </span>
+                      {' · '}
+                      <span>
+                        {t('reports:planningView.segmentCount', {
+                          count: segmentCount,
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {primaryOccurrence && primaryOccurrence.segments && (
+                  <div className="space-y-3 pt-2">
+                    <Typography variant="h5" className="text-morandi-stone-700">
+                      {t('reports:planningView.segmentsLabel', 'Segments')}
+                      {timeOfDay && (
+                        <span className="ml-2 text-sm font-normal text-morandi-stone-500">
+                          {timeOfDay}
+                        </span>
+                      )}
+                    </Typography>
+                    <ul className="space-y-2">
+                      {primaryOccurrence.segments.map(segment => (
+                        <li
+                          key={segment.id ?? segment.label}
+                          className="rounded-lg border border-morandi-stone-200 bg-morandi-stone-50/50 p-3"
+                        >
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <Typography
+                              variant="h6"
+                              className="text-morandi-stone-900"
+                            >
+                              {segment.label}
+                            </Typography>
+                            {segment.durationMinutes && (
+                              <Typography
+                                variant="body-sm"
+                                className="text-morandi-stone-600"
+                              >
+                                {segment.durationMinutes}m
+                              </Typography>
+                            )}
+                          </div>
+                          {segment.instructions && (
                             <Typography
                               variant="body-sm"
-                              className="text-morandi-stone-600"
+                              className="mt-2 text-morandi-stone-600"
                             >
-                              {segment.durationMinutes}m
+                              {segment.instructions}
                             </Typography>
                           )}
-                        </div>
-                        {segment.instructions && (
-                          <Typography
-                            variant="body-sm"
-                            className="mt-2 text-morandi-stone-600"
-                          >
-                            {segment.instructions}
-                          </Typography>
-                        )}
-                        {segment.techniques &&
-                          segment.techniques.length > 0 && (
-                            <div className="mt-2 text-xs text-morandi-stone-500">
-                              {segment.techniques.join(' · ')}
-                            </div>
-                          )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                          {segment.techniques &&
+                            segment.techniques.length > 0 && (
+                              <div className="mt-2 text-xs text-morandi-stone-500">
+                                {segment.techniques.join(' · ')}
+                              </div>
+                            )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-              {allOccurrences.length > 0 && (
-                <div className="border-t border-morandi-stone-200 pt-2 text-xs text-morandi-stone-500">
-                  {t('reports:planningView.scheduledSessions', {
-                    count: allOccurrences.length,
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )
-      })}
+                {allOccurrences.length > 0 && (
+                  <div className="border-t border-morandi-stone-200 pt-2 text-xs text-morandi-stone-500">
+                    {t('reports:planningView.scheduledSessions', {
+                      count: allOccurrences.length,
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )
+        })}
 
       {/* Templates Tab Content */}
       {activeTab === 'templates' && (
