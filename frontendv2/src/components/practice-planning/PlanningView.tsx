@@ -365,9 +365,6 @@ const PlanningView = ({
       setIsPublishModalOpen(false)
       setPlanToPublish(null)
 
-      // Reload templates to show the newly published one
-      await loadTemplates()
-
       toast.success(
         t(
           'common:templates.publishSuccess',
