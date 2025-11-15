@@ -18,7 +18,10 @@ import { trackPlanningEvent } from '@/lib/analytics/planning'
 interface TemplateGalleryProps {
   templates: PlanTemplate[]
   onAdopt: (templateId: string) => Promise<void> | void
+  onDelete?: (templateId: string) => Promise<void> | void
   isLoading: boolean
+  currentUserId?: string
+  showAuthorControls?: boolean
 }
 
 type VisibilityFilter = 'all' | TemplateVisibility
@@ -26,7 +29,10 @@ type VisibilityFilter = 'all' | TemplateVisibility
 export function TemplateGallery({
   templates,
   onAdopt,
+  onDelete,
   isLoading,
+  currentUserId,
+  showAuthorControls = false,
 }: TemplateGalleryProps) {
   const { t } = useTranslation('common')
 
@@ -243,6 +249,16 @@ export function TemplateGallery({
                         {template.description}
                       </CardDescription>
                     )}
+                    {/* Author badge */}
+                    {!showAuthorControls &&
+                      currentUserId &&
+                      template.authorId === currentUserId && (
+                        <div className="mt-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-morandi-purple-100 text-morandi-purple-700">
+                            {t('templates.yourTemplate', 'Your Template')}
+                          </span>
+                        </div>
+                      )}
                   </div>
                   {template.visibility === 'public' && (
                     <div className="flex-shrink-0">
@@ -288,16 +304,40 @@ export function TemplateGallery({
                   )}
                 </div>
 
-                {/* Adopt Button */}
-                <div className="pt-2">
-                  <Button
-                    onClick={() => handleAdopt(template.id)}
-                    size="sm"
-                    className="w-full"
-                    leftIcon={<Star className="h-4 w-4" />}
-                  >
-                    {t('templates.adopt', 'Adopt')}
-                  </Button>
+                {/* Action Buttons */}
+                <div className="pt-2 flex gap-2">
+                  {showAuthorControls ? (
+                    <>
+                      <Button
+                        onClick={() => handleAdopt(template.id)}
+                        size="sm"
+                        variant="secondary"
+                        className="flex-1"
+                        leftIcon={<Star className="h-4 w-4" />}
+                      >
+                        {t('templates.adopt', 'Adopt')}
+                      </Button>
+                      {onDelete && (
+                        <Button
+                          onClick={() => onDelete(template.id)}
+                          size="sm"
+                          variant="danger"
+                          className="flex-1"
+                        >
+                          {t('templates.delete', 'Delete')}
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <Button
+                      onClick={() => handleAdopt(template.id)}
+                      size="sm"
+                      className="w-full"
+                      leftIcon={<Star className="h-4 w-4" />}
+                    >
+                      {t('templates.adopt', 'Adopt')}
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

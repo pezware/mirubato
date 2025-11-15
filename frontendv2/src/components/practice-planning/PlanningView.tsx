@@ -39,6 +39,7 @@ import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { trackPlanningEvent } from '@/lib/analytics/planning'
 import { usePlanningAnalytics } from '@/hooks/usePlanningAnalytics'
 import { toast } from '@/utils/toastManager'
+import { useAuthStore } from '@/stores/authStore'
 
 interface PlanningViewProps {
   plans: PracticePlan[]
@@ -96,8 +97,10 @@ const PlanningView = ({
   const loadTemplates = usePlanningStore(state => state.loadTemplates)
   const publishTemplate = usePlanningStore(state => state.publishTemplate)
   const adoptTemplate = usePlanningStore(state => state.adoptTemplate)
+  const deleteTemplate = usePlanningStore(state => state.deleteTemplate)
   const templates = usePlanningStore(state => state.templates)
   const isLoadingTemplates = usePlanningStore(state => state.isLoading)
+  const user = useAuthStore(state => state.user)
 
   const dueTodayOccurrences = useDueTodayOccurrences()
   const upcomingOccurrences = useUpcomingOccurrences()
@@ -116,6 +119,9 @@ const PlanningView = ({
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'plans' | 'templates'>('plans')
+  const [templateSubtab, setTemplateSubtab] = useState<'browse' | 'mine'>(
+    'browse'
+  )
 
   // Editor state
   const [isEditorOpen, setIsEditorOpen] = useState(false)
@@ -144,6 +150,20 @@ const PlanningView = ({
       loadTemplates()
     }
   }, [activeTab, loadTemplates])
+
+  // Filter templates by authorship
+  const myTemplates = useMemo(() => {
+    if (!user) return []
+    return templates.filter(template => template.authorId === user.id)
+  }, [templates, user])
+
+  const browseTemplates = useMemo(() => {
+    // Show all public templates plus user's private templates
+    if (!user) return templates.filter(t => t.visibility === 'public')
+    return templates.filter(
+      t => t.visibility === 'public' || t.authorId === user.id
+    )
+  }, [templates, user])
 
   const planLookup = useMemo(() => {
     const map = new Map<string, PracticePlan>()
@@ -373,6 +393,30 @@ const PlanningView = ({
         err instanceof Error
           ? err.message
           : t('common:templates.errors.adoptFailed', 'Failed to adopt template')
+      toast.error(message)
+      throw err
+    }
+  }
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    try {
+      await deleteTemplate(templateId)
+
+      toast.success(
+        t('common:templates.deleteSuccess', 'Template deleted successfully!'),
+        t(
+          'common:templates.deleteSuccessDetail',
+          'Your template has been removed'
+        )
+      )
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : t(
+              'common:templates.errors.deleteFailed',
+              'Failed to delete template'
+            )
       toast.error(message)
       throw err
     }
@@ -864,25 +908,82 @@ const PlanningView = ({
       {/* Templates Tab Content */}
       {activeTab === 'templates' && (
         <>
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <Typography variant="h3" className="text-morandi-stone-900">
-                {t('common:templates.browseTemplates', 'Browse Templates')}
-              </Typography>
-              <Typography variant="body-sm" className="text-morandi-stone-600">
-                {t(
-                  'common:templates.galleryDescription',
-                  'Discover and adopt practice plan templates created by tutors and the community.'
-                )}
-              </Typography>
-            </div>
+          {/* Template Subtabs */}
+          <Tabs
+            tabs={[
+              {
+                id: 'browse',
+                label: t('common:templates.subtabs.browse', 'Browse'),
+              },
+              {
+                id: 'mine',
+                label: t(
+                  'common:templates.subtabs.myTemplates',
+                  'My Templates'
+                ),
+              },
+            ]}
+            activeTab={templateSubtab}
+            onTabChange={(tabId: string) =>
+              setTemplateSubtab(tabId as 'browse' | 'mine')
+            }
+          />
 
-            <TemplateGallery
-              templates={templates}
-              onAdopt={handleAdoptTemplate}
-              isLoading={isLoadingTemplates}
-            />
-          </div>
+          {/* Browse Tab */}
+          {templateSubtab === 'browse' && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <Typography variant="h3" className="text-morandi-stone-900">
+                  {t('common:templates.browseTemplates', 'Browse Templates')}
+                </Typography>
+                <Typography
+                  variant="body-sm"
+                  className="text-morandi-stone-600"
+                >
+                  {t(
+                    'common:templates.galleryDescription',
+                    'Discover and adopt practice plan templates created by tutors and the community.'
+                  )}
+                </Typography>
+              </div>
+
+              <TemplateGallery
+                templates={browseTemplates}
+                onAdopt={handleAdoptTemplate}
+                isLoading={isLoadingTemplates}
+                currentUserId={user?.id}
+              />
+            </div>
+          )}
+
+          {/* My Templates Tab */}
+          {templateSubtab === 'mine' && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <Typography variant="h3" className="text-morandi-stone-900">
+                  {t('common:templates.myTemplates', 'My Templates')}
+                </Typography>
+                <Typography
+                  variant="body-sm"
+                  className="text-morandi-stone-600"
+                >
+                  {t(
+                    'common:templates.myTemplatesDescription',
+                    'Manage your published practice plan templates.'
+                  )}
+                </Typography>
+              </div>
+
+              <TemplateGallery
+                templates={myTemplates}
+                onAdopt={handleAdoptTemplate}
+                onDelete={handleDeleteTemplate}
+                isLoading={isLoadingTemplates}
+                currentUserId={user?.id}
+                showAuthorControls
+              />
+            </div>
+          )}
         </>
       )}
 
