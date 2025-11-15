@@ -24,8 +24,10 @@ import {
 import { Calendar, Plus } from 'lucide-react'
 import PlanReminderCard, { type PlanReminderStatus } from './PlanReminderCard'
 import PlanProgressRail from './PlanProgressRail'
+import PlanningAnalyticsPanel from './PlanningAnalyticsPanel'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { trackPlanningEvent } from '@/lib/analytics/planning'
+import { usePlanningAnalytics } from '@/hooks/usePlanningAnalytics'
 
 interface PlanningViewProps {
   plans: PracticePlan[]
@@ -87,6 +89,14 @@ const PlanningView = ({
   const nextActionableOccurrence = useNextActionableOccurrence()
   const { getPrimaryInstrument } = useUserPreferences()
   const fallbackInstrument = getPrimaryInstrument()
+
+  // Planning analytics
+  const planningAnalytics = usePlanningAnalytics({
+    completed: completedOccurrences,
+    dueToday: dueTodayOccurrences,
+    upcoming: upcomingOccurrences,
+    allOccurrences: occurrences,
+  })
 
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create')
@@ -470,6 +480,9 @@ const PlanningView = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Planning Analytics Panel */}
+      <PlanningAnalyticsPanel analytics={planningAnalytics} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">

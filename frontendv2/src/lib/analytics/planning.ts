@@ -5,6 +5,13 @@ export type PlanningAnalyticsEvent =
   | 'planning.plan.checkIn'
   | 'planning.plan.reminder.open'
   | 'planning.plan.reminder.checkIn'
+  | 'planning.analytics.viewed'
+  | 'planning.analytics.adherence.low'
+  | 'planning.analytics.streak.milestone'
+  | 'planning.analytics.forecast.peak'
+  | 'planning.template.publish'
+  | 'planning.template.adopt'
+  | 'planning.template.view'
 
 export type PlanningAnalyticsPayload = Record<string, unknown>
 
