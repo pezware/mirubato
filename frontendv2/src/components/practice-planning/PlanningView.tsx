@@ -11,13 +11,12 @@ import {
   Typography,
   Tabs,
   DropdownMenu,
-  type DropdownMenuItem,
 } from '@/components/ui'
-import type { PracticePlan, PlanOccurrence, PlanTemplate } from '@/api/planning'
+import type { PracticePlan, PlanOccurrence } from '@/api/planning'
 import PlanEditorModal from './PlanEditorModal'
 import PlanCheckInModal from './PlanCheckInModal'
-import TemplateGallery from './TemplateGallery'
-import TemplatePublisherModal from './TemplatePublisherModal'
+import { TemplateGallery } from './TemplateGallery'
+import { TemplatePublisherModal } from './TemplatePublisherModal'
 import {
   usePlanningStore,
   useCompletedOccurrences,
@@ -131,6 +130,7 @@ const PlanningView = ({
   // Template modals state
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
   const [planToPublish, setPlanToPublish] = useState<PracticePlan | null>(null)
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
 
   // Load templates when switching to templates tab
   useEffect(() => {
@@ -366,9 +366,6 @@ const PlanningView = ({
   const openPublishModal = (plan: PracticePlan) => {
     setPlanToPublish(plan)
     setIsPublishModalOpen(true)
-    trackPlanningEvent('planning.template.publishModal.open', {
-      planId: plan.id,
-    })
   }
 
   const heroReminders = reminderItems.slice(0, 3)
@@ -593,7 +590,7 @@ const PlanningView = ({
           },
         ]}
         activeTab={activeTab}
-        onChange={(tabId) => setActiveTab(tabId as 'plans' | 'templates')}
+        onTabChange={(tabId: string) => setActiveTab(tabId as 'plans' | 'templates')}
       />
 
       {/* Plans Tab Content */}
@@ -689,22 +686,21 @@ const PlanningView = ({
                         {t('reports:planningView.editPlan', 'Edit plan')}
                       </Button>
                       <DropdownMenu
-                        trigger={
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<MoreVertical className="h-4 w-4" />}
-                            aria-label={t('common:more', 'More')}
-                          />
-                        }
                         items={[
                           {
-                            id: 'publish',
                             label: t('common:templates.publishAsTemplate', 'Publish as Template'),
                             icon: <Share2 className="h-4 w-4" />,
-                            onClick: () => openPublishModal(plan),
+                            onClick: () => {
+                              openPublishModal(plan)
+                              setOpenDropdownId(null)
+                            },
                           },
                         ]}
+                        isOpen={openDropdownId === plan.id}
+                        onToggle={() => setOpenDropdownId(openDropdownId === plan.id ? null : plan.id)}
+                        onClose={() => setOpenDropdownId(null)}
+                        icon={<MoreVertical className="h-4 w-4" />}
+                        ariaLabel={t('common:more', 'More')}
                       />
                     </div>
                   </div>
