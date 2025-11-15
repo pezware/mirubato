@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Button,
@@ -9,10 +9,15 @@ import {
   CardTitle,
   LoadingSkeleton,
   Typography,
+  Tabs,
+  DropdownMenu,
+  type DropdownMenuItem,
 } from '@/components/ui'
-import type { PracticePlan, PlanOccurrence } from '@/api/planning'
+import type { PracticePlan, PlanOccurrence, PlanTemplate } from '@/api/planning'
 import PlanEditorModal from './PlanEditorModal'
 import PlanCheckInModal from './PlanCheckInModal'
+import TemplateGallery from './TemplateGallery'
+import TemplatePublisherModal from './TemplatePublisherModal'
 import {
   usePlanningStore,
   useCompletedOccurrences,
@@ -21,13 +26,14 @@ import {
   useNextActionableOccurrence,
   type CreatePlanDraft,
 } from '@/stores/planningStore'
-import { Calendar, Plus } from 'lucide-react'
+import { Calendar, Plus, MoreVertical, BookTemplate, Share2 } from 'lucide-react'
 import PlanReminderCard, { type PlanReminderStatus } from './PlanReminderCard'
 import PlanProgressRail from './PlanProgressRail'
 import PlanningAnalyticsPanel from './PlanningAnalyticsPanel'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { trackPlanningEvent } from '@/lib/analytics/planning'
 import { usePlanningAnalytics } from '@/hooks/usePlanningAnalytics'
+import { toast } from '@/utils/toastManager'
 
 interface PlanningViewProps {
   plans: PracticePlan[]
@@ -82,6 +88,11 @@ const PlanningView = ({
   const updatePlan = usePlanningStore(state => state.updatePlan)
   const deletePlan = usePlanningStore(state => state.deletePlan)
   const completeOccurrence = usePlanningStore(state => state.completeOccurrence)
+  const loadTemplates = usePlanningStore(state => state.loadTemplates)
+  const publishTemplate = usePlanningStore(state => state.publishTemplate)
+  const adoptTemplate = usePlanningStore(state => state.adoptTemplate)
+  const templates = usePlanningStore(state => state.templates)
+  const isLoadingTemplates = usePlanningStore(state => state.isLoading)
 
   const dueTodayOccurrences = useDueTodayOccurrences()
   const upcomingOccurrences = useUpcomingOccurrences()
@@ -98,6 +109,10 @@ const PlanningView = ({
     allOccurrences: occurrences,
   })
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'plans' | 'templates'>('plans')
+
+  // Editor state
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create')
   const [editorInitial, setEditorInitial] = useState<{
@@ -106,10 +121,23 @@ const PlanningView = ({
   } | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [editorError, setEditorError] = useState<string | null>(null)
+
+  // Check-in state
   const [activeCheckIn, setActiveCheckIn] = useState<{
     plan: PracticePlan
     occurrence: PlanOccurrence
   } | null>(null)
+
+  // Template modals state
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
+  const [planToPublish, setPlanToPublish] = useState<PracticePlan | null>(null)
+
+  // Load templates when switching to templates tab
+  useEffect(() => {
+    if (activeTab === 'templates') {
+      loadTemplates()
+    }
+  }, [activeTab, loadTemplates])
 
   const planLookup = useMemo(() => {
     const map = new Map<string, PracticePlan>()
@@ -286,6 +314,63 @@ const PlanningView = ({
     setActiveCheckIn({ plan, occurrence })
   }
 
+  // Template handlers
+  const handlePublishTemplate = async (options: {
+    title: string
+    description?: string
+    visibility: 'public' | 'private'
+    tags?: string[]
+  }) => {
+    if (!planToPublish) return
+
+    try {
+      await publishTemplate(planToPublish.id, options)
+      setIsPublishModalOpen(false)
+      setPlanToPublish(null)
+
+      toast.success(
+        t('common:templates.publishSuccess', 'Template published successfully!'),
+        t('common:templates.publishSuccessDetail', 'Your plan is now available as a template')
+      )
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : t('common:templates.errors.publishFailed', 'Failed to publish template')
+      toast.error(message)
+      throw err
+    }
+  }
+
+  const handleAdoptTemplate = async (templateId: string) => {
+    try {
+      await adoptTemplate(templateId)
+
+      toast.success(
+        t('common:templates.adoptSuccess', 'Template adopted successfully!'),
+        t('common:templates.adoptSuccessDetail', 'Find it in your Active Plans')
+      )
+
+      // Switch to plans tab to show the newly adopted plan
+      setActiveTab('plans')
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : t('common:templates.errors.adoptFailed', 'Failed to adopt template')
+      toast.error(message)
+      throw err
+    }
+  }
+
+  const openPublishModal = (plan: PracticePlan) => {
+    setPlanToPublish(plan)
+    setIsPublishModalOpen(true)
+    trackPlanningEvent('planning.template.publishModal.open', {
+      planId: plan.id,
+    })
+  }
+
   const heroReminders = reminderItems.slice(0, 3)
 
   const heroStats = [
@@ -434,12 +519,21 @@ const PlanningView = ({
                   </div>
                 ))}
               </div>
-              <Button
-                onClick={() => openCreateModal('hero')}
-                leftIcon={<Plus className="h-4 w-4" />}
-              >
-                {t('reports:planningView.createPlan', 'Create plan')}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => openCreateModal('hero')}
+                  leftIcon={<Plus className="h-4 w-4" />}
+                >
+                  {t('reports:planningView.createPlan', 'Create plan')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setActiveTab('templates')}
+                  leftIcon={<BookTemplate className="h-4 w-4" />}
+                >
+                  {t('common:templates.browseTemplates', 'Browse Templates')}
+                </Button>
+              </div>
             </div>
             <div className="flex-1 space-y-3">
               {heroReminders.length > 0 ? (
@@ -484,27 +578,50 @@ const PlanningView = ({
       {/* Planning Analytics Panel */}
       <PlanningAnalyticsPanel analytics={planningAnalytics} />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <Typography variant="h3" className="text-morandi-stone-900">
-            {t('reports:planningView.activePlans', 'Active plans')}
-          </Typography>
-          <Typography variant="body-sm" className="text-morandi-stone-600">
-            {t(
-              'reports:planningView.headingDescription',
-              'Schedule upcoming sessions and track progress as you go.'
-            )}
-          </Typography>
-        </div>
-        <Button
-          onClick={() => openCreateModal('header')}
-          leftIcon={<Plus className="h-4 w-4" />}
-        >
-          {t('reports:planningView.createPlan', 'Create plan')}
-        </Button>
-      </div>
+      {/* Tabs Navigation */}
+      <Tabs
+        tabs={[
+          {
+            id: 'plans',
+            label: t('common:templates.tabs.myPlans', 'My Plans'),
+            icon: <Calendar className="h-4 w-4" />,
+          },
+          {
+            id: 'templates',
+            label: t('common:templates.tabs.templates', 'Templates'),
+            icon: <BookTemplate className="h-4 w-4" />,
+          },
+        ]}
+        activeTab={activeTab}
+        onChange={(tabId) => setActiveTab(tabId as 'plans' | 'templates')}
+      />
 
-      {plans.map(plan => {
+      {/* Plans Tab Content */}
+      {activeTab === 'plans' && (
+        <>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <Typography variant="h3" className="text-morandi-stone-900">
+                {t('reports:planningView.activePlans', 'Active plans')}
+              </Typography>
+              <Typography variant="body-sm" className="text-morandi-stone-600">
+                {t(
+                  'reports:planningView.headingDescription',
+                  'Schedule upcoming sessions and track progress as you go.'
+                )}
+              </Typography>
+            </div>
+            <Button
+              onClick={() => openCreateModal('header')}
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              {t('reports:planningView.createPlan', 'Create plan')}
+            </Button>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'plans' && plans.map(plan => {
         const nextOccurrence = getNextOccurrenceForPlan(plan.id)
         const allOccurrences = occurrencesByPlan.get(plan.id) ?? []
         const primaryOccurrence = nextOccurrence ?? allOccurrences[0]
@@ -531,9 +648,17 @@ const PlanningView = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg sm:text-xl">
-                        {plan.title}
-                      </CardTitle>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CardTitle className="text-lg sm:text-xl">
+                          {plan.title}
+                        </CardTitle>
+                        {plan.templateVersion && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-morandi-sage-100 text-morandi-sage-700">
+                            <BookTemplate className="h-3 w-3" />
+                            {t('common:templates.fromTemplate', 'From Template')}
+                          </span>
+                        )}
+                      </div>
                       {plan.description && (
                         <CardDescription className="mt-1">
                           {plan.description}
@@ -563,6 +688,24 @@ const PlanningView = ({
                       >
                         {t('reports:planningView.editPlan', 'Edit plan')}
                       </Button>
+                      <DropdownMenu
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<MoreVertical className="h-4 w-4" />}
+                            aria-label={t('common:more', 'More')}
+                          />
+                        }
+                        items={[
+                          {
+                            id: 'publish',
+                            label: t('common:templates.publishAsTemplate', 'Publish as Template'),
+                            icon: <Share2 className="h-4 w-4" />,
+                            onClick: () => openPublishModal(plan),
+                          },
+                        ]}
+                      />
                     </div>
                   </div>
                 </div>
@@ -694,8 +837,47 @@ const PlanningView = ({
         )
       })}
 
+      {/* Templates Tab Content */}
+      {activeTab === 'templates' && (
+        <>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Typography variant="h3" className="text-morandi-stone-900">
+                {t('common:templates.browseTemplates', 'Browse Templates')}
+              </Typography>
+              <Typography variant="body-sm" className="text-morandi-stone-600">
+                {t(
+                  'common:templates.galleryDescription',
+                  'Discover and adopt practice plan templates created by tutors and the community.'
+                )}
+              </Typography>
+            </div>
+
+            <TemplateGallery
+              templates={templates}
+              onAdopt={handleAdoptTemplate}
+              isLoading={isLoadingTemplates}
+            />
+          </div>
+        </>
+      )}
+
       {editorModal}
       {checkInModal}
+
+      {/* Template Publisher Modal */}
+      {planToPublish && (
+        <TemplatePublisherModal
+          isOpen={isPublishModalOpen}
+          onClose={() => {
+            setIsPublishModalOpen(false)
+            setPlanToPublish(null)
+          }}
+          onSubmit={handlePublishTemplate}
+          defaultTitle={planToPublish.title}
+          defaultDescription={planToPublish.description ?? ''}
+        />
+      )}
     </div>
   )
 }
