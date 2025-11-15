@@ -245,6 +245,49 @@
   "system": "System",
   "tagline": "play with me",
   "tasks": "Tasks",
+  "templates": {
+    "adopt": "Adopt",
+    "adoptions": "adoptions",
+    "emptyState": {
+      "noMatches": "No templates match your filters",
+      "title": "No templates found",
+      "tryDifferent": "Try adjusting your filters to see more templates."
+    },
+    "errors": {
+      "publishFailed": "Failed to publish template",
+      "titleRequired": "Title is required"
+    },
+    "fields": {
+      "description": "Description",
+      "tags": "Tags",
+      "title": "Template Title",
+      "visibility": "Visibility"
+    },
+    "filters": {
+      "all": "All",
+      "clear": "Clear filters",
+      "tags": "Tags",
+      "tagsPlaceholder": "Filter by tags...",
+      "visibility": "Visibility"
+    },
+    "hints": {
+      "tags": "Separate multiple tags with commas"
+    },
+    "placeholders": {
+      "description": "Describe what this template is for and how to use it",
+      "tags": "e.g. beginner, scales, technique (comma-separated)",
+      "title": "Enter template title"
+    },
+    "publish": "Publish Template",
+    "publishTitle": "Publish as Template",
+    "publishing": "Publishing...",
+    "visibility": {
+      "private": "Private",
+      "privateDesc": "Only visible to you",
+      "public": "Public",
+      "publicDesc": "Visible to all users"
+    }
+  },
   "theme": "Theme",
   "time": {
     "allTime": "All time",

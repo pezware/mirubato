@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Button,
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui'
 import type { PlanTemplate, TemplateVisibility } from '@/api/planning'
 import { Star, Download } from 'lucide-react'
+import { trackPlanningEvent } from '@/lib/analytics/planning'
 
 interface TemplateGalleryProps {
   templates: PlanTemplate[]
@@ -64,6 +65,30 @@ export function TemplateGallery({
   }
 
   const hasActiveFilters = visibilityFilter !== 'all' || tagFilter.trim() !== ''
+
+  // Track when templates are viewed
+  useEffect(() => {
+    if (!isLoading && templates.length > 0) {
+      trackPlanningEvent('planning.template.view', {
+        templateCount: templates.length,
+        publicCount: templates.filter(t => t.visibility === 'public').length,
+        privateCount: templates.filter(t => t.visibility === 'private').length,
+      })
+    }
+  }, [isLoading, templates])
+
+  const handleAdopt = async (templateId: string) => {
+    const template = templates.find(t => t.id === templateId)
+    await onAdopt(templateId)
+
+    // Track adoption event
+    trackPlanningEvent('planning.template.adopt', {
+      templateId,
+      visibility: template?.visibility,
+      hasTags: (template?.tags?.length ?? 0) > 0,
+      adoptionCount: template?.adoptionCount,
+    })
+  }
 
   if (isLoading) {
     return (
@@ -266,7 +291,7 @@ export function TemplateGallery({
                 {/* Adopt Button */}
                 <div className="pt-2">
                   <Button
-                    onClick={() => onAdopt(template.id)}
+                    onClick={() => handleAdopt(template.id)}
                     size="sm"
                     className="w-full"
                     leftIcon={<Star className="h-4 w-4" />}

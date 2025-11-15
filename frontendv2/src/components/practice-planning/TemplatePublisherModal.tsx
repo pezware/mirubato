@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@/components/ui'
 import type { TemplateVisibility } from '@/api/planning'
+import { trackPlanningEvent } from '@/lib/analytics/planning'
 
 interface TemplatePublisherModalProps {
   isOpen: boolean
@@ -62,6 +63,13 @@ export function TemplatePublisherModal({
         description: description.trim() || undefined,
         visibility,
         tags: tags.length > 0 ? tags : undefined,
+      })
+
+      // Track publish event
+      trackPlanningEvent('planning.template.publish', {
+        visibility,
+        hasTags: tags.length > 0,
+        hasDescription: !!description.trim(),
       })
 
       // Reset form

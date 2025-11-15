@@ -309,5 +309,48 @@
     "list": "Liste"
   },
   "warning": "Avertissement",
-  "yes": "Oui"
+  "yes": "Oui",
+  "templates": {
+    "adopt": "[NEEDS TRANSLATION] Adopt",
+    "adoptions": "[NEEDS TRANSLATION] adoptions",
+    "emptyState": {
+      "noMatches": "[NEEDS TRANSLATION] No templates match your filters",
+      "title": "[NEEDS TRANSLATION] No templates found",
+      "tryDifferent": "[NEEDS TRANSLATION] Try adjusting your filters to see more templates."
+    },
+    "errors": {
+      "publishFailed": "[NEEDS TRANSLATION] Failed to publish template",
+      "titleRequired": "[NEEDS TRANSLATION] Title is required"
+    },
+    "fields": {
+      "description": "[NEEDS TRANSLATION] Description",
+      "tags": "[NEEDS TRANSLATION] Tags",
+      "title": "[NEEDS TRANSLATION] Template Title",
+      "visibility": "[NEEDS TRANSLATION] Visibility"
+    },
+    "filters": {
+      "all": "[NEEDS TRANSLATION] All",
+      "clear": "[NEEDS TRANSLATION] Clear filters",
+      "tags": "[NEEDS TRANSLATION] Tags",
+      "tagsPlaceholder": "[NEEDS TRANSLATION] Filter by tags...",
+      "visibility": "[NEEDS TRANSLATION] Visibility"
+    },
+    "hints": {
+      "tags": "[NEEDS TRANSLATION] Separate multiple tags with commas"
+    },
+    "placeholders": {
+      "description": "[NEEDS TRANSLATION] Describe what this template is for and how to use it",
+      "tags": "[NEEDS TRANSLATION] e.g. beginner, scales, technique (comma-separated)",
+      "title": "[NEEDS TRANSLATION] Enter template title"
+    },
+    "publish": "[NEEDS TRANSLATION] Publish Template",
+    "publishTitle": "[NEEDS TRANSLATION] Publish as Template",
+    "publishing": "[NEEDS TRANSLATION] Publishing...",
+    "visibility": {
+      "private": "[NEEDS TRANSLATION] Private",
+      "privateDesc": "[NEEDS TRANSLATION] Only visible to you",
+      "public": "[NEEDS TRANSLATION] Public",
+      "publicDesc": "[NEEDS TRANSLATION] Visible to all users"
+    }
+  }
 }
