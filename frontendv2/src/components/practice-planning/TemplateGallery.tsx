@@ -251,11 +251,7 @@ export function TemplateGallery({
                         <Download className="h-4 w-4" />
                         <span>
                           {template.adoptionCount}{' '}
-                          {t(
-                            'templates.adoptions',
-                            { count: template.adoptionCount },
-                            'adoptions'
-                          )}
+                          {t('templates.adoptions', 'adoptions')}
                         </span>
                       </div>
                     )}
