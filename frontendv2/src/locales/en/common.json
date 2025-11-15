@@ -248,15 +248,29 @@
   "templates": {
     "adopt": "Adopt",
     "adoptions": "adoptions",
+    "adoptFailed": "Failed to adopt template",
+    "adoptSuccess": "Template adopted successfully!",
+    "adoptSuccessDetail": "Find it in your Active Plans",
+    "browseTemplates": "Browse Templates",
+    "delete": "Delete",
+    "deleteSuccess": "Template deleted successfully!",
+    "deleteSuccessDetail": "Your template has been removed",
     "emptyState": {
       "noMatches": "No templates match your filters",
       "title": "No templates found",
       "tryDifferent": "Try adjusting your filters to see more templates."
     },
     "errors": {
+      "adoptFailed": "Failed to adopt template",
+      "deleteFailed": "Failed to delete template",
       "publishFailed": "Failed to publish template",
       "titleRequired": "Title is required"
     },
+    "fromTemplate": "From Template",
+    "galleryDescription": "Discover and adopt practice plan templates created by tutors and the community.",
+    "myTemplates": "My Templates",
+    "myTemplatesDescription": "Manage your published practice plan templates.",
+    "yourTemplate": "Your Template",
     "fields": {
       "description": "Description",
       "tags": "Tags",
@@ -279,8 +293,20 @@
       "title": "Enter template title"
     },
     "publish": "Publish Template",
+    "publishAsTemplate": "Publish as Template",
+    "publishedAsTemplate": "Published",
+    "publishSuccess": "Template published successfully!",
+    "publishSuccessDetail": "Your plan is now available as a template",
     "publishTitle": "Publish as Template",
     "publishing": "Publishing...",
+    "subtabs": {
+      "browse": "Browse",
+      "myTemplates": "My Templates"
+    },
+    "tabs": {
+      "myPlans": "My Plans",
+      "templates": "Templates"
+    },
     "visibility": {
       "private": "Private",
       "privateDesc": "Only visible to you",

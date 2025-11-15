@@ -313,12 +313,21 @@
   "templates": {
     "adopt": "[NEEDS TRANSLATION] Adopt",
     "adoptions": "[NEEDS TRANSLATION] adoptions",
+    "adoptFailed": "Failed to adopt template",
+    "adoptSuccess": "Template adopted successfully!",
+    "adoptSuccessDetail": "Find it in your Active Plans",
+    "browseTemplates": "Browse Templates",
+    "delete": "Delete",
+    "deleteSuccess": "Template deleted successfully!",
+    "deleteSuccessDetail": "Your template has been removed",
     "emptyState": {
       "noMatches": "[NEEDS TRANSLATION] No templates match your filters",
       "title": "[NEEDS TRANSLATION] No templates found",
       "tryDifferent": "[NEEDS TRANSLATION] Try adjusting your filters to see more templates."
     },
     "errors": {
+      "adoptFailed": "Failed to adopt template",
+      "deleteFailed": "Failed to delete template",
       "publishFailed": "[NEEDS TRANSLATION] Failed to publish template",
       "titleRequired": "[NEEDS TRANSLATION] Title is required"
     },
@@ -335,6 +344,11 @@
       "tagsPlaceholder": "[NEEDS TRANSLATION] Filter by tags...",
       "visibility": "[NEEDS TRANSLATION] Visibility"
     },
+    "fromTemplate": "From Template",
+    "galleryDescription": "Discover and adopt practice plan templates created by tutors and the community.",
+    "myTemplates": "My Templates",
+    "myTemplatesDescription": "Manage your published practice plan templates.",
+    "yourTemplate": "Your Template",
     "hints": {
       "tags": "[NEEDS TRANSLATION] Separate multiple tags with commas"
     },
@@ -344,8 +358,20 @@
       "title": "[NEEDS TRANSLATION] Enter template title"
     },
     "publish": "[NEEDS TRANSLATION] Publish Template",
+    "publishAsTemplate": "Publish as Template",
+    "publishedAsTemplate": "Publié",
+    "publishSuccess": "Template published successfully!",
+    "publishSuccessDetail": "Your plan is now available as a template",
     "publishTitle": "[NEEDS TRANSLATION] Publish as Template",
     "publishing": "[NEEDS TRANSLATION] Publishing...",
+    "subtabs": {
+      "browse": "Browse",
+      "myTemplates": "My Templates"
+    },
+    "tabs": {
+      "myPlans": "My Plans",
+      "templates": "Templates"
+    },
     "visibility": {
       "private": "[NEEDS TRANSLATION] Private",
       "privateDesc": "[NEEDS TRANSLATION] Only visible to you",
