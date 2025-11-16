@@ -292,7 +292,9 @@
     "confirmNote": "Nota: Tu tiempo de práctica ya ha sido registrado y permanecerá en tu registro.",
     "confirmButton": "Deshacer registro",
     "genericError": "No se pudo deshacer el registro",
-    "success": "Registro deshecho exitosamente"
+    "success": "Registro deshecho exitosamente",
+    "undoSuccess": "Check-in deshecho",
+    "undoSuccessDetail": "Tu sesión ha sido desvinculada del plan"
   },
   "planningView": {
     "activePlans": "Planes activos",
