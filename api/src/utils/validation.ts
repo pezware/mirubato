@@ -5,6 +5,7 @@ import {
   PartialGoalSchema,
   PartialPracticePlanSchema,
   PartialPlanOccurrenceSchema,
+  PartialPlanTemplateSchema,
 } from '../schemas/entities'
 
 const RECURRENCE_WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
@@ -280,6 +281,7 @@ export const schemas = {
       goals: z.array(PartialGoalSchema).optional(),
       practicePlans: z.array(PartialPracticePlanSchema).optional(),
       planOccurrences: z.array(PartialPlanOccurrenceSchema).optional(),
+      planTemplates: z.array(PartialPlanTemplateSchema).optional(),
     }),
     lastSyncToken: z.string().optional(),
   }),
