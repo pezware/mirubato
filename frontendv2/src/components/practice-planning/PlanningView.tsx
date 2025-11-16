@@ -581,12 +581,15 @@ const PlanningView = ({
                     key={stat.label}
                     className="rounded-2xl bg-white/80 px-4 py-3 shadow-inner"
                   >
-                    <p className="text-xs uppercase text-morandi-stone-500">
+                    <Typography
+                      variant="caption"
+                      className="uppercase text-morandi-stone-500"
+                    >
                       {stat.label}
-                    </p>
-                    <p className="text-2xl font-semibold text-morandi-stone-900">
+                    </Typography>
+                    <Typography variant="h2" className="text-morandi-stone-900">
                       {stat.value}
-                    </p>
+                    </Typography>
                   </div>
                 ))}
               </div>

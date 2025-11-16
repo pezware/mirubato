@@ -246,7 +246,7 @@ export function PlanCheckInModal({
       <ModalBody className="space-y-5">
         <section className="space-y-2">
           <Typography variant="h3">{plan.title}</Typography>
-          <Typography variant="body" className="text-muted-foreground">
+          <Typography variant="body" className="text-morandi-stone-600">
             {t(
               'reports:planningCheckIn.upcomingSession',
               'Next session details'
@@ -256,26 +256,26 @@ export function PlanCheckInModal({
             {segmentSummary.map(segment => (
               <div
                 key={segment.id}
-                className="rounded-lg border border-border bg-muted/30 p-3 space-y-2"
+                className="rounded-lg border border-morandi-stone-200 bg-morandi-stone-50 p-3 space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <Typography variant="h4">{segment.label}</Typography>
                   {segment.duration ? (
                     <Typography
                       variant="body"
-                      className="text-muted-foreground"
+                      className="text-morandi-stone-600"
                     >
                       {segment.duration}m
                     </Typography>
                   ) : null}
                 </div>
                 {segment.instructions && (
-                  <Typography variant="body" className="text-muted-foreground">
+                  <Typography variant="body" className="text-morandi-stone-600">
                     {segment.instructions}
                   </Typography>
                 )}
                 {segment.techniques.length > 0 && (
-                  <Typography variant="body" className="text-muted-foreground">
+                  <Typography variant="body" className="text-morandi-stone-600">
                     {segment.techniques.join(' · ')}
                   </Typography>
                 )}
@@ -313,7 +313,7 @@ export function PlanCheckInModal({
             {t('reports:planningCheckIn.reflection', 'Reflection')}
           </Typography>
           {(occurrence.reflectionPrompts ?? []).length === 0 ? (
-            <Typography variant="body" className="text-muted-foreground">
+            <Typography variant="body" className="text-morandi-stone-600">
               {t(
                 'reports:planningCheckIn.noPrompts',
                 'No prompts configured for this session.'
@@ -342,7 +342,7 @@ export function PlanCheckInModal({
         </section>
 
         {submitError && (
-          <Typography variant="body" className="text-red-600">
+          <Typography variant="body" className="text-morandi-rose-500">
             {submitError}
           </Typography>
         )}

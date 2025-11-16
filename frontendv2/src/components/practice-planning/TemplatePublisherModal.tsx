@@ -112,10 +112,10 @@ export function TemplatePublisherModal({
             <div>
               <label
                 htmlFor="template-title"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-morandi-stone-700 mb-1"
               >
                 {t('templates.fields.title', 'Template Title')}
-                <span className="text-red-500 ml-1">*</span>
+                <span className="text-morandi-rose-500 ml-1">*</span>
               </label>
               <Input
                 id="template-title"
@@ -133,7 +133,7 @@ export function TemplatePublisherModal({
             <div>
               <label
                 htmlFor="template-description"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-morandi-stone-700 mb-1"
               >
                 {t('templates.fields.description', 'Description')}
               </label>
@@ -152,11 +152,15 @@ export function TemplatePublisherModal({
 
             {/* Visibility */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-morandi-stone-700 mb-2">
                 {t('templates.fields.visibility', 'Visibility')}
               </label>
-              <div className="space-y-2">
-                <label className="flex items-center">
+              <div
+                className="space-y-2"
+                role="radiogroup"
+                aria-label={t('templates.fields.visibility', 'Visibility')}
+              >
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="radio"
                     name="visibility"
@@ -164,11 +168,11 @@ export function TemplatePublisherModal({
                     checked={visibility === 'private'}
                     onChange={() => setVisibility('private')}
                     disabled={isSubmitting}
-                    className="mr-2"
+                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
                   />
-                  <span className="text-sm">
+                  <span className="text-sm text-morandi-stone-900">
                     {t('templates.visibility.private', 'Private')}
-                    <span className="text-gray-500 ml-2 text-xs">
+                    <span className="text-morandi-stone-500 ml-2 text-xs">
                       {t(
                         'templates.visibility.privateDesc',
                         'Only visible to you'
@@ -176,7 +180,7 @@ export function TemplatePublisherModal({
                     </span>
                   </span>
                 </label>
-                <label className="flex items-center">
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="radio"
                     name="visibility"
@@ -184,11 +188,11 @@ export function TemplatePublisherModal({
                     checked={visibility === 'public'}
                     onChange={() => setVisibility('public')}
                     disabled={isSubmitting}
-                    className="mr-2"
+                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
                   />
-                  <span className="text-sm">
+                  <span className="text-sm text-morandi-stone-900">
                     {t('templates.visibility.public', 'Public')}
-                    <span className="text-gray-500 ml-2 text-xs">
+                    <span className="text-morandi-stone-500 ml-2 text-xs">
                       {t(
                         'templates.visibility.publicDesc',
                         'Visible to all users'
@@ -203,7 +207,7 @@ export function TemplatePublisherModal({
             <div>
               <label
                 htmlFor="template-tags"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-morandi-stone-700 mb-1"
               >
                 {t('templates.fields.tags', 'Tags')}
               </label>
@@ -217,7 +221,10 @@ export function TemplatePublisherModal({
                 )}
                 disabled={isSubmitting}
               />
-              <Typography variant="caption" className="text-gray-500 mt-1">
+              <Typography
+                variant="caption"
+                className="text-morandi-stone-500 mt-1"
+              >
                 {t(
                   'templates.hints.tags',
                   'Separate multiple tags with commas'
@@ -227,8 +234,11 @@ export function TemplatePublisherModal({
 
             {/* Error message */}
             {error && (
-              <div className="rounded-md bg-red-50 p-3">
-                <Typography variant="body" className="text-red-800 text-sm">
+              <div className="rounded-md bg-morandi-rose-50 p-3">
+                <Typography
+                  variant="body"
+                  className="text-morandi-rose-500 text-sm"
+                >
                   {error}
                 </Typography>
               </div>

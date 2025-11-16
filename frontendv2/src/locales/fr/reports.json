@@ -283,6 +283,17 @@
       "titleRequired": "Le titre du plan est requis"
     }
   },
+  "planningUncheckIn": {
+    "recentlyCompleted": "Session terminée",
+    "timeRemaining": "Annulation disponible pendant {{time}}",
+    "undoButton": "Annuler",
+    "confirmTitle": "Annuler l'enregistrement ?",
+    "confirmMessage": "Cela dissociera votre session de pratique de \"{{planTitle}}\". Votre entrée de journal sera conservée et pourra être liée à un autre plan ou rester indépendante.",
+    "confirmNote": "Remarque : Votre temps de pratique a déjà été enregistré et restera dans votre journal.",
+    "confirmButton": "Annuler l'enregistrement",
+    "genericError": "Impossible d'annuler l'enregistrement",
+    "success": "Enregistrement annulé avec succès"
+  },
   "planningView": {
     "activePlans": "Plans actifs",
     "analytics": {

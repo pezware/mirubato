@@ -134,46 +134,50 @@ export function TemplateGallery({
           <div className="space-y-4">
             {/* Visibility Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-morandi-stone-700 mb-2">
                 {t('templates.filters.visibility', 'Visibility')}
               </label>
-              <div className="flex gap-4">
-                <label className="flex items-center">
+              <div
+                className="flex gap-4"
+                role="radiogroup"
+                aria-label={t('templates.filters.visibility', 'Visibility')}
+              >
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="radio"
                     name="visibility-filter"
                     value="all"
                     checked={visibilityFilter === 'all'}
                     onChange={() => setVisibilityFilter('all')}
-                    className="mr-2"
+                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
                   />
-                  <span className="text-sm">
+                  <span className="text-sm text-morandi-stone-900">
                     {t('templates.filters.all', 'All')}
                   </span>
                 </label>
-                <label className="flex items-center">
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="radio"
                     name="visibility-filter"
                     value="public"
                     checked={visibilityFilter === 'public'}
                     onChange={() => setVisibilityFilter('public')}
-                    className="mr-2"
+                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
                   />
-                  <span className="text-sm">
+                  <span className="text-sm text-morandi-stone-900">
                     {t('templates.visibility.public', 'Public')}
                   </span>
                 </label>
-                <label className="flex items-center">
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="radio"
                     name="visibility-filter"
                     value="private"
                     checked={visibilityFilter === 'private'}
                     onChange={() => setVisibilityFilter('private')}
-                    className="mr-2"
+                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
                   />
-                  <span className="text-sm">
+                  <span className="text-sm text-morandi-stone-900">
                     {t('templates.visibility.private', 'Private')}
                   </span>
                 </label>
@@ -184,7 +188,7 @@ export function TemplateGallery({
             <div>
               <label
                 htmlFor="tag-filter"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-morandi-stone-700 mb-1"
               >
                 {t('templates.filters.tags', 'Tags')}
               </label>

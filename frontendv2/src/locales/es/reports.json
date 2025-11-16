@@ -283,6 +283,17 @@
       "titleRequired": "El título del plan es obligatorio"
     }
   },
+  "planningUncheckIn": {
+    "recentlyCompleted": "Sesión completada",
+    "timeRemaining": "Deshacer disponible por {{time}}",
+    "undoButton": "Deshacer",
+    "confirmTitle": "¿Deshacer registro?",
+    "confirmMessage": "Esto desvinculará tu sesión de práctica de \"{{planTitle}}\". Tu entrada del registro se conservará y podrá vincularse a un plan diferente o permanecer independiente.",
+    "confirmNote": "Nota: Tu tiempo de práctica ya ha sido registrado y permanecerá en tu registro.",
+    "confirmButton": "Deshacer registro",
+    "genericError": "No se pudo deshacer el registro",
+    "success": "Registro deshecho exitosamente"
+  },
   "planningView": {
     "activePlans": "Planes activos",
     "analytics": {
