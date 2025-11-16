@@ -85,6 +85,10 @@ const getInstrumentFromTags = (tags?: string[]): string | undefined => {
   return tag.slice(INSTRUMENT_TAG_PREFIX.length)
 }
 
+const ensureFlexibility = (
+  value?: PracticePlanSchedule['flexibility']
+): NonNullable<PracticePlanSchedule['flexibility']> => value ?? 'anytime'
+
 interface TemplateAdoptionModalProps {
   template: PlanTemplate
   isOpen: boolean
@@ -125,7 +129,7 @@ export function TemplateAdoptionModal({
   )
   const [flexibility, setFlexibility] = useState<
     NonNullable<PracticePlanSchedule['flexibility']>
-  >(template.schedule?.flexibility ?? 'anytime')
+  >(ensureFlexibility(template.schedule?.flexibility))
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -137,7 +141,7 @@ export function TemplateAdoptionModal({
     setStartDate(toDateInputValue(template.schedule?.startDate))
     setStartTime(toTimeInputValue(template.schedule?.timeOfDay))
     setDurationMinutes(template.schedule?.durationMinutes?.toString() ?? '')
-    setFlexibility(template.schedule?.flexibility ?? 'anytime')
+    setFlexibility(ensureFlexibility(template.schedule?.flexibility))
     setErrors({})
   }, [template, normalizedDefaultInstrument])
 
@@ -364,7 +368,11 @@ export function TemplateAdoptionModal({
               <Select
                 value={flexibility}
                 onChange={value =>
-                  setFlexibility(value as PracticePlanSchedule['flexibility'])
+                  setFlexibility(
+                    ensureFlexibility(
+                      value as PracticePlanSchedule['flexibility']
+                    )
+                  )
                 }
                 options={flexibilityOptions}
                 label={t(
