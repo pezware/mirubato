@@ -95,6 +95,13 @@ export interface PracticePlan {
   deletedAt?: string | null
 }
 
+export interface TemplateAdoptionCustomization {
+  title?: string
+  tags?: string[]
+  focusAreas?: string[]
+  schedule?: Partial<PracticePlanSchedule>
+}
+
 export interface PlanTemplate {
   id: string
   authorId: string
@@ -381,10 +388,7 @@ export const planningApi = {
 
   adoptTemplate: async (
     templateId: string,
-    customization?: {
-      title?: string
-      schedule?: Partial<PracticePlanSchedule>
-    }
+    customization?: TemplateAdoptionCustomization
   ) => {
     const response = await apiClient.post<{
       plan: PracticePlan

@@ -11,18 +11,27 @@ import {
   LoadingSkeleton,
   Typography,
 } from '@/components/ui'
-import type { PlanTemplate, TemplateVisibility } from '@/api/planning'
+import type {
+  PlanTemplate,
+  TemplateAdoptionCustomization,
+  TemplateVisibility,
+} from '@/api/planning'
 import { Star, Download, Eye } from 'lucide-react'
 import { trackPlanningEvent } from '@/lib/analytics/planning'
 import { TemplateDetailModal } from './TemplateDetailModal'
+import { TemplateAdoptionModal } from './TemplateAdoptionModal'
 
 interface TemplateGalleryProps {
   templates: PlanTemplate[]
-  onAdopt: (templateId: string) => Promise<void> | void
+  onAdopt: (
+    templateId: string,
+    customization?: TemplateAdoptionCustomization
+  ) => Promise<void> | void
   onDelete?: (templateId: string) => Promise<void> | void
   isLoading: boolean
   currentUserId?: string
   showAuthorControls?: boolean
+  defaultInstrument?: string
 }
 
 type VisibilityFilter = 'all' | TemplateVisibility
@@ -34,6 +43,7 @@ export function TemplateGallery({
   isLoading,
   currentUserId,
   showAuthorControls = false,
+  defaultInstrument,
 }: TemplateGalleryProps) {
   const { t } = useTranslation('common')
 
@@ -44,6 +54,8 @@ export function TemplateGallery({
     null
   )
   const [isAdopting, setIsAdopting] = useState(false)
+  const [customizingTemplate, setCustomizingTemplate] =
+    useState<PlanTemplate | null>(null)
 
   const filteredTemplates = useMemo(() => {
     return templates.filter(template => {
@@ -88,22 +100,67 @@ export function TemplateGallery({
     }
   }, [isLoading, templates])
 
-  const handleAdopt = async (templateId: string) => {
+  const handleAdopt = (templateId: string) => {
     const template = templates.find(t => t.id === templateId)
-    setIsAdopting(true)
-    try {
-      await onAdopt(templateId)
+    if (!template) {
+      return
+    }
 
-      // Track adoption event
+    trackPlanningEvent('planning.template.customize.open', {
+      templateId,
+      visibility: template.visibility,
+    })
+
+    setCustomizingTemplate(template)
+    setSelectedTemplate(null)
+  }
+
+  const handleCloseCustomization = () => {
+    if (isAdopting) {
+      return
+    }
+
+    if (customizingTemplate) {
+      trackPlanningEvent('planning.template.customize.cancel', {
+        templateId: customizingTemplate.id,
+        visibility: customizingTemplate.visibility,
+      })
+    }
+    setCustomizingTemplate(null)
+  }
+
+  const handleCustomizationSubmit = async (
+    customization: TemplateAdoptionCustomization
+  ) => {
+    if (!customizingTemplate) {
+      return
+    }
+
+    setIsAdopting(true)
+    trackPlanningEvent('planning.template.customize.submit', {
+      templateId: customizingTemplate.id,
+      visibility: customizingTemplate.visibility,
+      providedInstrument: customization.tags?.some(tag =>
+        tag.startsWith('instrument:')
+      ),
+      focusCount: customization.focusAreas?.length ?? 0,
+    })
+
+    try {
+      await onAdopt(customizingTemplate.id, customization)
+
       trackPlanningEvent('planning.template.adopt', {
-        templateId,
-        visibility: template?.visibility,
-        hasTags: (template?.tags?.length ?? 0) > 0,
-        adoptionCount: template?.adoptionCount,
+        templateId: customizingTemplate.id,
+        visibility: customizingTemplate.visibility,
+        hasTags: (customizingTemplate.tags?.length ?? 0) > 0,
+        adoptionCount: customizingTemplate.adoptionCount,
+        customizedTitle:
+          customization.title &&
+          customization.title.trim() !== customizingTemplate.title,
+        hasSchedulePreferences: Boolean(customization.schedule),
       })
 
-      // Close the detail modal if open
-      setSelectedTemplate(null)
+      setCustomizingTemplate(null)
     } finally {
       setIsAdopting(false)
     }
@@ -410,6 +467,17 @@ export function TemplateGallery({
           template={selectedTemplate}
           onAdopt={handleAdopt}
           isAdopting={isAdopting}
+        />
+      )}
+
+      {customizingTemplate && (
+        <TemplateAdoptionModal
+          template={customizingTemplate}
+          isOpen={Boolean(customizingTemplate)}
+          onClose={handleCloseCustomization}
+          onSubmit={handleCustomizationSubmit}
+          isSubmitting={isAdopting}
+          defaultInstrument={defaultInstrument}
         />
       )}
     </div>
