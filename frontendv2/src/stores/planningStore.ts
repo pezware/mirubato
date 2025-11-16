@@ -956,12 +956,12 @@ const aggregateTechniques = (
   return Array.from(aggregated)
 }
 
-const sanitizeMetadataRecord = (
-  metadata: Record<string, unknown>
-): Record<string, unknown> => {
+const sanitizeMetadataRecord = <T extends object>(metadata: T): T => {
   return Object.fromEntries(
-    Object.entries(metadata).filter(([, value]) => value !== undefined)
-  )
+    Object.entries(metadata as Record<string, unknown>).filter(
+      ([, value]) => value !== undefined
+    )
+  ) as T
 }
 
 const serializeSegmentsForMetadata = (
@@ -977,7 +977,7 @@ const serializeSegmentsForMetadata = (
         return null
       }
 
-      const normalized: Record<string, unknown> = {
+      const normalized: TemplateSegmentPreview = {
         label: segment.label,
       }
 

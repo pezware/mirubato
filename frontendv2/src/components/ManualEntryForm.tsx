@@ -7,6 +7,7 @@ import { useUserPreferences } from '../hooks/useUserPreferences'
 import { useFormValidation } from '../hooks/useFormValidation'
 import { ManualEntryFormSchema } from '../schemas/validation'
 import type { LogbookEntry } from '../api/logbook'
+import type { TemplateSegmentPreview } from '../api/planning'
 import type { PlanOccurrencePrefillData } from '../stores/planningStore'
 import {
   generateNormalizedScoreId,
@@ -31,12 +32,12 @@ type PlanPiecePrefill = {
   scoreId?: string
 }
 
-const sanitizeMetadataRecord = (
-  metadata: Record<string, unknown>
-): Record<string, unknown> => {
+const sanitizeMetadataRecord = <T extends object>(metadata: T): T => {
   return Object.fromEntries(
-    Object.entries(metadata).filter(([, value]) => value !== undefined)
-  )
+    Object.entries(metadata as Record<string, unknown>).filter(
+      ([, value]) => value !== undefined
+    )
+  ) as T
 }
 
 const prepareSegmentsForMetadata = (
@@ -52,7 +53,7 @@ const prepareSegmentsForMetadata = (
         return null
       }
 
-      const normalized: Record<string, unknown> = {
+      const normalized: TemplateSegmentPreview = {
         label: segment.label,
       }
 
