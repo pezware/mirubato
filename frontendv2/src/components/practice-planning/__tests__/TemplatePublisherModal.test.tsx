@@ -207,5 +207,10 @@ describe('TemplatePublisherModal', () => {
         screen.getByRole('button', { name: /Publishing.../i })
       ).toBeDisabled()
     })
+
+    // Wait for async operation to complete to avoid state update after teardown
+    await waitFor(() => {
+      expect(mockOnClose).toHaveBeenCalled()
+    })
   })
 })
