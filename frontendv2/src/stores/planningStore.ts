@@ -7,6 +7,9 @@ import {
   type PlanSegment,
   type PlanTargets,
   type PlanTemplate,
+  type PlanTemplateMetadata,
+  type TemplatePreviewMetadata,
+  type TemplateSegmentPreview,
   type TemplateVisibility,
 } from '../api/planning'
 import type { SyncEvent, WebSocketSync } from '../services/webSocketSync'
@@ -506,16 +509,7 @@ export interface PlanOccurrencePrefillData {
   scheduledStart?: string | null
   scheduledEnd?: string | null
   durationMinutes?: number
-  segments: Array<{
-    id?: string
-    label: string
-    durationMinutes?: number
-    pieceRefs?: PlanSegment['pieceRefs']
-    techniques?: string[]
-    instructions?: string
-    tempoTargets?: Record<string, number | string | null>
-    metadata?: Record<string, unknown>
-  }>
+  segments: TemplateSegmentPreview[]
   reflectionPrompts: string[]
   focusAreas: string[]
   techniques: string[]
@@ -962,17 +956,17 @@ const aggregateTechniques = (
   return Array.from(aggregated)
 }
 
-const sanitizeMetadataRecord = (
-  metadata: Record<string, unknown>
-): Record<string, unknown> => {
+const sanitizeMetadataRecord = <T extends object>(metadata: T): T => {
   return Object.fromEntries(
-    Object.entries(metadata).filter(([, value]) => value !== undefined)
-  )
+    Object.entries(metadata as Record<string, unknown>).filter(
+      ([, value]) => value !== undefined
+    )
+  ) as T
 }
 
 const serializeSegmentsForMetadata = (
   segments?: PlanSegment[]
-): PlanOccurrencePrefillData['segments'] => {
+): TemplateSegmentPreview[] => {
   if (!Array.isArray(segments)) {
     return []
   }
@@ -983,7 +977,7 @@ const serializeSegmentsForMetadata = (
         return null
       }
 
-      const normalized: Record<string, unknown> = {
+      const normalized: TemplateSegmentPreview = {
         label: segment.label,
       }
 
@@ -1032,10 +1026,74 @@ const serializeSegmentsForMetadata = (
 
       return sanitizeMetadataRecord(normalized)
     })
-    .filter(
-      (segment): segment is PlanOccurrencePrefillData['segments'][number] =>
-        Boolean(segment)
-    )
+    .filter((segment): segment is TemplateSegmentPreview => Boolean(segment))
+}
+
+const buildTemplatePreviewMetadata = (
+  plan: PracticePlan,
+  occurrences: PlanOccurrence[]
+): TemplatePreviewMetadata | undefined => {
+  const previewOccurrence =
+    occurrences.find(occurrence => (occurrence.segments?.length ?? 0) > 0) ??
+    occurrences[0]
+
+  if (!previewOccurrence) {
+    return undefined
+  }
+
+  const segments = serializeSegmentsForMetadata(previewOccurrence.segments)
+  const pieces = collectPiecesFromSegments(previewOccurrence.segments)
+  const totalSegmentMinutes = sumSegmentDurations(previewOccurrence.segments)
+  const sessionMinutes =
+    typeof plan.schedule?.durationMinutes === 'number' &&
+    plan.schedule.durationMinutes > 0
+      ? plan.schedule.durationMinutes
+      : totalSegmentMinutes > 0
+        ? totalSegmentMinutes
+        : undefined
+
+  const techniques = aggregateTechniques(
+    plan.techniques,
+    previewOccurrence.segments
+  )
+
+  const preview: TemplatePreviewMetadata = {}
+
+  if (segments.length > 0) {
+    preview.segments = segments
+  }
+
+  if (pieces.length > 0) {
+    preview.pieces = pieces
+  }
+
+  const workload: TemplatePreviewMetadata['workload'] = {}
+
+  if (typeof sessionMinutes === 'number') {
+    workload.sessionMinutes = sessionMinutes
+  }
+
+  if (segments.length > 0) {
+    workload.segmentsCount = segments.length
+  }
+
+  if (totalSegmentMinutes > 0) {
+    workload.totalSegmentMinutes = totalSegmentMinutes
+  }
+
+  if (Object.keys(workload).length > 0) {
+    preview.workload = workload
+  }
+
+  if (plan.focusAreas && plan.focusAreas.length > 0) {
+    preview.focusAreas = plan.focusAreas
+  }
+
+  if (techniques.length > 0) {
+    preview.techniques = techniques
+  }
+
+  return Object.keys(preview).length > 0 ? preview : undefined
 }
 
 export const usePlanningStore = create<PlanningState>((set, get) => ({
@@ -2162,12 +2220,28 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
   },
 
   publishTemplate: async (planId, options) => {
-    const { plansMap, templatesMap } = get()
+    const { plansMap, templatesMap, getOccurrencesForPlan } = get()
     const plan = plansMap.get(planId)
 
     if (!plan) {
       throw new Error('Plan not found')
     }
+
+    const planOccurrences = getOccurrencesForPlan(planId)
+    const previewMetadata = buildTemplatePreviewMetadata(plan, planOccurrences)
+
+    const baseMetadata =
+      plan.metadata && typeof plan.metadata === 'object'
+        ? { ...(plan.metadata as PlanTemplateMetadata) }
+        : undefined
+
+    const templateMetadata: PlanTemplateMetadata | undefined =
+      previewMetadata || baseMetadata
+        ? {
+            ...(baseMetadata ?? {}),
+            ...(previewMetadata ? { preview: previewMetadata } : {}),
+          }
+        : undefined
 
     // Create template from plan
     const now = new Date().toISOString()
@@ -2188,7 +2262,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       templateVersion: 1,
       visibility: options.visibility || 'private',
       adoptionCount: 0,
-      metadata: {},
+      metadata: templateMetadata ?? {},
       publishedAt: now,
       createdAt: now,
       updatedAt: now,

@@ -11,6 +11,35 @@ export interface PlanPieceRef {
   composer?: string | null
 }
 
+export interface TemplateSegmentPreview {
+  id?: string
+  label?: string
+  durationMinutes?: number
+  pieceRefs?: PlanPieceRef[]
+  techniques?: string[]
+  instructions?: string
+  tempoTargets?: Record<string, number | string | null>
+  metadata?: Record<string, unknown>
+}
+
+export interface TemplateWorkloadMetadata {
+  sessionMinutes?: number
+  segmentsCount?: number
+  totalSegmentMinutes?: number
+}
+
+export interface TemplatePreviewMetadata {
+  segments?: TemplateSegmentPreview[]
+  workload?: TemplateWorkloadMetadata
+  pieces?: PlanPieceRef[]
+  focusAreas?: string[]
+  techniques?: string[]
+}
+
+export interface PlanTemplateMetadata extends Record<string, unknown> {
+  preview?: TemplatePreviewMetadata
+}
+
 export interface PlanSegment {
   id?: string
   label: string
@@ -81,7 +110,7 @@ export interface PlanTemplate {
   templateVersion: number
   visibility: TemplateVisibility
   adoptionCount?: number
-  metadata?: Record<string, unknown>
+  metadata?: PlanTemplateMetadata
   publishedAt: string
   createdAt: string
   updatedAt: string
@@ -173,7 +202,7 @@ const normalizeTemplate = (template: PlanTemplate): PlanTemplate => ({
   },
   metadata:
     template.metadata && typeof template.metadata === 'object'
-      ? template.metadata
+      ? (template.metadata as PlanTemplateMetadata)
       : {},
   adoptionCount: template.adoptionCount ?? 0,
 })
