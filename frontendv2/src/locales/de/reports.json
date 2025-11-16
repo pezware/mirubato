@@ -292,7 +292,9 @@
     "confirmNote": "Hinweis: Ihre Übungszeit wurde bereits protokolliert und bleibt in Ihrem Protokoll erhalten.",
     "confirmButton": "Check-in rückgängig machen",
     "genericError": "Check-in konnte nicht rückgängig gemacht werden",
-    "success": "Check-in erfolgreich rückgängig gemacht"
+    "success": "Check-in erfolgreich rückgängig gemacht",
+    "undoSuccess": "Check-in rückgängig gemacht",
+    "undoSuccessDetail": "Ihre Sitzung wurde vom Plan getrennt"
   },
   "planningView": {
     "activePlans": "Aktive Pläne",

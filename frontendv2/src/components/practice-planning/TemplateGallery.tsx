@@ -133,65 +133,76 @@ export function TemplateGallery({
         <CardContent className="pt-6">
           <div className="space-y-4">
             {/* Visibility Filter */}
-            <div>
-              <label className="block text-sm font-medium text-morandi-stone-700 mb-2">
-                {t('templates.filters.visibility', 'Visibility')}
-              </label>
-              <div
-                className="flex gap-4"
-                role="radiogroup"
-                aria-label={t('templates.filters.visibility', 'Visibility')}
+            <fieldset>
+              <Typography
+                as="legend"
+                variant="body-sm"
+                className="block font-medium text-morandi-stone-700 mb-2"
               >
-                <label className="flex items-center cursor-pointer">
+                {t('templates.filters.visibility', 'Visibility')}
+              </Typography>
+              <div className="flex gap-4">
+                <label className="flex items-center cursor-pointer group">
                   <input
                     type="radio"
                     name="visibility-filter"
                     value="all"
                     checked={visibilityFilter === 'all'}
                     onChange={() => setVisibilityFilter('all')}
-                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
+                    className="mr-2 h-4 w-4 border-morandi-stone-300 text-morandi-sage-600 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
                   />
-                  <span className="text-sm text-morandi-stone-900">
+                  <Typography
+                    variant="body-sm"
+                    className="text-morandi-stone-900 group-hover:text-morandi-stone-700"
+                  >
                     {t('templates.filters.all', 'All')}
-                  </span>
+                  </Typography>
                 </label>
-                <label className="flex items-center cursor-pointer">
+                <label className="flex items-center cursor-pointer group">
                   <input
                     type="radio"
                     name="visibility-filter"
                     value="public"
                     checked={visibilityFilter === 'public'}
                     onChange={() => setVisibilityFilter('public')}
-                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
+                    className="mr-2 h-4 w-4 border-morandi-stone-300 text-morandi-sage-600 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
                   />
-                  <span className="text-sm text-morandi-stone-900">
+                  <Typography
+                    variant="body-sm"
+                    className="text-morandi-stone-900 group-hover:text-morandi-stone-700"
+                  >
                     {t('templates.visibility.public', 'Public')}
-                  </span>
+                  </Typography>
                 </label>
-                <label className="flex items-center cursor-pointer">
+                <label className="flex items-center cursor-pointer group">
                   <input
                     type="radio"
                     name="visibility-filter"
                     value="private"
                     checked={visibilityFilter === 'private'}
                     onChange={() => setVisibilityFilter('private')}
-                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
+                    className="mr-2 h-4 w-4 border-morandi-stone-300 text-morandi-sage-600 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
                   />
-                  <span className="text-sm text-morandi-stone-900">
+                  <Typography
+                    variant="body-sm"
+                    className="text-morandi-stone-900 group-hover:text-morandi-stone-700"
+                  >
                     {t('templates.visibility.private', 'Private')}
-                  </span>
+                  </Typography>
                 </label>
               </div>
-            </div>
+            </fieldset>
 
             {/* Tag Filter */}
             <div>
-              <label
+              <Typography
+                as="label"
                 htmlFor="tag-filter"
-                className="block text-sm font-medium text-morandi-stone-700 mb-1"
+                variant="body-sm"
+                className="block font-medium text-morandi-stone-700 mb-1"
               >
                 {t('templates.filters.tags', 'Tags')}
-              </label>
+              </Typography>
               <Input
                 id="tag-filter"
                 value={tagFilter}
@@ -258,17 +269,25 @@ export function TemplateGallery({
                       currentUserId &&
                       template.authorId === currentUserId && (
                         <div className="mt-2">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-morandi-purple-100 text-morandi-purple-700">
+                          <Typography
+                            as="span"
+                            variant="caption"
+                            className="inline-flex items-center px-2 py-1 rounded-full font-medium bg-morandi-purple-100 text-morandi-purple-700"
+                          >
                             {t('templates.yourTemplate', 'Your Template')}
-                          </span>
+                          </Typography>
                         </div>
                       )}
                   </div>
                   {template.visibility === 'public' && (
                     <div className="flex-shrink-0">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-morandi-sage-100 text-morandi-sage-700">
+                      <Typography
+                        as="span"
+                        variant="caption"
+                        className="inline-flex items-center px-2 py-1 rounded-full font-medium bg-morandi-sage-100 text-morandi-sage-700"
+                      >
                         {t('templates.visibility.public', 'Public')}
-                      </span>
+                      </Typography>
                     </div>
                   )}
                 </div>
@@ -278,12 +297,14 @@ export function TemplateGallery({
                 {template.tags && template.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {template.tags.map(tag => (
-                      <span
+                      <Typography
                         key={tag}
-                        className="inline-block px-2 py-1 rounded text-xs bg-morandi-stone-100 text-morandi-stone-700"
+                        as="span"
+                        variant="caption"
+                        className="inline-block px-2 py-1 rounded bg-morandi-stone-100 text-morandi-stone-700"
                       >
                         {tag}
-                      </span>
+                      </Typography>
                     ))}
                   </div>
                 )}

@@ -35,6 +35,7 @@ import {
 import PlanReminderCard, { type PlanReminderStatus } from './PlanReminderCard'
 import PlanProgressRail from './PlanProgressRail'
 import PlanningAnalyticsPanel from './PlanningAnalyticsPanel'
+import { UndoCheckInBanner } from './UndoCheckInBanner'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { trackPlanningEvent } from '@/lib/analytics/planning'
 import { usePlanningAnalytics } from '@/hooks/usePlanningAnalytics'
@@ -143,6 +144,10 @@ const PlanningView = ({
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
   const [planToPublish, setPlanToPublish] = useState<PracticePlan | null>(null)
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
+
+  // Track recently completed check-ins for undo banner
+  const [recentlyCompletedOccurrenceId, setRecentlyCompletedOccurrenceId] =
+    useState<string | null>(null)
 
   // Load templates when switching to templates tab
   useEffect(() => {
@@ -311,8 +316,27 @@ const PlanningView = ({
       responses: input.responses,
       metrics: input.metrics,
     })
+    // Track this occurrence for undo banner
+    setRecentlyCompletedOccurrenceId(input.occurrenceId)
     setActiveCheckIn(null)
   }
+
+  const handleUndoComplete = () => {
+    setRecentlyCompletedOccurrenceId(null)
+    toast.info(
+      t('reports:planningUncheckIn.undoSuccess', 'Check-in undone'),
+      t(
+        'reports:planningUncheckIn.undoSuccessDetail',
+        'Your session has been unlinked from the plan'
+      )
+    )
+  }
+
+  // Get the recently completed occurrence object for undo banner
+  const recentlyCompletedOccurrence = useMemo(() => {
+    if (!recentlyCompletedOccurrenceId) return null
+    return occurrences.find(occ => occ.id === recentlyCompletedOccurrenceId)
+  }, [recentlyCompletedOccurrenceId, occurrences])
 
   const openCreateModal = (source: 'hero' | 'header' | 'empty' = 'header') => {
     if (source === 'hero') {
@@ -648,6 +672,15 @@ const PlanningView = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Undo Check-In Banner - shown after recent check-in */}
+      {recentlyCompletedOccurrence && (
+        <UndoCheckInBanner
+          occurrence={recentlyCompletedOccurrence}
+          plan={planLookup.get(recentlyCompletedOccurrence.planId)}
+          onUndoComplete={handleUndoComplete}
+        />
+      )}
 
       {/* Planning Analytics Panel */}
       <PlanningAnalyticsPanel analytics={planningAnalytics} />

@@ -1653,7 +1653,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
   },
 
   deletePlan: async planId => {
-    const { plansMap, occurrencesMap } = get()
+    const { plansMap, occurrencesMap, templatesMap } = get()
     const existingPlan = plansMap.get(planId)
     if (!existingPlan) {
       return
@@ -1674,6 +1674,28 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
 
     const nextPlansList = toSortedPlans(nextPlansMap)
     const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+    // Decrement adoption count if plan was adopted from a template
+    if (existingPlan.sourceTemplateId) {
+      const nextTemplatesMap = new Map(templatesMap)
+      const sourceTemplate = nextTemplatesMap.get(existingPlan.sourceTemplateId)
+      if (sourceTemplate && (sourceTemplate.adoptionCount || 0) > 0) {
+        const updatedTemplate: PlanTemplate = {
+          ...sourceTemplate,
+          adoptionCount: (sourceTemplate.adoptionCount || 0) - 1,
+          updatedAt: new Date().toISOString(),
+        }
+        nextTemplatesMap.set(existingPlan.sourceTemplateId, updatedTemplate)
+        const nextTemplatesList = toSortedTemplates(nextTemplatesMap)
+        writeToStorage(TEMPLATES_STORAGE_KEY, nextTemplatesList)
+
+        // Update templates state
+        set({
+          templatesMap: nextTemplatesMap,
+          templates: nextTemplatesList,
+        })
+      }
+    }
 
     // ALWAYS save to localStorage
     writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
@@ -2207,19 +2229,45 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       customization
     )
 
-    const { plansMap, occurrencesMap } = get()
+    const { plansMap, occurrencesMap, templatesMap } = get()
+
+    // Ensure the plan tracks its source template
+    const planWithSource: PracticePlan = {
+      ...plan,
+      sourceTemplateId: plan.sourceTemplateId ?? templateId,
+    }
 
     // Update local state
     const nextPlansMap = new Map(plansMap)
     const nextOccurrencesMap = new Map(occurrencesMap)
 
-    nextPlansMap.set(plan.id, plan)
+    nextPlansMap.set(planWithSource.id, planWithSource)
     occurrences.forEach(occ => {
       nextOccurrencesMap.set(occ.id, occ)
     })
 
     const nextPlansList = toSortedPlans(nextPlansMap)
     const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+    // Update template adoption count locally
+    const nextTemplatesMap = new Map(templatesMap)
+    const sourceTemplate = nextTemplatesMap.get(templateId)
+    if (sourceTemplate) {
+      const updatedTemplate: PlanTemplate = {
+        ...sourceTemplate,
+        adoptionCount: (sourceTemplate.adoptionCount || 0) + 1,
+        updatedAt: new Date().toISOString(),
+      }
+      nextTemplatesMap.set(templateId, updatedTemplate)
+      const nextTemplatesList = toSortedTemplates(nextTemplatesMap)
+      writeToStorage(TEMPLATES_STORAGE_KEY, nextTemplatesList)
+
+      // Update templates state
+      set({
+        templatesMap: nextTemplatesMap,
+        templates: nextTemplatesList,
+      })
+    }
 
     // Save to localStorage
     writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
@@ -2233,7 +2281,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       occurrences: nextOccurrencesList,
     })
 
-    return { plan, occurrences }
+    return { plan: planWithSource, occurrences }
   },
 
   updateTemplate: async (templateId, updates) => {

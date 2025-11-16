@@ -28,6 +28,17 @@ export interface TypographyProps {
   className?: string
   as?: keyof JSX.IntrinsicElements
   fontFamily?: FontFamily
+  // Label-specific props (for as="label")
+  htmlFor?: string
+  // Common HTML attributes
+  id?: string
+  'aria-label'?: string
+  'aria-labelledby'?: string
+  'aria-describedby'?: string
+  role?: string
+  tabIndex?: number
+  onClick?: React.MouseEventHandler
+  onKeyDown?: React.KeyboardEventHandler
 }
 
 // Typography variant mappings based on design system
@@ -82,6 +93,7 @@ export function Typography({
   className,
   as,
   fontFamily,
+  htmlFor,
   ...props
 }: TypographyProps) {
   const Component = as || defaultElements[variant]
@@ -93,11 +105,14 @@ export function Typography({
     styles = styles.replace(/font-(inter|lexend|serif)/, `font-${fontFamily}`)
   }
 
-  return (
-    <Component className={cn(styles, className)} {...props}>
-      {children}
-    </Component>
-  )
+  // Build props object, including htmlFor for label elements
+  const componentProps = {
+    className: cn(styles, className),
+    ...props,
+    ...(htmlFor && as === 'label' ? { htmlFor } : {}),
+  }
+
+  return <Component {...componentProps}>{children}</Component>
 }
 
 // Convenience components for common use cases

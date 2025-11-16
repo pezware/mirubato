@@ -110,13 +110,15 @@ export function TemplatePublisherModal({
           <div className="space-y-4">
             {/* Title */}
             <div>
-              <label
+              <Typography
+                as="label"
                 htmlFor="template-title"
-                className="block text-sm font-medium text-morandi-stone-700 mb-1"
+                variant="body-sm"
+                className="block font-medium text-morandi-stone-700 mb-1"
               >
                 {t('templates.fields.title', 'Template Title')}
                 <span className="text-morandi-rose-500 ml-1">*</span>
-              </label>
+              </Typography>
               <Input
                 id="template-title"
                 value={title}
@@ -131,12 +133,14 @@ export function TemplatePublisherModal({
 
             {/* Description */}
             <div>
-              <label
+              <Typography
+                as="label"
                 htmlFor="template-description"
-                className="block text-sm font-medium text-morandi-stone-700 mb-1"
+                variant="body-sm"
+                className="block font-medium text-morandi-stone-700 mb-1"
               >
                 {t('templates.fields.description', 'Description')}
-              </label>
+              </Typography>
               <Textarea
                 id="template-description"
                 value={description}
@@ -151,16 +155,16 @@ export function TemplatePublisherModal({
             </div>
 
             {/* Visibility */}
-            <div>
-              <label className="block text-sm font-medium text-morandi-stone-700 mb-2">
-                {t('templates.fields.visibility', 'Visibility')}
-              </label>
-              <div
-                className="space-y-2"
-                role="radiogroup"
-                aria-label={t('templates.fields.visibility', 'Visibility')}
+            <fieldset>
+              <Typography
+                as="legend"
+                variant="body-sm"
+                className="block font-medium text-morandi-stone-700 mb-2"
               >
-                <label className="flex items-center cursor-pointer">
+                {t('templates.fields.visibility', 'Visibility')}
+              </Typography>
+              <div className="space-y-2">
+                <label className="flex items-center cursor-pointer group">
                   <input
                     type="radio"
                     name="visibility"
@@ -168,19 +172,26 @@ export function TemplatePublisherModal({
                     checked={visibility === 'private'}
                     onChange={() => setVisibility('private')}
                     disabled={isSubmitting}
-                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
+                    className="mr-2 h-4 w-4 border-morandi-stone-300 text-morandi-sage-600 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2 disabled:opacity-50"
                   />
-                  <span className="text-sm text-morandi-stone-900">
+                  <Typography
+                    variant="body-sm"
+                    className="text-morandi-stone-900 group-hover:text-morandi-stone-700"
+                  >
                     {t('templates.visibility.private', 'Private')}
-                    <span className="text-morandi-stone-500 ml-2 text-xs">
+                    <Typography
+                      as="span"
+                      variant="caption"
+                      className="text-morandi-stone-500 ml-2"
+                    >
                       {t(
                         'templates.visibility.privateDesc',
                         'Only visible to you'
                       )}
-                    </span>
-                  </span>
+                    </Typography>
+                  </Typography>
                 </label>
-                <label className="flex items-center cursor-pointer">
+                <label className="flex items-center cursor-pointer group">
                   <input
                     type="radio"
                     name="visibility"
@@ -188,29 +199,38 @@ export function TemplatePublisherModal({
                     checked={visibility === 'public'}
                     onChange={() => setVisibility('public')}
                     disabled={isSubmitting}
-                    className="mr-2 h-4 w-4 accent-morandi-sage-500 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2"
+                    className="mr-2 h-4 w-4 border-morandi-stone-300 text-morandi-sage-600 focus:ring-2 focus:ring-morandi-sage-400 focus:ring-offset-2 disabled:opacity-50"
                   />
-                  <span className="text-sm text-morandi-stone-900">
+                  <Typography
+                    variant="body-sm"
+                    className="text-morandi-stone-900 group-hover:text-morandi-stone-700"
+                  >
                     {t('templates.visibility.public', 'Public')}
-                    <span className="text-morandi-stone-500 ml-2 text-xs">
+                    <Typography
+                      as="span"
+                      variant="caption"
+                      className="text-morandi-stone-500 ml-2"
+                    >
                       {t(
                         'templates.visibility.publicDesc',
                         'Visible to all users'
                       )}
-                    </span>
-                  </span>
+                    </Typography>
+                  </Typography>
                 </label>
               </div>
-            </div>
+            </fieldset>
 
             {/* Tags */}
             <div>
-              <label
+              <Typography
+                as="label"
                 htmlFor="template-tags"
-                className="block text-sm font-medium text-morandi-stone-700 mb-1"
+                variant="body-sm"
+                className="block font-medium text-morandi-stone-700 mb-1"
               >
                 {t('templates.fields.tags', 'Tags')}
-              </label>
+              </Typography>
               <Input
                 id="template-tags"
                 value={tagsInput}
