@@ -12,6 +12,7 @@ export type PlanningAnalyticsEvent =
   | 'planning.template.publish'
   | 'planning.template.adopt'
   | 'planning.template.view'
+  | 'planning.template.preview'
   | 'planning.occurrence.uncheckin'
 
 export type PlanningAnalyticsPayload = Record<string, unknown>

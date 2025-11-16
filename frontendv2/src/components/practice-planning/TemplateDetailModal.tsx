@@ -1,0 +1,407 @@
+import { useTranslation } from 'react-i18next'
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Typography,
+  Tag,
+} from '@/components/ui'
+import type { PlanTemplate } from '@/api/planning'
+import {
+  Calendar,
+  Clock,
+  Target,
+  Music,
+  BookOpen,
+  Repeat,
+  Download,
+  Star,
+} from 'lucide-react'
+
+interface TemplateDetailModalProps {
+  isOpen: boolean
+  onClose: () => void
+  template: PlanTemplate
+  onAdopt: (templateId: string) => Promise<void> | void
+  isAdopting?: boolean
+}
+
+const formatScheduleKind = (kind: string): string => {
+  switch (kind) {
+    case 'single':
+      return 'Single Session'
+    case 'recurring':
+      return 'Recurring'
+    default:
+      return kind
+  }
+}
+
+const formatFlexibility = (flexibility?: string): string => {
+  if (!flexibility) return 'Not specified'
+  return flexibility.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+}
+
+const formatPlanType = (type: string): string => {
+  switch (type) {
+    case 'bootcamp':
+      return 'Bootcamp'
+    case 'course':
+      return 'Course'
+    case 'custom':
+      return 'Custom'
+    default:
+      return type
+  }
+}
+
+export function TemplateDetailModal({
+  isOpen,
+  onClose,
+  template,
+  onAdopt,
+  isAdopting = false,
+}: TemplateDetailModalProps) {
+  const { t } = useTranslation('common')
+
+  const handleAdopt = () => {
+    onAdopt(template.id)
+  }
+
+  const hasSegments =
+    template.schedule?.metadata &&
+    typeof template.schedule.metadata === 'object' &&
+    'segments' in template.schedule.metadata &&
+    Array.isArray(template.schedule.metadata.segments)
+
+  const segments = hasSegments
+    ? (
+        template.schedule.metadata as {
+          segments: Array<{
+            label?: string
+            durationMinutes?: number
+            instructions?: string
+            techniques?: string[]
+          }>
+        }
+      ).segments
+    : []
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={template.title}
+      size="lg"
+      data-testid="template-detail-modal"
+    >
+      <ModalBody>
+        <div className="space-y-6">
+          {/* Header badges */}
+          <div className="flex flex-wrap gap-2">
+            <Tag variant="primary" size="sm">
+              {formatPlanType(template.type)}
+            </Tag>
+            {template.visibility === 'public' && (
+              <Tag variant="success" size="sm">
+                {t('templates.visibility.public', 'Public')}
+              </Tag>
+            )}
+            {template.adoptionCount !== undefined &&
+              template.adoptionCount > 0 && (
+                <Tag variant="default" size="sm">
+                  <Download className="h-3 w-3 mr-1" />
+                  {template.adoptionCount}{' '}
+                  {t('templates.adoptions', 'adoptions')}
+                </Tag>
+              )}
+          </div>
+
+          {/* Description */}
+          {template.description && (
+            <div>
+              <Typography
+                variant="body-sm"
+                className="font-medium text-morandi-stone-700 mb-2"
+              >
+                {t('templates.details.description', 'Description')}
+              </Typography>
+              <Typography variant="body" className="text-morandi-stone-600">
+                {template.description}
+              </Typography>
+            </div>
+          )}
+
+          {/* Schedule Information */}
+          <div className="bg-morandi-stone-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Calendar className="h-4 w-4 text-morandi-sage-600" />
+              <Typography
+                variant="body-sm"
+                className="font-medium text-morandi-stone-900"
+              >
+                {t('templates.details.schedule', 'Schedule')}
+              </Typography>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div>
+                <Typography
+                  variant="caption"
+                  className="text-morandi-stone-500"
+                >
+                  {t('templates.details.scheduleType', 'Type')}
+                </Typography>
+                <Typography
+                  variant="body-sm"
+                  className="text-morandi-stone-900"
+                >
+                  {formatScheduleKind(template.schedule.kind)}
+                </Typography>
+              </div>
+              {template.schedule.durationMinutes && (
+                <div>
+                  <Typography
+                    variant="caption"
+                    className="text-morandi-stone-500"
+                  >
+                    {t('templates.details.duration', 'Duration')}
+                  </Typography>
+                  <Typography
+                    variant="body-sm"
+                    className="text-morandi-stone-900"
+                  >
+                    {template.schedule.durationMinutes}{' '}
+                    {t('common.minutes', 'minutes')}
+                  </Typography>
+                </div>
+              )}
+              {template.schedule.timeOfDay && (
+                <div>
+                  <Typography
+                    variant="caption"
+                    className="text-morandi-stone-500"
+                  >
+                    {t('templates.details.timeOfDay', 'Time of Day')}
+                  </Typography>
+                  <Typography
+                    variant="body-sm"
+                    className="text-morandi-stone-900"
+                  >
+                    {template.schedule.timeOfDay}
+                  </Typography>
+                </div>
+              )}
+              {template.schedule.flexibility && (
+                <div>
+                  <Typography
+                    variant="caption"
+                    className="text-morandi-stone-500"
+                  >
+                    {t('templates.details.flexibility', 'Flexibility')}
+                  </Typography>
+                  <Typography
+                    variant="body-sm"
+                    className="text-morandi-stone-900"
+                  >
+                    {formatFlexibility(template.schedule.flexibility)}
+                  </Typography>
+                </div>
+              )}
+              {template.schedule.kind === 'recurring' &&
+                template.schedule.rule && (
+                  <div className="sm:col-span-2">
+                    <Typography
+                      variant="caption"
+                      className="text-morandi-stone-500"
+                    >
+                      {t('templates.details.recurrence', 'Recurrence')}
+                    </Typography>
+                    <div className="flex items-center gap-1">
+                      <Repeat className="h-3 w-3 text-morandi-stone-600" />
+                      <Typography
+                        variant="body-sm"
+                        className="text-morandi-stone-900"
+                      >
+                        {template.schedule.rule}
+                      </Typography>
+                    </div>
+                  </div>
+                )}
+            </div>
+          </div>
+
+          {/* Focus Areas */}
+          {template.focusAreas && template.focusAreas.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="h-4 w-4 text-morandi-sage-600" />
+                <Typography
+                  variant="body-sm"
+                  className="font-medium text-morandi-stone-900"
+                >
+                  {t('templates.details.focusAreas', 'Focus Areas')}
+                </Typography>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {template.focusAreas.map(area => (
+                  <Tag key={area} variant="default" size="sm">
+                    {area}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Techniques */}
+          {template.techniques && template.techniques.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen className="h-4 w-4 text-morandi-sage-600" />
+                <Typography
+                  variant="body-sm"
+                  className="font-medium text-morandi-stone-900"
+                >
+                  {t('templates.details.techniques', 'Techniques')}
+                </Typography>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {template.techniques.map(technique => (
+                  <Tag key={technique} variant="primary" size="sm">
+                    {technique}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Piece References */}
+          {template.pieceRefs && template.pieceRefs.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Music className="h-4 w-4 text-morandi-sage-600" />
+                <Typography
+                  variant="body-sm"
+                  className="font-medium text-morandi-stone-900"
+                >
+                  {t('templates.details.pieces', 'Pieces')}
+                </Typography>
+              </div>
+              <ul className="space-y-2">
+                {template.pieceRefs.map((piece, index) => (
+                  <li
+                    key={piece.scoreId || index}
+                    className="text-sm text-morandi-stone-700"
+                  >
+                    <Typography variant="body-sm">
+                      {piece.title || 'Untitled'}
+                      {piece.composer && (
+                        <span className="text-morandi-stone-500">
+                          {' '}
+                          - {piece.composer}
+                        </span>
+                      )}
+                    </Typography>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Segments */}
+          {segments.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-morandi-sage-600" />
+                <Typography
+                  variant="body-sm"
+                  className="font-medium text-morandi-stone-900"
+                >
+                  {t('templates.details.segments', 'Session Segments')}
+                </Typography>
+              </div>
+              <div className="space-y-3">
+                {segments.map((segment, index) => (
+                  <div
+                    key={index}
+                    className="border border-morandi-stone-200 rounded-lg p-3 bg-white"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <Typography
+                        variant="body-sm"
+                        className="font-medium text-morandi-stone-900"
+                      >
+                        {segment.label || `Segment ${index + 1}`}
+                      </Typography>
+                      {segment.durationMinutes && (
+                        <Typography
+                          variant="caption"
+                          className="text-morandi-stone-600"
+                        >
+                          {segment.durationMinutes} min
+                        </Typography>
+                      )}
+                    </div>
+                    {segment.instructions && (
+                      <Typography
+                        variant="caption"
+                        className="text-morandi-stone-600 mb-2 block"
+                      >
+                        {segment.instructions}
+                      </Typography>
+                    )}
+                    {segment.techniques && segment.techniques.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {segment.techniques.map(tech => (
+                          <span
+                            key={tech}
+                            className="text-xs px-2 py-0.5 rounded bg-morandi-sage-50 text-morandi-sage-700"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tags */}
+          {template.tags && template.tags.length > 0 && (
+            <div>
+              <Typography
+                variant="body-sm"
+                className="font-medium text-morandi-stone-700 mb-2"
+              >
+                {t('templates.details.tags', 'Tags')}
+              </Typography>
+              <div className="flex flex-wrap gap-2">
+                {template.tags.map(tag => (
+                  <Tag key={tag} variant="default" size="sm">
+                    {tag}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button variant="ghost" onClick={onClose} disabled={isAdopting}>
+          {t('common.close', 'Close')}
+        </Button>
+        <Button
+          onClick={handleAdopt}
+          loading={isAdopting}
+          leftIcon={<Star className="h-4 w-4" />}
+        >
+          {t('templates.adopt', 'Adopt Template')}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  )
+}
+
+export default TemplateDetailModal

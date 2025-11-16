@@ -12,8 +12,9 @@ import {
   Typography,
 } from '@/components/ui'
 import type { PlanTemplate, TemplateVisibility } from '@/api/planning'
-import { Star, Download } from 'lucide-react'
+import { Star, Download, Eye } from 'lucide-react'
 import { trackPlanningEvent } from '@/lib/analytics/planning'
+import { TemplateDetailModal } from './TemplateDetailModal'
 
 interface TemplateGalleryProps {
   templates: PlanTemplate[]
@@ -39,6 +40,10 @@ export function TemplateGallery({
   const [visibilityFilter, setVisibilityFilter] =
     useState<VisibilityFilter>('all')
   const [tagFilter, setTagFilter] = useState('')
+  const [selectedTemplate, setSelectedTemplate] = useState<PlanTemplate | null>(
+    null
+  )
+  const [isAdopting, setIsAdopting] = useState(false)
 
   const filteredTemplates = useMemo(() => {
     return templates.filter(template => {
@@ -85,15 +90,31 @@ export function TemplateGallery({
 
   const handleAdopt = async (templateId: string) => {
     const template = templates.find(t => t.id === templateId)
-    await onAdopt(templateId)
+    setIsAdopting(true)
+    try {
+      await onAdopt(templateId)
 
-    // Track adoption event
-    trackPlanningEvent('planning.template.adopt', {
-      templateId,
-      visibility: template?.visibility,
-      hasTags: (template?.tags?.length ?? 0) > 0,
-      adoptionCount: template?.adoptionCount,
+      // Track adoption event
+      trackPlanningEvent('planning.template.adopt', {
+        templateId,
+        visibility: template?.visibility,
+        hasTags: (template?.tags?.length ?? 0) > 0,
+        adoptionCount: template?.adoptionCount,
+      })
+
+      // Close the detail modal if open
+      setSelectedTemplate(null)
+    } finally {
+      setIsAdopting(false)
+    }
+  }
+
+  const handleViewDetails = (template: PlanTemplate) => {
+    trackPlanningEvent('planning.template.preview', {
+      templateId: template.id,
+      visibility: template.visibility,
     })
+    setSelectedTemplate(template)
   }
 
   if (isLoading) {
@@ -331,6 +352,15 @@ export function TemplateGallery({
 
                 {/* Action Buttons */}
                 <div className="pt-2 flex gap-2">
+                  <Button
+                    onClick={() => handleViewDetails(template)}
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1"
+                    leftIcon={<Eye className="h-4 w-4" />}
+                  >
+                    {t('templates.viewDetails', 'View Details')}
+                  </Button>
                   {showAuthorControls ? (
                     <>
                       <Button
@@ -339,6 +369,7 @@ export function TemplateGallery({
                         variant="secondary"
                         className="flex-1"
                         leftIcon={<Star className="h-4 w-4" />}
+                        disabled={isAdopting}
                       >
                         {t('templates.adopt', 'Adopt')}
                       </Button>
@@ -357,8 +388,9 @@ export function TemplateGallery({
                     <Button
                       onClick={() => handleAdopt(template.id)}
                       size="sm"
-                      className="w-full"
+                      className="flex-1"
                       leftIcon={<Star className="h-4 w-4" />}
+                      disabled={isAdopting}
                     >
                       {t('templates.adopt', 'Adopt')}
                     </Button>
@@ -368,6 +400,17 @@ export function TemplateGallery({
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Template Detail Modal */}
+      {selectedTemplate && (
+        <TemplateDetailModal
+          isOpen={Boolean(selectedTemplate)}
+          onClose={() => setSelectedTemplate(null)}
+          template={selectedTemplate}
+          onAdopt={handleAdopt}
+          isAdopting={isAdopting}
+        />
       )}
     </div>
   )

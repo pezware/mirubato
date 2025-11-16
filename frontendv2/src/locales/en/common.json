@@ -266,10 +266,25 @@
       "publishFailed": "Failed to publish template",
       "titleRequired": "Title is required"
     },
+    "details": {
+      "description": "Description",
+      "schedule": "Schedule",
+      "scheduleType": "Type",
+      "duration": "Duration",
+      "timeOfDay": "Time of Day",
+      "flexibility": "Flexibility",
+      "recurrence": "Recurrence",
+      "focusAreas": "Focus Areas",
+      "techniques": "Techniques",
+      "pieces": "Pieces",
+      "segments": "Session Segments",
+      "tags": "Tags"
+    },
     "fromTemplate": "From Template",
     "galleryDescription": "Discover and adopt practice plan templates created by tutors and the community.",
     "myTemplates": "My Templates",
     "myTemplatesDescription": "Manage your published practice plan templates.",
+    "viewDetails": "View Details",
     "yourTemplate": "Your Template",
     "fields": {
       "description": "Description",

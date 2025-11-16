@@ -772,7 +772,7 @@ const PlanningView = ({
                             </span>
                           )}
                           {publishedPlanIds.has(plan.id) && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-morandi-blue-100 text-morandi-blue-700">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-morandi-sky-100 text-morandi-navy-600">
                               <Share2 className="h-3 w-3" />
                               {t(
                                 'common:templates.publishedAsTemplate',
