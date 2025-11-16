@@ -17,6 +17,7 @@ import {
   Repeat,
   Download,
   Star,
+  ListChecks,
 } from 'lucide-react'
 
 interface TemplateDetailModalProps {
@@ -69,24 +70,52 @@ export function TemplateDetailModal({
     onAdopt(template.id)
   }
 
-  const hasSegments =
-    template.schedule?.metadata &&
-    typeof template.schedule.metadata === 'object' &&
-    'segments' in template.schedule.metadata &&
-    Array.isArray(template.schedule.metadata.segments)
+  const previewMetadata = template.metadata?.preview
+  const segments = previewMetadata?.segments ?? []
+  const pieceRefs =
+    previewMetadata?.pieces && previewMetadata.pieces.length > 0
+      ? previewMetadata.pieces
+      : (template.pieceRefs ?? [])
+  const focusAreas =
+    previewMetadata?.focusAreas && previewMetadata.focusAreas.length > 0
+      ? previewMetadata.focusAreas
+      : (template.focusAreas ?? [])
+  const techniques =
+    previewMetadata?.techniques && previewMetadata.techniques.length > 0
+      ? previewMetadata.techniques
+      : (template.techniques ?? [])
 
-  const segments = hasSegments
-    ? (
-        template.schedule.metadata as {
-          segments: Array<{
-            label?: string
-            durationMinutes?: number
-            instructions?: string
-            techniques?: string[]
-          }>
-        }
-      ).segments
-    : []
+  const scheduleMetadata =
+    template.schedule?.metadata &&
+    typeof template.schedule.metadata === 'object'
+      ? template.schedule.metadata
+      : null
+
+  const fallbackSegmentsCount =
+    scheduleMetadata && typeof scheduleMetadata.segmentsCount === 'number'
+      ? scheduleMetadata.segmentsCount
+      : undefined
+
+  const workloadSummary = previewMetadata?.workload
+  const sessionMinutes =
+    typeof workloadSummary?.sessionMinutes === 'number'
+      ? workloadSummary.sessionMinutes
+      : typeof template.schedule.durationMinutes === 'number'
+        ? template.schedule.durationMinutes
+        : typeof workloadSummary?.totalSegmentMinutes === 'number'
+          ? workloadSummary.totalSegmentMinutes
+          : undefined
+
+  const segmentsCount =
+    typeof workloadSummary?.segmentsCount === 'number'
+      ? workloadSummary.segmentsCount
+      : segments.length > 0
+        ? segments.length
+        : fallbackSegmentsCount
+
+  const showWorkloadSummary =
+    (typeof sessionMinutes === 'number' && sessionMinutes > 0) ||
+    (typeof segmentsCount === 'number' && segmentsCount > 0)
 
   return (
     <Modal
@@ -232,7 +261,7 @@ export function TemplateDetailModal({
           </div>
 
           {/* Focus Areas */}
-          {template.focusAreas && template.focusAreas.length > 0 && (
+          {focusAreas.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Target className="h-4 w-4 text-morandi-sage-600" />
@@ -244,7 +273,7 @@ export function TemplateDetailModal({
                 </Typography>
               </div>
               <div className="flex flex-wrap gap-2">
-                {template.focusAreas.map(area => (
+                {focusAreas.map(area => (
                   <Tag key={area} variant="default" size="sm">
                     {area}
                   </Tag>
@@ -254,7 +283,7 @@ export function TemplateDetailModal({
           )}
 
           {/* Techniques */}
-          {template.techniques && template.techniques.length > 0 && (
+          {techniques.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <BookOpen className="h-4 w-4 text-morandi-sage-600" />
@@ -266,7 +295,7 @@ export function TemplateDetailModal({
                 </Typography>
               </div>
               <div className="flex flex-wrap gap-2">
-                {template.techniques.map(technique => (
+                {techniques.map(technique => (
                   <Tag key={technique} variant="primary" size="sm">
                     {technique}
                   </Tag>
@@ -276,7 +305,7 @@ export function TemplateDetailModal({
           )}
 
           {/* Piece References */}
-          {template.pieceRefs && template.pieceRefs.length > 0 && (
+          {pieceRefs.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Music className="h-4 w-4 text-morandi-sage-600" />
@@ -288,7 +317,7 @@ export function TemplateDetailModal({
                 </Typography>
               </div>
               <ul className="space-y-2">
-                {template.pieceRefs.map((piece, index) => (
+                {pieceRefs.map((piece, index) => (
                   <li
                     key={piece.scoreId || index}
                     className="text-sm text-morandi-stone-700"
@@ -308,11 +337,59 @@ export function TemplateDetailModal({
             </div>
           )}
 
+          {showWorkloadSummary && (
+            <div className="bg-morandi-sage-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="h-4 w-4 text-morandi-sage-600" />
+                <Typography
+                  variant="body-sm"
+                  className="font-medium text-morandi-stone-900"
+                >
+                  {t('templates.details.workloadSummary', 'Workload Summary')}
+                </Typography>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                {typeof sessionMinutes === 'number' && sessionMinutes > 0 && (
+                  <div>
+                    <Typography
+                      variant="caption"
+                      className="text-morandi-stone-500"
+                    >
+                      {t('templates.details.sessionLength', 'Session Length')}
+                    </Typography>
+                    <Typography
+                      variant="body-sm"
+                      className="text-morandi-stone-900"
+                    >
+                      {sessionMinutes} {t('common.minutes', 'minutes')}
+                    </Typography>
+                  </div>
+                )}
+                {typeof segmentsCount === 'number' && segmentsCount > 0 && (
+                  <div>
+                    <Typography
+                      variant="caption"
+                      className="text-morandi-stone-500"
+                    >
+                      {t('templates.details.segmentCount', 'Segments')}
+                    </Typography>
+                    <Typography
+                      variant="body-sm"
+                      className="text-morandi-stone-900"
+                    >
+                      {segmentsCount}
+                    </Typography>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Segments */}
           {segments.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-morandi-sage-600" />
+                <ListChecks className="h-4 w-4 text-morandi-sage-600" />
                 <Typography
                   variant="body-sm"
                   className="font-medium text-morandi-stone-900"
