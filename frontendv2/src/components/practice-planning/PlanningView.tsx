@@ -587,10 +587,7 @@ const PlanningView = ({
                     >
                       {stat.label}
                     </Typography>
-                    <Typography
-                      variant="h2"
-                      className="text-morandi-stone-900"
-                    >
+                    <Typography variant="h2" className="text-morandi-stone-900">
                       {stat.value}
                     </Typography>
                   </div>

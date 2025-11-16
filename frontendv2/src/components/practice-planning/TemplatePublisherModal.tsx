@@ -221,7 +221,10 @@ export function TemplatePublisherModal({
                 )}
                 disabled={isSubmitting}
               />
-              <Typography variant="caption" className="text-morandi-stone-500 mt-1">
+              <Typography
+                variant="caption"
+                className="text-morandi-stone-500 mt-1"
+              >
                 {t(
                   'templates.hints.tags',
                   'Separate multiple tags with commas'
@@ -232,7 +235,10 @@ export function TemplatePublisherModal({
             {/* Error message */}
             {error && (
               <div className="rounded-md bg-morandi-rose-50 p-3">
-                <Typography variant="body" className="text-morandi-rose-500 text-sm">
+                <Typography
+                  variant="body"
+                  className="text-morandi-rose-500 text-sm"
+                >
                   {error}
                 </Typography>
               </div>

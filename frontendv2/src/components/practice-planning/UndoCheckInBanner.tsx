@@ -1,7 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Undo2, Clock, CheckCircle2, X } from 'lucide-react'
-import { Button, Typography, Modal, ModalBody, ModalFooter } from '@/components/ui'
+import {
+  Button,
+  Typography,
+  Modal,
+  ModalBody,
+  ModalFooter,
+} from '@/components/ui'
 import type { PlanOccurrence, PracticePlan } from '@/api/planning'
 import { usePlanningStore } from '@/stores/planningStore'
 import { trackPlanningEvent } from '@/lib/analytics/planning'
@@ -26,7 +32,9 @@ export function UndoCheckInBanner({
   onUndoComplete,
 }: UndoCheckInBannerProps) {
   const { t } = useTranslation(['reports', 'common'])
-  const uncheckInOccurrence = usePlanningStore(state => state.uncheckInOccurrence)
+  const uncheckInOccurrence = usePlanningStore(
+    state => state.uncheckInOccurrence
+  )
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [isUndoing, setIsUndoing] = useState(false)
@@ -89,7 +97,10 @@ export function UndoCheckInBanner({
       if (!result.success) {
         setUndoError(
           result.error ??
-            t('reports:planningUncheckIn.genericError', 'Unable to undo check-in')
+            t(
+              'reports:planningUncheckIn.genericError',
+              'Unable to undo check-in'
+            )
         )
         setIsUndoing(false)
         return
@@ -110,7 +121,10 @@ export function UndoCheckInBanner({
       const message =
         error instanceof Error
           ? error.message
-          : t('reports:planningUncheckIn.genericError', 'Unable to undo check-in')
+          : t(
+              'reports:planningUncheckIn.genericError',
+              'Unable to undo check-in'
+            )
       setUndoError(message)
       setIsUndoing(false)
     }
@@ -132,15 +146,28 @@ export function UndoCheckInBanner({
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-morandi-sage-600 flex-shrink-0" />
             <div>
-              <Typography variant="body-sm" className="text-morandi-stone-900 font-medium">
-                {t('reports:planningUncheckIn.recentlyCompleted', 'Session completed')}
+              <Typography
+                variant="body-sm"
+                className="text-morandi-stone-900 font-medium"
+              >
+                {t(
+                  'reports:planningUncheckIn.recentlyCompleted',
+                  'Session completed'
+                )}
               </Typography>
               <div className="flex items-center gap-2 mt-1">
                 <Clock className="h-3.5 w-3.5 text-morandi-stone-500" />
-                <Typography variant="caption" className="text-morandi-stone-600">
-                  {t('reports:planningUncheckIn.timeRemaining', 'Undo available for {{time}}', {
-                    time: formattedTime,
-                  })}
+                <Typography
+                  variant="caption"
+                  className="text-morandi-stone-600"
+                >
+                  {t(
+                    'reports:planningUncheckIn.timeRemaining',
+                    'Undo available for {{time}}',
+                    {
+                      time: formattedTime,
+                    }
+                  )}
                 </Typography>
               </div>
             </div>

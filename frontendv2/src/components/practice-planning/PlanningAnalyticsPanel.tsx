@@ -310,7 +310,10 @@ const PlanningAnalyticsPanel = ({
                     'No practice sessions scheduled yet'
                   )}
                 </Typography>
-                <Typography variant="body-sm" className="text-morandi-stone-500">
+                <Typography
+                  variant="body-sm"
+                  className="text-morandi-stone-500"
+                >
                   {t(
                     'planningView.analytics.createPlan',
                     'Create a practice plan to get started'

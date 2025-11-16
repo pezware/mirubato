@@ -39,13 +39,17 @@ vi.mock('react-i18next', () => ({
         'reports:planningUncheckIn.undoButton': 'Undo',
         'reports:planningUncheckIn.confirmTitle': 'Undo Check-In?',
         'reports:planningUncheckIn.confirmMessage': `This will unlink your practice session from "${typeof defaultValue === 'object' ? defaultValue.planTitle : '{{planTitle}}'}".`,
-        'reports:planningUncheckIn.confirmNote': 'Note: Your practice time will remain.',
+        'reports:planningUncheckIn.confirmNote':
+          'Note: Your practice time will remain.',
         'reports:planningUncheckIn.confirmButton': 'Undo Check-In',
         'reports:planningUncheckIn.genericError': 'Unable to undo check-in',
         'common:close': 'Close',
         'common:cancel': 'Cancel',
       }
-      return translations[key] ?? (typeof defaultValue === 'string' ? defaultValue : key)
+      return (
+        translations[key] ??
+        (typeof defaultValue === 'string' ? defaultValue : key)
+      )
     },
   }),
 }))
@@ -87,7 +91,9 @@ describe('UndoCheckInBanner', () => {
   }
 
   const createRecentOccurrence = (minutesAgo: number): PlanOccurrence => {
-    const checkInTime = new Date(Date.now() - minutesAgo * 60 * 1000).toISOString()
+    const checkInTime = new Date(
+      Date.now() - minutesAgo * 60 * 1000
+    ).toISOString()
     return {
       id: 'occ_456',
       planId: 'plan_123',
@@ -155,7 +161,9 @@ describe('UndoCheckInBanner', () => {
     await waitFor(() => {
       expect(screen.getByText('Undo Check-In?')).toBeInTheDocument()
     })
-    expect(screen.getByText(/This will unlink your practice session/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/This will unlink your practice session/)
+    ).toBeInTheDocument()
   })
 
   it('calls uncheckInOccurrence when confirmed', async () => {
