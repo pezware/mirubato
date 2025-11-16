@@ -1212,7 +1212,7 @@ export function PlanEditorModal({
         </section>
 
         {(formError || error) && (
-          <Typography variant="body" className="text-red-600">
+          <Typography variant="body" className="text-morandi-rose-500">
             {formError || error}
           </Typography>
         )}
