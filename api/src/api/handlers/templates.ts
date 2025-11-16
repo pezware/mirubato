@@ -87,6 +87,7 @@ templatesHandler.post(
         status: 'active' as const,
         ownerId: userId,
         templateVersion: template.templateVersion,
+        sourceTemplateId: templateId,
         tags: template.tags || [],
         metadata: {
           ...template.metadata,

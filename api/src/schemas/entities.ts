@@ -188,6 +188,7 @@ export const PracticePlanSchema = z.object({
   status: PracticePlanStatus.default('draft'),
   ownerId: z.string().optional(),
   templateVersion: z.number().int().optional(),
+  sourceTemplateId: z.string().nullable().optional(),
   tags: z.array(z.string()).optional(),
   metadata: z.record(z.unknown()).optional(),
   createdAt: z.string(),
