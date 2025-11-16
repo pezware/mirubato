@@ -1,13 +1,14 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  IconPiano,
-  IconGuitarPick,
-  IconMusic,
-  IconMicrophone,
-  IconLayoutGrid,
-  IconCircle,
-} from '@tabler/icons-react'
+  Piano,
+  Guitar,
+  Music,
+  MicVocal,
+  LayoutGrid,
+  Drum,
+  type LucideIcon,
+} from 'lucide-react'
 import type { PracticePlan, PlanOccurrence } from '@/api/planning'
 import { Button, Tag, Typography } from '@/components/ui'
 import { cn } from '@/utils/cn'
@@ -24,23 +25,39 @@ interface PlanReminderCardProps {
   onOpenPlan?: (plan: PracticePlan, occurrence: PlanOccurrence) => void
 }
 
-const instrumentIcons: Record<string, JSX.Element> = {
-  piano: <IconPiano size={20} stroke={1.6} />,
-  guitar: <IconGuitarPick size={20} stroke={1.6} />,
-  violin: <IconMusic size={20} stroke={1.6} />,
-  viola: <IconMusic size={20} stroke={1.6} />,
-  cello: <IconMusic size={20} stroke={1.6} />,
-  'double-bass': <IconMusic size={20} stroke={1.6} />,
-  flute: <IconMusic size={20} stroke={1.6} />,
-  clarinet: <IconMusic size={20} stroke={1.6} />,
-  saxophone: <IconMusic size={20} stroke={1.6} />,
-  trumpet: <IconMusic size={20} stroke={1.6} />,
-  trombone: <IconMusic size={20} stroke={1.6} />,
-  tuba: <IconMusic size={20} stroke={1.6} />,
-  voice: <IconMicrophone size={20} stroke={1.6} />,
-  organ: <IconPiano size={20} stroke={1.6} />,
-  accordion: <IconLayoutGrid size={20} stroke={1.6} />,
-  percussion: <IconCircle size={20} stroke={1.6} />,
+const ICON_STROKE_WIDTH = 1.6
+
+const instrumentIcons: Record<string, LucideIcon> = {
+  piano: Piano,
+  organ: Piano,
+  guitar: Guitar,
+  violin: Music,
+  viola: Music,
+  cello: Music,
+  'double-bass': Music,
+  flute: Music,
+  clarinet: Music,
+  saxophone: Music,
+  trumpet: Music,
+  trombone: Music,
+  tuba: Music,
+  voice: MicVocal,
+  accordion: LayoutGrid,
+  percussion: Drum,
+}
+
+const renderInstrumentIcon = (instrument?: string) => {
+  const IconComponent =
+    (instrument ? instrumentIcons[instrument] : undefined) ?? Music
+
+  return (
+    <IconComponent
+      aria-hidden="true"
+      className="h-5 w-5 text-current"
+      data-testid="instrument-icon"
+      strokeWidth={ICON_STROKE_WIDTH}
+    />
+  )
 }
 
 const parseDate = (value?: string | null) => {
@@ -153,10 +170,9 @@ const PlanReminderCard = ({
     () => resolveInstrument(plan, fallbackInstrument),
     [plan, fallbackInstrument]
   )
-  const instrumentIcon = instrument ? (
-    (instrumentIcons[instrument] ?? <IconMusic size={20} stroke={1.6} />)
-  ) : (
-    <IconMusic size={20} stroke={1.6} />
+  const instrumentIcon = useMemo(
+    () => renderInstrumentIcon(instrument),
+    [instrument]
   )
 
   const instrumentLabel = instrument
@@ -205,7 +221,10 @@ const PlanReminderCard = ({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-morandi-sage-50 text-morandi-sage-700">
+          <div
+            data-testid="instrument-icon-wrapper"
+            className="flex h-11 w-11 items-center justify-center rounded-xl bg-morandi-sage-50 text-morandi-sage-700"
+          >
             {instrumentIcon}
           </div>
           <div className="space-y-1">
