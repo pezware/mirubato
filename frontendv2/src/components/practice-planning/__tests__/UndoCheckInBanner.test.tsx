@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
+import { render, screen, act, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { UndoCheckInBanner } from '../UndoCheckInBanner'
 import type { PlanOccurrence, PracticePlan } from '@/api/planning'
