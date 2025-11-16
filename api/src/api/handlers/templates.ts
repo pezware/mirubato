@@ -87,6 +87,7 @@ templatesHandler.post(
         status: 'active' as const,
         ownerId: userId,
         templateVersion: template.templateVersion,
+        // Ensure downstream clients know which template spawned this plan
         sourceTemplateId: templateId,
         tags: template.tags || [],
         metadata: {
