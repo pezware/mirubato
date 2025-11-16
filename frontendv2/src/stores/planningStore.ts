@@ -8,6 +8,7 @@ import {
   type PlanTargets,
   type PlanTemplate,
   type PlanTemplateMetadata,
+  type TemplateAdoptionCustomization,
   type TemplatePreviewMetadata,
   type TemplateSegmentPreview,
   type TemplateVisibility,
@@ -588,15 +589,7 @@ interface PlanningState {
   ) => Promise<PlanTemplate>
   adoptTemplate: (
     templateId: string,
-    customization?: {
-      title?: string
-      schedule?: {
-        startDate?: string
-        endDate?: string
-        timeOfDay?: string
-        durationMinutes?: number
-      }
-    }
+    customization?: TemplateAdoptionCustomization
   ) => Promise<{ plan: PracticePlan; occurrences: PlanOccurrence[] }>
   updateTemplate: (
     templateId: string,
@@ -2296,7 +2289,10 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     return template
   },
 
-  adoptTemplate: async (templateId, customization) => {
+  adoptTemplate: async (
+    templateId,
+    customization?: TemplateAdoptionCustomization
+  ) => {
     // Call the API endpoint
     const { plan, occurrences } = await planningApi.adoptTemplate(
       templateId,

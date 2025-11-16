@@ -71,6 +71,12 @@ describe('TemplateGallery', () => {
   beforeEach(() => {
     mockOnAdopt.mockReset()
     mockOnAdopt.mockResolvedValue(undefined)
+
+    global.ResizeObserver = vi.fn().mockImplementation(() => ({
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn(),
+    }))
   })
 
   it('renders list of templates', () => {
@@ -156,8 +162,21 @@ describe('TemplateGallery', () => {
     const adoptButton = screen.getByRole('button', { name: /adopt/i })
     fireEvent.click(adoptButton)
 
+    const confirmButton = await screen.findByRole('button', {
+      name: /adopt plan/i,
+    })
+    fireEvent.click(confirmButton)
+
     await waitFor(() => {
-      expect(mockOnAdopt).toHaveBeenCalledWith('template_1')
+      expect(mockOnAdopt).toHaveBeenCalledWith(
+        'template_1',
+        expect.objectContaining({
+          title: 'Beginner Scales Practice',
+          schedule: expect.objectContaining({
+            startDate: expect.any(String),
+          }),
+        })
+      )
     })
   })
 

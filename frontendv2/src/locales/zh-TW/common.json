@@ -316,6 +316,29 @@
     "adoptFailed": "Failed to adopt template",
     "adoptSuccess": "Template adopted successfully!",
     "adoptSuccessDetail": "Find it in your Active Plans",
+    "adoptModal": {
+      "title": "Make it yours",
+      "description": "Adjust the details so this plan fits your routine before adopting it.",
+      "fields": {
+        "title": "Plan title",
+        "instrument": "Instrument",
+        "focus": "Focus tags",
+        "startDate": "Start date",
+        "startTime": "Preferred time",
+        "duration": "Session length (minutes)",
+        "flexibility": "Flexibility"
+      },
+      "placeholders": {
+        "focus": "e.g. tone, rhythm, sight-reading"
+      },
+      "focusHint": "Separate multiple tags with commas",
+      "instrumentPlaceholder": "Choose an instrument",
+      "instrumentNone": "No instrument",
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Adopt plan"
+      }
+    },
     "browseTemplates": "Browse Templates",
     "delete": "Delete",
     "deleteSuccess": "Template deleted successfully!",
@@ -329,7 +352,9 @@
       "adoptFailed": "Failed to adopt template",
       "deleteFailed": "Failed to delete template",
       "publishFailed": "[NEEDS TRANSLATION] Failed to publish template",
-      "titleRequired": "[NEEDS TRANSLATION] Title is required"
+      "titleRequired": "[NEEDS TRANSLATION] Title is required",
+      "startDateRequired": "Start date is required",
+      "durationPositive": "Duration must be greater than zero"
     },
     "fields": {
       "description": "[NEEDS TRANSLATION] Description",

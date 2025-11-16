@@ -12,7 +12,11 @@ import {
   Tabs,
   DropdownMenu,
 } from '@/components/ui'
-import type { PracticePlan, PlanOccurrence } from '@/api/planning'
+import type {
+  PracticePlan,
+  PlanOccurrence,
+  TemplateAdoptionCustomization,
+} from '@/api/planning'
 import PlanEditorModal from './PlanEditorModal'
 import PlanCheckInModal from './PlanCheckInModal'
 import { TemplateGallery } from './TemplateGallery'
@@ -416,9 +420,12 @@ const PlanningView = ({
     }
   }
 
-  const handleAdoptTemplate = async (templateId: string) => {
+  const handleAdoptTemplate = async (
+    templateId: string,
+    customization?: TemplateAdoptionCustomization
+  ) => {
     try {
-      await adoptTemplate(templateId)
+      await adoptTemplate(templateId, customization)
 
       toast.success(
         t('common:templates.adoptSuccess', 'Template adopted successfully!'),
@@ -1012,6 +1019,7 @@ const PlanningView = ({
                 onAdopt={handleAdoptTemplate}
                 isLoading={isLoadingTemplates}
                 currentUserId={user?.id}
+                defaultInstrument={fallbackInstrument}
               />
             </div>
           )}
@@ -1041,6 +1049,7 @@ const PlanningView = ({
                 isLoading={isLoadingTemplates}
                 currentUserId={user?.id}
                 showAuthorControls
+                defaultInstrument={fallbackInstrument}
               />
             </div>
           )}
