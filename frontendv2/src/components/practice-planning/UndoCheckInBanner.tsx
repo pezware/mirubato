@@ -181,14 +181,14 @@ export function UndoCheckInBanner({
             >
               {t('reports:planningUncheckIn.undoButton', 'Undo')}
             </Button>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleDismiss}
-              className="p-1 rounded text-morandi-stone-500 hover:text-morandi-stone-700 hover:bg-morandi-stone-100"
               aria-label={t('common:close', 'Close')}
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

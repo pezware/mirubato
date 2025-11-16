@@ -292,7 +292,9 @@
     "confirmNote": "Remarque : Votre temps de pratique a déjà été enregistré et restera dans votre journal.",
     "confirmButton": "Annuler l'enregistrement",
     "genericError": "Impossible d'annuler l'enregistrement",
-    "success": "Enregistrement annulé avec succès"
+    "success": "Enregistrement annulé avec succès",
+    "undoSuccess": "Check-in annulé",
+    "undoSuccessDetail": "Votre session a été dissociée du plan"
   },
   "planningView": {
     "activePlans": "Plans actifs",

@@ -450,7 +450,9 @@
     "confirmNote": "Note: Your practice time has already been logged and will remain in your logbook.",
     "confirmButton": "Undo Check-In",
     "genericError": "Unable to undo check-in",
-    "success": "Check-in undone successfully"
+    "success": "Check-in undone successfully",
+    "undoSuccess": "Check-in undone",
+    "undoSuccessDetail": "Your session has been unlinked from the plan"
   },
   "planningEditor": {
     "title": "New Practice Plan",

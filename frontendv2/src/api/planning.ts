@@ -57,6 +57,7 @@ export interface PracticePlan {
   status: PracticePlanStatus
   ownerId?: string
   templateVersion?: number
+  sourceTemplateId?: string | null
   tags?: string[]
   metadata?: Record<string, unknown>
   createdAt: string
@@ -121,6 +122,7 @@ const normalizePlan = (plan: PracticePlan): PracticePlan => ({
   techniques: Array.isArray(plan.techniques) ? plan.techniques : [],
   pieceRefs: Array.isArray(plan.pieceRefs) ? plan.pieceRefs : [],
   tags: Array.isArray(plan.tags) ? plan.tags : [],
+  sourceTemplateId: plan.sourceTemplateId ?? null,
   schedule: {
     ...plan.schedule,
     metadata:

@@ -292,7 +292,9 @@
     "confirmNote": "注意：您的練習時間已被記錄，將保留在您的練習日誌中。",
     "confirmButton": "撤銷簽到",
     "genericError": "無法撤銷簽到",
-    "success": "簽到已成功撤銷"
+    "success": "簽到已成功撤銷",
+    "undoSuccess": "已撤銷簽到",
+    "undoSuccessDetail": "您的練習記錄已從計劃中解除連結"
   },
   "planningView": {
     "activePlans": "進行中的計畫",
