@@ -4,6 +4,31 @@ import userEvent from '@testing-library/user-event'
 import { UndoCheckInBanner } from '../UndoCheckInBanner'
 import type { PlanOccurrence, PracticePlan } from '@/api/planning'
 
+// Mock IntersectionObserver and ResizeObserver for Headless UI Modal
+class MockIntersectionObserver {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
+
+class MockResizeObserver {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
+
+Object.defineProperty(window, 'IntersectionObserver', {
+  writable: true,
+  configurable: true,
+  value: MockIntersectionObserver,
+})
+
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  configurable: true,
+  value: MockResizeObserver,
+})
+
 // Mock i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -61,28 +86,27 @@ describe('UndoCheckInBanner', () => {
     updatedAt: '2025-11-16T08:00:00Z',
   }
 
-  const recentCheckInTime = new Date(Date.now() - 5 * 60 * 1000).toISOString() // 5 minutes ago
-
-  const mockOccurrence: PlanOccurrence = {
-    id: 'occ_456',
-    planId: 'plan_123',
-    scheduledStart: '2025-11-16T09:00:00Z',
-    scheduledEnd: '2025-11-16T09:30:00Z',
-    status: 'completed',
-    segments: [],
-    logEntryId: 'entry_789',
-    checkIn: {
-      recordedAt: recentCheckInTime,
-      responses: { 'How was it?': 'Good' },
-    },
-    createdAt: '2025-11-16T08:00:00Z',
-    updatedAt: recentCheckInTime,
+  const createRecentOccurrence = (minutesAgo: number): PlanOccurrence => {
+    const checkInTime = new Date(Date.now() - minutesAgo * 60 * 1000).toISOString()
+    return {
+      id: 'occ_456',
+      planId: 'plan_123',
+      scheduledStart: '2025-11-16T09:00:00Z',
+      scheduledEnd: '2025-11-16T09:30:00Z',
+      status: 'completed',
+      segments: [],
+      logEntryId: 'entry_789',
+      checkIn: {
+        recordedAt: checkInTime,
+        responses: { 'How was it?': 'Good' },
+      },
+      createdAt: '2025-11-16T08:00:00Z',
+      updatedAt: checkInTime,
+    }
   }
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date(Date.now()))
   })
 
   afterEach(() => {
@@ -90,13 +114,17 @@ describe('UndoCheckInBanner', () => {
   })
 
   it('renders when occurrence is recently completed', () => {
+    const mockOccurrence = createRecentOccurrence(5)
     render(<UndoCheckInBanner occurrence={mockOccurrence} plan={mockPlan} />)
     expect(screen.getByText('Session completed')).toBeInTheDocument()
     expect(screen.getByText('Undo')).toBeInTheDocument()
   })
 
   it('does not render when occurrence is not completed', () => {
-    const scheduledOccurrence = { ...mockOccurrence, status: 'scheduled' as const }
+    const scheduledOccurrence = {
+      ...createRecentOccurrence(5),
+      status: 'scheduled' as const,
+    }
     const { container } = render(
       <UndoCheckInBanner occurrence={scheduledOccurrence} plan={mockPlan} />
     )
@@ -104,14 +132,7 @@ describe('UndoCheckInBanner', () => {
   })
 
   it('does not render when check-in is older than 15 minutes', () => {
-    const oldCheckInTime = new Date(Date.now() - 20 * 60 * 1000).toISOString() // 20 minutes ago
-    const oldOccurrence = {
-      ...mockOccurrence,
-      checkIn: {
-        recordedAt: oldCheckInTime,
-        responses: {},
-      },
-    }
+    const oldOccurrence = createRecentOccurrence(20)
     const { container } = render(
       <UndoCheckInBanner occurrence={oldOccurrence} plan={mockPlan} />
     )
@@ -119,24 +140,28 @@ describe('UndoCheckInBanner', () => {
   })
 
   it('displays remaining time countdown', () => {
+    const mockOccurrence = createRecentOccurrence(5)
     render(<UndoCheckInBanner occurrence={mockOccurrence} plan={mockPlan} />)
-    // Should show approximately 10 minutes remaining (15 - 5 = 10)
     expect(screen.getByText(/Undo available for/)).toBeInTheDocument()
   })
 
   it('opens confirmation modal when undo button is clicked', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const mockOccurrence = createRecentOccurrence(5)
+    const user = userEvent.setup()
     render(<UndoCheckInBanner occurrence={mockOccurrence} plan={mockPlan} />)
 
     await user.click(screen.getByText('Undo'))
 
-    expect(screen.getByText('Undo Check-In?')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Undo Check-In?')).toBeInTheDocument()
+    })
     expect(screen.getByText(/This will unlink your practice session/)).toBeInTheDocument()
   })
 
   it('calls uncheckInOccurrence when confirmed', async () => {
     mockUncheckInOccurrence.mockResolvedValue({ success: true })
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const mockOccurrence = createRecentOccurrence(5)
+    const user = userEvent.setup()
     const onUndoComplete = vi.fn()
 
     render(
@@ -148,7 +173,11 @@ describe('UndoCheckInBanner', () => {
     )
 
     await user.click(screen.getByText('Undo'))
-    await user.click(screen.getByText('Undo Check-In'))
+    await waitFor(() => {
+      expect(screen.getByText('Undo Check-In?')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Undo Check-In' }))
 
     await waitFor(() => {
       expect(mockUncheckInOccurrence).toHaveBeenCalledWith('occ_456', {
@@ -163,12 +192,17 @@ describe('UndoCheckInBanner', () => {
       success: false,
       error: 'Undo window has expired',
     })
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const mockOccurrence = createRecentOccurrence(5)
+    const user = userEvent.setup()
 
     render(<UndoCheckInBanner occurrence={mockOccurrence} plan={mockPlan} />)
 
     await user.click(screen.getByText('Undo'))
-    await user.click(screen.getByText('Undo Check-In'))
+    await waitFor(() => {
+      expect(screen.getByText('Undo Check-In?')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Undo Check-In' }))
 
     await waitFor(() => {
       expect(screen.getByText('Undo window has expired')).toBeInTheDocument()
@@ -176,21 +210,27 @@ describe('UndoCheckInBanner', () => {
   })
 
   it('can be dismissed by clicking close button', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const mockOccurrence = createRecentOccurrence(5)
+    const user = userEvent.setup()
     render(<UndoCheckInBanner occurrence={mockOccurrence} plan={mockPlan} />)
 
     const closeButton = screen.getByLabelText('Close')
     await user.click(closeButton)
 
-    expect(screen.queryByText('Session completed')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('Session completed')).not.toBeInTheDocument()
+    })
   })
 
   it('cancels undo when cancel button is clicked in modal', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const mockOccurrence = createRecentOccurrence(5)
+    const user = userEvent.setup()
     render(<UndoCheckInBanner occurrence={mockOccurrence} plan={mockPlan} />)
 
     await user.click(screen.getByText('Undo'))
-    expect(screen.getByText('Undo Check-In?')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Undo Check-In?')).toBeInTheDocument()
+    })
 
     await user.click(screen.getByText('Cancel'))
 
@@ -202,6 +242,8 @@ describe('UndoCheckInBanner', () => {
   })
 
   it('hides automatically when time expires', () => {
+    vi.useFakeTimers()
+    const mockOccurrence = createRecentOccurrence(5)
     render(<UndoCheckInBanner occurrence={mockOccurrence} plan={mockPlan} />)
     expect(screen.getByText('Session completed')).toBeInTheDocument()
 
