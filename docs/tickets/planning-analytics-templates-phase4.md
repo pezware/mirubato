@@ -274,12 +274,12 @@ Users may accidentally check in for the wrong plan occurrence (Plan A instead of
 
 ### Alternative Approaches Considered
 
-| Approach               | Pros                    | Cons                                        | Recommendation |
-| ---------------------- | ----------------------- | ------------------------------------------- | -------------- |
-| **Soft Dissociation**  | Simple, respects logbook independence | Entry remains "orphaned" (acceptable) | ✅ **Recommended** |
-| Delete Logbook Entry   | Clean undo              | Violates architecture principle, data loss  | ❌ Avoid       |
-| Mark Entry as Canceled | Maintains link          | Pollutes logbook with planning metadata     | ❌ Avoid       |
-| Two-Phase Check-In     | Prevents mistakes       | Adds friction to normal flow                | 🤔 Consider for v2 |
+| Approach               | Pros                                  | Cons                                       | Recommendation     |
+| ---------------------- | ------------------------------------- | ------------------------------------------ | ------------------ |
+| **Soft Dissociation**  | Simple, respects logbook independence | Entry remains "orphaned" (acceptable)      | ✅ **Recommended** |
+| Delete Logbook Entry   | Clean undo                            | Violates architecture principle, data loss | ❌ Avoid           |
+| Mark Entry as Canceled | Maintains link                        | Pollutes logbook with planning metadata    | ❌ Avoid           |
+| Two-Phase Check-In     | Prevents mistakes                     | Adds friction to normal flow               | 🤔 Consider for v2 |
 
 ### Implementation Tasks
 
