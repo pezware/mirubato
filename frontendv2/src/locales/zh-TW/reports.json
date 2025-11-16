@@ -283,6 +283,17 @@
       "titleRequired": "必須填寫計畫標題"
     }
   },
+  "planningUncheckIn": {
+    "recentlyCompleted": "練習已完成",
+    "timeRemaining": "可在 {{time}} 內撤銷",
+    "undoButton": "撤銷",
+    "confirmTitle": "撤銷簽到？",
+    "confirmMessage": "這將解除您的練習與「{{planTitle}}」的關聯。您的練習記錄將被保留，可以關聯到其他計畫或保持獨立。",
+    "confirmNote": "注意：您的練習時間已被記錄，將保留在您的練習日誌中。",
+    "confirmButton": "撤銷簽到",
+    "genericError": "無法撤銷簽到",
+    "success": "簽到已成功撤銷"
+  },
   "planningView": {
     "activePlans": "進行中的計畫",
     "analytics": {

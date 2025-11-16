@@ -213,10 +213,10 @@ const PlanReminderCard = ({
               {plan?.title ??
                 t('reports:planningView.untitledPlan', 'Practice plan')}
             </Typography>
-            <p className="text-sm text-morandi-stone-600">
+            <Typography variant="body-sm" className="text-morandi-stone-600">
               {[dayLabel, timeLabel].filter(Boolean).join(' · ')}
-            </p>
-            <p className="text-xs text-morandi-stone-500">
+            </Typography>
+            <Typography variant="caption" className="text-morandi-stone-500">
               {instrumentLabel}
               {segmentsCount > 0 && (
                 <span className="ml-2">
@@ -225,7 +225,7 @@ const PlanReminderCard = ({
                   })}
                 </span>
               )}
-            </p>
+            </Typography>
           </div>
         </div>
         <Tag variant={badgeVariant} size="sm">

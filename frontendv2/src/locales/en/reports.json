@@ -441,6 +441,17 @@
     "editPlan": "Edit plan",
     "viewPlan": "Open Plan"
   },
+  "planningUncheckIn": {
+    "recentlyCompleted": "Session completed",
+    "timeRemaining": "Undo available for {{time}}",
+    "undoButton": "Undo",
+    "confirmTitle": "Undo Check-In?",
+    "confirmMessage": "This will unlink your practice session from \"{{planTitle}}\". Your logbook entry will be preserved and can be linked to a different plan or remain standalone.",
+    "confirmNote": "Note: Your practice time has already been logged and will remain in your logbook.",
+    "confirmButton": "Undo Check-In",
+    "genericError": "Unable to undo check-in",
+    "success": "Check-in undone successfully"
+  },
   "planningEditor": {
     "title": "New Practice Plan",
     "editTitle": "Edit practice plan",

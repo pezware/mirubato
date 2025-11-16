@@ -283,6 +283,17 @@
       "titleRequired": "Planname ist erforderlich"
     }
   },
+  "planningUncheckIn": {
+    "recentlyCompleted": "Sitzung abgeschlossen",
+    "timeRemaining": "Rückgängig machen verfügbar für {{time}}",
+    "undoButton": "Rückgängig",
+    "confirmTitle": "Check-in rückgängig machen?",
+    "confirmMessage": "Dies wird Ihre Übungssitzung von \"{{planTitle}}\" trennen. Ihr Protokolleintrag wird beibehalten und kann mit einem anderen Plan verknüpft oder eigenständig bleiben.",
+    "confirmNote": "Hinweis: Ihre Übungszeit wurde bereits protokolliert und bleibt in Ihrem Protokoll erhalten.",
+    "confirmButton": "Check-in rückgängig machen",
+    "genericError": "Check-in konnte nicht rückgängig gemacht werden",
+    "success": "Check-in erfolgreich rückgängig gemacht"
+  },
   "planningView": {
     "activePlans": "Aktive Pläne",
     "analytics": {

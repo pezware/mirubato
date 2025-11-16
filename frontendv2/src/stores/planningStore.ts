@@ -572,6 +572,10 @@ interface PlanningState {
       metrics?: Record<string, unknown>
     }
   ) => Promise<void>
+  uncheckInOccurrence: (
+    occurrenceId: string,
+    options?: { reason?: string }
+  ) => Promise<{ success: boolean; error?: string }>
   attachRealtimeHandlers: (webSocketSync: WebSocketSync) => void
   detachRealtimeHandlers: (webSocketSync: WebSocketSync) => void
   // Template methods
@@ -1880,6 +1884,102 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
         // Occurrence is already updated locally, so don't throw
       }
     }
+  },
+
+  uncheckInOccurrence: async (occurrenceId, options = {}) => {
+    const { occurrencesMap, plansMap } = get()
+    const occurrence = occurrencesMap.get(occurrenceId)
+
+    if (!occurrence) {
+      return { success: false, error: 'Occurrence not found' }
+    }
+
+    if (occurrence.status !== 'completed') {
+      return { success: false, error: 'Occurrence is not checked in' }
+    }
+
+    // Validate time window (15 minutes = 900000 ms)
+    const UNDO_WINDOW_MS = 15 * 60 * 1000
+    const checkInTime = occurrence.checkIn?.recordedAt
+    if (checkInTime) {
+      const elapsed = Date.now() - new Date(checkInTime).getTime()
+      if (elapsed > UNDO_WINDOW_MS) {
+        return { success: false, error: 'Undo window has expired (15 minutes)' }
+      }
+    }
+
+    const plan = plansMap.get(occurrence.planId)
+    const nowIso = new Date().toISOString()
+
+    // Store audit trail of the undo action
+    const previousCheckIn =
+      occurrence.checkIn && occurrence.logEntryId
+        ? {
+            uncheckedAt: nowIso,
+            previousLogEntryId: occurrence.logEntryId,
+            reason: options.reason ?? 'user_initiated',
+          }
+        : undefined
+
+    const updatedOccurrence: PlanOccurrence = {
+      ...occurrence,
+      status: 'scheduled',
+      logEntryId: undefined,
+      checkIn: undefined,
+      metrics: {
+        ...occurrence.metrics,
+        previousCheckIn,
+      },
+      updatedAt: nowIso,
+    }
+
+    const sanitizedOccurrence = sanitizeForStorage(updatedOccurrence)
+
+    // ALWAYS update locally first (offline-first pattern)
+    const nextOccurrencesMap = new Map(occurrencesMap)
+    nextOccurrencesMap.set(occurrenceId, sanitizedOccurrence)
+
+    const nextPlansMap = new Map(plansMap)
+    if (plan) {
+      nextPlansMap.set(occurrence.planId, {
+        ...plan,
+        updatedAt: nowIso,
+      })
+    }
+
+    const nextPlansList = toSortedPlans(nextPlansMap)
+    const nextOccurrencesList = toSortedOccurrences(nextOccurrencesMap)
+
+    // ALWAYS save to localStorage
+    writeToStorage(PLANS_STORAGE_KEY, nextPlansList)
+    writeToStorage(OCCURRENCES_STORAGE_KEY, nextOccurrencesList)
+
+    // Update state immediately
+    set({
+      plansMap: nextPlansMap,
+      occurrencesMap: nextOccurrencesMap,
+      plans: nextPlansList,
+      occurrences: nextOccurrencesList,
+    })
+
+    // ONLY sync to server if not in local mode and auth token exists
+    if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+      try {
+        await planningApi.updateOccurrence(sanitizedOccurrence)
+        console.log(
+          '[Planning] Occurrence un-check-in synced to server:',
+          occurrenceId
+        )
+      } catch (syncError) {
+        console.warn(
+          '[Planning] Failed to sync un-check-in to server, keeping local copy:',
+          syncError
+        )
+        // Occurrence is already updated locally, so don't throw
+      }
+    }
+
+    return { success: true }
   },
 
   attachRealtimeHandlers: webSocketSync => {
