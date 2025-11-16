@@ -936,7 +936,7 @@ export function PlanEditorModal({
             />
           </div>
           {scheduleKind === 'recurring' && (
-            <div className="space-y-4 rounded-xl border border-border bg-muted/30 p-4">
+            <div className="space-y-4 rounded-xl border border-morandi-stone-200 bg-morandi-stone-50 p-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Select
                   value={recurrenceFrequency}
@@ -967,7 +967,10 @@ export function PlanEditorModal({
               </div>
               {recurrenceFrequency === 'WEEKLY' && (
                 <div className="space-y-2">
-                  <Typography variant="body" className="text-sm font-medium">
+                  <Typography
+                    variant="body-sm"
+                    className="font-medium text-morandi-stone-700"
+                  >
                     {t(
                       'reports:planningEditor.recurrence.weekdaysLabel',
                       'Repeat on'
@@ -1035,14 +1038,17 @@ export function PlanEditorModal({
                 )}
               </div>
               {recurrencePreviewStrings.length > 0 && (
-                <div className="space-y-2 rounded-lg bg-muted/40 p-3">
-                  <Typography variant="body" className="text-sm font-medium">
+                <div className="space-y-2 rounded-lg bg-morandi-stone-100 p-3">
+                  <Typography
+                    variant="body-sm"
+                    className="font-medium text-morandi-stone-700"
+                  >
                     {t(
                       'reports:planningEditor.recurrence.previewLabel',
                       'Upcoming occurrences'
                     )}
                   </Typography>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-morandi-stone-600">
                     {recurrencePreviewStrings.map(value => (
                       <li key={value}>{value}</li>
                     ))}
@@ -1066,7 +1072,7 @@ export function PlanEditorModal({
             {segments.map((segment, index) => (
               <div
                 key={segment.id}
-                className="rounded-xl border border-border bg-muted/30 p-4 space-y-3"
+                className="rounded-xl border border-morandi-stone-200 bg-morandi-stone-50 p-4 space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <Typography variant="h4">
@@ -1174,7 +1180,7 @@ export function PlanEditorModal({
             </Button>
           </div>
           {prompts.length === 0 ? (
-            <Typography variant="body" className="text-muted-foreground">
+            <Typography variant="body" className="text-morandi-stone-600">
               {t(
                 'reports:planningEditor.promptHelper',
                 'Use prompts to guide post-practice reflections.'
