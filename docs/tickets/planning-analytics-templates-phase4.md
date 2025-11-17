@@ -25,6 +25,20 @@ The logbook and its analytics are foundational features that must operate indepe
 
 ---
 
+## Phase 4 Gap Tracking (Post-Critical Fixes)
+
+| Status | Area                   | Description / Next Steps                                                                                                                                                                                                                                                                                     |
+| ------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ✅     | Data Schema Mismatches | Critical backend schema gaps (missing `sourceTemplateId`, adoption customization fields, sync enums, segment persistence) have been fixed. Continue regression monitoring via template adoption QA checklist.                                                                                                |
+| ⏳     | Analytics / Telemetry  | Instrument `createPlan`, `updatePlan`, and `completeOccurrence` flows inside `frontendv2/src/stores/planningStore.ts` so `planning.plan.create`, `planning.plan.edit`, and `planning.plan.checkIn` events fire consistently. Update ticket once store emits events and analytics dashboards reflect traffic. |
+| ⏳     | Validation             | 1) Replace `PlanTemplate.metadata` catch-all with structured preview/segment schemas in `api/src/schemas/entities.ts`. 2) Enforce RRULE validation for schedules inside `PracticePlanScheduleSchema`. Document parser/validator decisions in spec appendix.                                                  |
+| ⏳     | Adoption Counters      | When deleting plans sourced from templates, ensure backend adoption counts decrement reliably (API contract + store retry handling). Track in planning store deletion workstream.                                                                                                                            |
+| ⏳     | Error Handling         | Harden the backend adoption count updater (`api/src/api/handlers/templates.ts`) so failures propagate or retry instead of silent log-only behavior. Consider queue-based retries or compensating transactions.                                                                                               |
+| ⏳     | UI / Localization      | Localize `TemplateDetailModal` helper text and add missing i18n keys for template metadata (plan type, schedule kind, flexibility strings). Coordinate with localization team for key naming conventions.                                                                                                    |
+| ⏳     | Analytics Type Safety  | Replace `Record<string, unknown>` payload typing in `frontendv2/src/lib/analytics/planning.ts` with a discriminated union so each planning analytics event enforces its payload contract.                                                                                                                    |
+
+---
+
 ## 1. Blend Planning Metrics into Analytics Dashboards
 
 ### Background / Problem Statement
