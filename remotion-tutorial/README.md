@@ -90,7 +90,6 @@ Place actual screenshots in `public/screenshots/` and reference them in scene co
 
 ```tsx
 import { Img, staticFile } from 'remotion'
-
 ;<Img src={staticFile('screenshots/logbook.png')} />
 ```
 
@@ -100,7 +99,6 @@ Place background music or narration in `public/audio/`:
 
 ```tsx
 import { Audio } from 'remotion'
-
 ;<Audio src={staticFile('audio/background.mp3')} volume={0.3} />
 ```
 
