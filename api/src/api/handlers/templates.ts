@@ -17,6 +17,8 @@ const AdoptTemplateSchema = z.object({
   customization: z
     .object({
       title: z.string().optional(),
+      focusAreas: z.array(z.string()).optional(),
+      tags: z.array(z.string()).optional(),
       schedule: z
         .object({
           startDate: z.string().optional(),
@@ -73,13 +75,23 @@ templatesHandler.post(
         ...(customization?.schedule || {}),
       }
 
+      const mergedFocusAreas = Array.from(
+        new Set([
+          ...(template.focusAreas || []),
+          ...(customization?.focusAreas || []),
+        ])
+      )
+      const mergedTags = Array.from(
+        new Set([...(template.tags || []), ...(customization?.tags || [])])
+      )
+
       const newPlan = {
         id: planId,
         user_id: userId,
         title: customTitle,
         description: template.description,
         type: template.type,
-        focusAreas: template.focusAreas || [],
+        focusAreas: mergedFocusAreas,
         techniques: template.techniques || [],
         pieceRefs: template.pieceRefs || [],
         schedule: customSchedule,
@@ -89,7 +101,7 @@ templatesHandler.post(
         templateVersion: template.templateVersion,
         // Ensure downstream clients know which template spawned this plan
         sourceTemplateId: templateId,
-        tags: template.tags || [],
+        tags: mergedTags,
         metadata: {
           ...template.metadata,
           adoptedFrom: templateId,
