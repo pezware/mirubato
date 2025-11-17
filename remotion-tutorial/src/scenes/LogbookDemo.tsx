@@ -350,26 +350,28 @@ export const LogbookDemo: React.FC = () => {
           right: '5%',
         }}
       >
-        {['Real-time sync across devices', 'Visual analytics', 'Export to CSV/JSON'].map(
-          (text, i) => {
-            const itemOpacity = staggeredAppearance(frame - fps * 2, i, 15)
-            return (
-              <span
-                key={i}
-                style={{
-                  display: 'inline-block',
-                  marginRight: theme.spacing.xl,
-                  fontSize: theme.fontSizes.base,
-                  fontFamily: theme.fonts.ui,
-                  color: theme.colors.textMuted,
-                  opacity: itemOpacity,
-                }}
-              >
-                • {text}
-              </span>
-            )
-          }
-        )}
+        {[
+          'Real-time sync across devices',
+          'Visual analytics',
+          'Export to CSV/JSON',
+        ].map((text, i) => {
+          const itemOpacity = staggeredAppearance(frame - fps * 2, i, 15)
+          return (
+            <span
+              key={i}
+              style={{
+                display: 'inline-block',
+                marginRight: theme.spacing.xl,
+                fontSize: theme.fontSizes.base,
+                fontFamily: theme.fonts.ui,
+                color: theme.colors.textMuted,
+                opacity: itemOpacity,
+              }}
+            >
+              • {text}
+            </span>
+          )
+        })}
       </div>
 
       {/* Annotation */}

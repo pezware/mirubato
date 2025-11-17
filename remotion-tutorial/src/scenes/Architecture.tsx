@@ -126,7 +126,11 @@ export const Architecture: React.FC = () => {
         }}
       >
         {storages.map((storage, index) => {
-          const storageOpacity = staggeredAppearance(frame - fps * 1.8, index, 10)
+          const storageOpacity = staggeredAppearance(
+            frame - fps * 1.8,
+            index,
+            10
+          )
           return (
             <div key={storage} style={{ opacity: storageOpacity }}>
               <ArchitectureBox
