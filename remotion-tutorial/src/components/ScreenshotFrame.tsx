@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Img, staticFile, useCurrentFrame, useVideoConfig } from 'remotion'
 import { interpolate, spring } from 'remotion'
 
@@ -54,6 +54,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
 }) => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
+  const [imageError, setImageError] = useState(false)
 
   // Entrance animation
   const entranceOpacity = animateIn
@@ -228,17 +229,51 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
           backgroundColor: '#f3f4f6',
         }}
       >
-        <Img
-          src={staticFile(`screenshots/${src}`)}
-          alt={alt}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transform: `scale(${zoomScale}) translate(${panX}px, ${panY}px)`,
-            transformOrigin: zoomTransformOrigin,
-          }}
-        />
+        {imageError ? (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#e5e7eb',
+              color: '#6b7280',
+              fontFamily: 'Inter, sans-serif',
+            }}
+          >
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📷</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 500 }}>
+              Screenshot not available
+            </div>
+            <div style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+              Run: npm run capture
+            </div>
+            <div
+              style={{
+                fontSize: '0.8rem',
+                marginTop: '0.25rem',
+                opacity: 0.7,
+              }}
+            >
+              {src}
+            </div>
+          </div>
+        ) : (
+          <Img
+            src={staticFile(`screenshots/${src}`)}
+            alt={alt}
+            onError={() => setImageError(true)}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transform: `scale(${zoomScale}) translate(${panX}px, ${panY}px)`,
+              transformOrigin: zoomTransformOrigin,
+            }}
+          />
+        )}
 
         {/* Highlight overlay */}
         {highlight && (

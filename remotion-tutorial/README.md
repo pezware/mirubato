@@ -4,15 +4,16 @@ Professional tutorial and introduction videos for Mirubato, built with Remotion.
 
 ## Video Overview
 
-The main composition (`MirubatoIntro`) is a 2:23 minute video showcasing:
+The main composition (`MirubatoIntro`) is a **65-second** video (optimized for 1.5x-2x playback speed) showcasing:
 
-1. **Intro** (8s) - Logo reveal and tagline
-2. **Overview** (15s) - What is Mirubato and key features
-3. **Logbook Demo** (30s) - Practice tracking with heatmap and timer
-4. **Scorebook Demo** (25s) - Sheet music library with AI metadata extraction
-5. **Toolbox Demo** (25s) - Metronome, Circle of Fifths, practice counter
-6. **Architecture** (30s) - Cloudflare edge infrastructure visualization
-7. **Outro** (10s) - Call to action and links
+1. **Intro** (5s) - Logo reveal and tagline
+2. **Overview** (10s) - What is Mirubato and key features
+3. **Logbook Demo** (18s) - Practice tracking with heatmap and analytics
+4. **Toolbox Demo** (12s) - Metronome, Circle of Fifths, practice counter
+5. **Architecture** (15s) - Cloudflare edge infrastructure visualization
+6. **Outro** (5s) - Call to action and links
+
+**Note**: Scorebook demo is temporarily excluded as it's in beta.
 
 ## Setup
 
