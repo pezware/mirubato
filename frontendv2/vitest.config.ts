@@ -8,7 +8,12 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/tests/setup.ts',
-    exclude: ['node_modules/**', 'tests/e2e/**', '**/*.e2e.test.ts'],
+    exclude: [
+      'node_modules/**',
+      'tests/e2e/**',
+      'tests/screenshots/**',
+      '**/*.e2e.test.ts',
+    ],
 
     // Use forks pool with reduced parallelism for memory efficiency
     pool: 'forks',
