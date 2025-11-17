@@ -314,6 +314,8 @@ tramp
 
 # Automated testing artifacts
 screenshots/
+!**/tests/screenshots/   # Allow screenshot capture test files
+!**/tests/screenshots/**/*.ts
 videos/
 traces/
 test-results.xml
