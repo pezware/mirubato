@@ -1,10 +1,232 @@
 import { Hono } from 'hono'
+import type { D1Database } from '@cloudflare/workers-types'
 import { nanoid } from 'nanoid'
 import { authMiddleware, validateBody, type Variables } from '../middleware'
 import { DatabaseHelpers, calculateChecksum } from '../../utils/database'
 import type { Env } from '../../index'
-import { PlanTemplateSchema } from '../../schemas/entities'
+import {
+  PlanOccurrenceSchema,
+  PlanSegmentSchema,
+  PlanTemplateSchema,
+  PlanPieceRefSchema,
+} from '../../schemas/entities'
 import { z } from 'zod'
+
+type PlanSegment = z.infer<typeof PlanSegmentSchema>
+
+const SOURCE_PLAN_OCCURRENCE_LOOKBACK = 5
+
+type SegmentCandidate = {
+  label?: unknown
+  durationMinutes?: unknown
+  pieceRefs?: unknown
+  techniques?: unknown
+  instructions?: unknown
+  tempoTargets?: unknown
+  metadata?: unknown
+}
+
+type PieceRefCandidate = z.infer<typeof PlanPieceRefSchema>
+
+const normalizeTempoTargets = (
+  value: unknown
+): Record<string, number | string | null> | undefined => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined
+  }
+
+  const normalized: Record<string, number | string | null> = {}
+  for (const [key, rawValue] of Object.entries(value)) {
+    if (!key) continue
+    if (
+      typeof rawValue === 'number' ||
+      typeof rawValue === 'string' ||
+      rawValue === null
+    ) {
+      normalized[key] = rawValue
+    }
+  }
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined
+}
+
+const normalizePieceRefs = (
+  value: unknown
+): PieceRefCandidate[] | undefined => {
+  if (!Array.isArray(value)) {
+    return undefined
+  }
+
+  const refs = value
+    .map(ref => {
+      if (!ref || typeof ref !== 'object') {
+        return null
+      }
+
+      const candidate = ref as PieceRefCandidate
+      const normalized: PieceRefCandidate = {}
+
+      if (typeof candidate.scoreId === 'string') {
+        normalized.scoreId = candidate.scoreId
+      }
+      if (typeof candidate.title === 'string') {
+        normalized.title = candidate.title
+      }
+      if (
+        typeof candidate.composer === 'string' ||
+        candidate.composer === null
+      ) {
+        normalized.composer = candidate.composer
+      }
+
+      return Object.keys(normalized).length > 0 ? normalized : null
+    })
+    .filter((ref): ref is PieceRefCandidate => Boolean(ref))
+
+  return refs.length > 0 ? refs : undefined
+}
+
+const normalizeSegment = (
+  candidate: unknown,
+  index: number
+): PlanSegment | null => {
+  if (!candidate || typeof candidate !== 'object') {
+    return null
+  }
+
+  const segment = candidate as SegmentCandidate
+  const labelCandidate =
+    typeof segment.label === 'string' && segment.label.trim().length > 0
+      ? segment.label.trim()
+      : undefined
+
+  const normalized: PlanSegment = {
+    label: labelCandidate ?? `Segment ${index + 1}`,
+  }
+
+  if (
+    typeof segment.durationMinutes === 'number' &&
+    Number.isFinite(segment.durationMinutes) &&
+    segment.durationMinutes > 0
+  ) {
+    normalized.durationMinutes = segment.durationMinutes
+  }
+
+  const pieceRefs = normalizePieceRefs(segment.pieceRefs)
+  if (pieceRefs) {
+    normalized.pieceRefs = pieceRefs
+  }
+
+  if (Array.isArray(segment.techniques)) {
+    const techniques = segment.techniques
+      .filter((tech): tech is string => typeof tech === 'string')
+      .map(tech => tech.trim())
+      .filter(Boolean)
+
+    if (techniques.length > 0) {
+      normalized.techniques = techniques
+    }
+  }
+
+  if (typeof segment.instructions === 'string') {
+    const trimmed = segment.instructions.trim()
+    if (trimmed.length > 0) {
+      normalized.instructions = trimmed
+    }
+  }
+
+  const tempoTargets = normalizeTempoTargets(segment.tempoTargets)
+  if (tempoTargets) {
+    normalized.tempoTargets = tempoTargets
+  }
+
+  if (
+    segment.metadata &&
+    typeof segment.metadata === 'object' &&
+    !Array.isArray(segment.metadata)
+  ) {
+    normalized.metadata = segment.metadata as Record<string, unknown>
+  }
+
+  return normalized
+}
+
+const normalizeSegments = (segments: unknown): PlanSegment[] => {
+  if (!Array.isArray(segments)) {
+    return []
+  }
+
+  return segments
+    .map((segment, index) => normalizeSegment(segment, index))
+    .filter((segment): segment is PlanSegment => Boolean(segment))
+}
+
+const extractPreviewSegments = (
+  metadata: Record<string, unknown> | undefined
+): PlanSegment[] => {
+  if (!metadata || typeof metadata !== 'object') {
+    return []
+  }
+
+  const withPreview = metadata as {
+    preview?: { segments?: unknown }
+  }
+
+  return normalizeSegments(withPreview.preview?.segments)
+}
+
+const fetchSourcePlanSegments = async (
+  db: D1Database,
+  template: z.infer<typeof PlanTemplateSchema>
+): Promise<PlanSegment[] | null> => {
+  if (!template.sourcePlanId) {
+    return null
+  }
+
+  try {
+    const result = await db
+      .prepare(
+        `
+        SELECT data
+        FROM sync_data
+        WHERE entity_type = ?
+          AND json_extract(data, '$.planId') = ?
+          AND deleted_at IS NULL
+        ORDER BY updated_at DESC
+        LIMIT ?
+      `
+      )
+      .bind(
+        'plan_occurrence',
+        template.sourcePlanId,
+        SOURCE_PLAN_OCCURRENCE_LOOKBACK
+      )
+      .all<{ data: string }>()
+
+    const rows = result?.results ?? []
+    for (const row of rows) {
+      try {
+        const occurrence = PlanOccurrenceSchema.parse(JSON.parse(row.data))
+        const segments = normalizeSegments(occurrence.segments)
+        if (segments.length > 0) {
+          return segments
+        }
+      } catch (err) {
+        console.warn(
+          'Failed to parse source plan occurrence for template adoption:',
+          err
+        )
+      }
+    }
+  } catch (err) {
+    console.warn(
+      'Failed to fetch source plan occurrences for template adoption:',
+      err
+    )
+  }
+
+  return null
+}
 
 export const templatesHandler = new Hono<{
   Bindings: Env
@@ -116,6 +338,12 @@ templatesHandler.post(
       // 3. Generate a single occurrence (MVP - simplified)
       const occurrenceId = `plan_occ_${nanoid()}`
 
+      const sourceSegments =
+        (await fetchSourcePlanSegments(c.env.DB, template)) ||
+        extractPreviewSegments(
+          template.metadata as Record<string, unknown> | undefined
+        )
+
       // Determine scheduled times
       const scheduleStartDate =
         customization?.schedule?.startDate || template.schedule.startDate || now
@@ -152,7 +380,7 @@ templatesHandler.post(
           template.schedule.kind === 'recurring'
             ? template.schedule.rule || null
             : null,
-        segments: [],
+        segments: sourceSegments,
         targets: {},
         reflectionPrompts: [],
         status: 'scheduled' as const,
