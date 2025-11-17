@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+
 /**
  * Playwright configuration specifically for capturing screenshots for Remotion tutorial videos.
  * This is NOT for E2E testing - it's for generating visual assets.

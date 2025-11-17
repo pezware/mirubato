@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+
 const SCREENSHOT_DIR = path.resolve(__dirname, '../../../remotion-tutorial/public/screenshots/toolbox')
 
 test.describe('Toolbox Screenshots for Tutorial Video', () => {
