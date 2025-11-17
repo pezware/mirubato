@@ -249,6 +249,7 @@ export const schemas = {
       'goal',
       'practice_plan',
       'plan_occurrence',
+      'plan_template',
       'user_preferences',
     ]),
     data: z.unknown(), // Allow any data structure since sync_data is flexible
@@ -265,6 +266,7 @@ export const schemas = {
           'goal',
           'practice_plan',
           'plan_occurrence',
+          'plan_template',
           'user_preferences',
         ]),
         data: z.unknown(), // Allow any data structure since sync_data is flexible

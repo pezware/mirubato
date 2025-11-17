@@ -682,6 +682,7 @@ export const openAPISpec = {
                     'goal',
                     'practice_plan',
                     'plan_occurrence',
+                    'plan_template',
                     'user_preferences',
                   ],
                   example: 'logbook_entry',
