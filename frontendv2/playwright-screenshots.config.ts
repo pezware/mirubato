@@ -1,5 +1,11 @@
 import { defineConfig, devices } from '@playwright/test'
 import path from 'path'
+import { fileURLToPath } from 'url'
+
+// ES module compatible __dirname
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 
 /**
  * Playwright configuration specifically for capturing screenshots for Remotion tutorial videos.
