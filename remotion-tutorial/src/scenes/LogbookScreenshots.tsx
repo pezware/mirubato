@@ -28,7 +28,7 @@ export const LogbookScreenshots: React.FC = () => {
         height: '100%',
         backgroundColor: theme.colors.background,
         position: 'relative',
-        padding: '4%'
+        padding: '4%',
       }}
     >
       <ChapterTitle
@@ -44,14 +44,14 @@ export const LogbookScreenshots: React.FC = () => {
           top: '22%',
           left: '10%',
           right: '10%',
-          height: '55%'
+          height: '55%',
         }}
       >
         {/* Phase 1: Show overview screenshot with zoom */}
         {showOverview && !showEntries && (
           <div
             style={{
-              opacity: fadeIn(frame, fps * 0.5, fps * 0.3)
+              opacity: fadeIn(frame, fps * 0.5, fps * 0.3),
             }}
           >
             <ScreenshotFrame
@@ -61,7 +61,7 @@ export const LogbookScreenshots: React.FC = () => {
                 startScale: 1,
                 endScale: 1.1,
                 focusX: '50%',
-                focusY: '30%'
+                focusY: '30%',
               }}
               animateIn={true}
               animationDelay={0}
@@ -73,7 +73,7 @@ export const LogbookScreenshots: React.FC = () => {
         {showEntries && !showStats && (
           <div
             style={{
-              opacity: fadeIn(frame, fps * 3, fps * 0.3)
+              opacity: fadeIn(frame, fps * 3, fps * 0.3),
             }}
           >
             <ScreenshotFrame
@@ -84,14 +84,14 @@ export const LogbookScreenshots: React.FC = () => {
                 y: '20%',
                 width: '90%',
                 height: '60%',
-                label: 'Practice History'
+                label: 'Practice History',
               }}
               cursor={{
                 show: true,
                 startX: '80',
                 startY: '10',
                 endX: '50',
-                endY: '40'
+                endY: '40',
               }}
               animateIn={true}
               animationDelay={0}
@@ -103,7 +103,7 @@ export const LogbookScreenshots: React.FC = () => {
         {showStats && (
           <div
             style={{
-              opacity: fadeIn(frame, fps * 6, fps * 0.3)
+              opacity: fadeIn(frame, fps * 6, fps * 0.3),
             }}
           >
             <ScreenshotFrame
@@ -113,7 +113,7 @@ export const LogbookScreenshots: React.FC = () => {
                 startScale: 0.9,
                 endScale: 1,
                 focusX: '50%',
-                focusY: '50%'
+                focusY: '50%',
               }}
               animateIn={true}
               animationDelay={0}
@@ -128,13 +128,13 @@ export const LogbookScreenshots: React.FC = () => {
           position: 'absolute',
           bottom: '8%',
           left: '5%',
-          right: '5%'
+          right: '5%',
         }}
       >
         {[
           'Real-time sync across devices',
           'Visual analytics',
-          'Export to CSV/JSON'
+          'Export to CSV/JSON',
         ].map((text, i) => {
           const itemOpacity = staggeredAppearance(frame - fps * 2, i, 15)
           return (
@@ -146,7 +146,7 @@ export const LogbookScreenshots: React.FC = () => {
                 fontSize: theme.fontSizes.base,
                 fontFamily: theme.fonts.ui,
                 color: theme.colors.textMuted,
-                opacity: itemOpacity
+                opacity: itemOpacity,
               }}
             >
               • {text}

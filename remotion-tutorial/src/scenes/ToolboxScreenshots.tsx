@@ -28,7 +28,7 @@ export const ToolboxScreenshots: React.FC = () => {
         height: '100%',
         backgroundColor: theme.colors.background,
         position: 'relative',
-        padding: '4%'
+        padding: '4%',
       }}
     >
       <ChapterTitle
@@ -44,7 +44,7 @@ export const ToolboxScreenshots: React.FC = () => {
           top: '25%',
           left: '15%',
           right: '15%',
-          height: '55%'
+          height: '55%',
         }}
       >
         {/* Metronome */}
@@ -57,14 +57,14 @@ export const ToolboxScreenshots: React.FC = () => {
                 startScale: 1,
                 endScale: 1.05,
                 focusX: '30%',
-                focusY: '40%'
+                focusY: '40%',
               }}
               highlight={{
                 x: '2%',
                 y: '15%',
                 width: '35%',
                 height: '70%',
-                label: 'BPM Control'
+                label: 'BPM Control',
               }}
               animateIn={true}
               animationDelay={0}
@@ -84,7 +84,8 @@ export const ToolboxScreenshots: React.FC = () => {
                 startY: '30',
                 endX: '50',
                 endY: '60',
-                clickAt: frame - fps * 4 > fps * 1 ? Math.floor(fps * 5) : undefined
+                clickAt:
+                  frame - fps * 4 > fps * 1 ? Math.floor(fps * 5) : undefined,
               }}
               animateIn={true}
               animationDelay={0}
@@ -102,7 +103,7 @@ export const ToolboxScreenshots: React.FC = () => {
                 startScale: 0.95,
                 endScale: 1,
                 focusX: '50%',
-                focusY: '50%'
+                focusY: '50%',
               }}
               animateIn={true}
               animationDelay={0}
@@ -117,7 +118,7 @@ export const ToolboxScreenshots: React.FC = () => {
           position: 'absolute',
           bottom: '10%',
           left: '50%',
-          transform: 'translateX(-50%)'
+          transform: 'translateX(-50%)',
         }}
       >
         {showMetronome && (
@@ -131,7 +132,7 @@ export const ToolboxScreenshots: React.FC = () => {
               fontSize: theme.fontSizes.lg,
               fontFamily: theme.fonts.ui,
               fontWeight: 600,
-              boxShadow: theme.shadows.box
+              boxShadow: theme.shadows.box,
             }}
           >
             Advanced Metronome with Pattern Editor
@@ -149,7 +150,7 @@ export const ToolboxScreenshots: React.FC = () => {
               fontSize: theme.fontSizes.lg,
               fontFamily: theme.fonts.ui,
               fontWeight: 600,
-              boxShadow: theme.shadows.box
+              boxShadow: theme.shadows.box,
             }}
           >
             Practice Counter for Repetitions
@@ -167,7 +168,7 @@ export const ToolboxScreenshots: React.FC = () => {
               fontSize: theme.fontSizes.lg,
               fontFamily: theme.fonts.ui,
               fontWeight: 600,
-              boxShadow: theme.shadows.box
+              boxShadow: theme.shadows.box,
             }}
           >
             Interactive Circle of Fifths

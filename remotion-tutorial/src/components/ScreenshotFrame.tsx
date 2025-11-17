@@ -50,19 +50,17 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
   cursor,
   opacity = 1,
   animateIn = true,
-  animationDelay = 0
+  animationDelay = 0,
 }) => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
   // Entrance animation
   const entranceOpacity = animateIn
-    ? interpolate(
-        frame,
-        [animationDelay, animationDelay + fps * 0.3],
-        [0, 1],
-        { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }
-      )
+    ? interpolate(frame, [animationDelay, animationDelay + fps * 0.3], [0, 1], {
+        extrapolateRight: 'clamp',
+        extrapolateLeft: 'clamp',
+      })
     : 1
 
   const entranceScale = animateIn
@@ -72,8 +70,8 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
         config: {
           damping: 100,
           stiffness: 200,
-          mass: 0.8
-        }
+          mass: 0.8,
+        },
       })
     : 1
 
@@ -133,7 +131,11 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
     ? frame >= cursor.clickAt && frame < cursor.clickAt + fps * 0.2
       ? interpolate(
           frame,
-          [cursor.clickAt, cursor.clickAt + fps * 0.1, cursor.clickAt + fps * 0.2],
+          [
+            cursor.clickAt,
+            cursor.clickAt + fps * 0.1,
+            cursor.clickAt + fps * 0.2,
+          ],
           [1, 0.8, 1],
           { extrapolateRight: 'clamp' }
         )
@@ -142,7 +144,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
 
   // Highlight pulse animation
   const highlightOpacity = highlight
-    ? 0.3 + Math.sin(frame / fps * 4) * 0.1
+    ? 0.3 + Math.sin((frame / fps) * 4) * 0.1
     : 0
 
   return (
@@ -152,7 +154,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
         width: '100%',
         height: '100%',
         opacity: entranceOpacity * opacity,
-        transform: `scale(${entranceScale * 0.95 + 0.05})`
+        transform: `scale(${entranceScale * 0.95 + 0.05})`,
       }}
     >
       {showBrowserFrame && (
@@ -169,7 +171,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
             alignItems: 'center',
             padding: '0 12px',
             gap: '8px',
-            zIndex: 10
+            zIndex: 10,
           }}
         >
           {/* Browser window controls */}
@@ -178,7 +180,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
               width: '12px',
               height: '12px',
               borderRadius: '50%',
-              backgroundColor: '#ef4444'
+              backgroundColor: '#ef4444',
             }}
           />
           <div
@@ -186,7 +188,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
               width: '12px',
               height: '12px',
               borderRadius: '50%',
-              backgroundColor: '#f59e0b'
+              backgroundColor: '#f59e0b',
             }}
           />
           <div
@@ -194,7 +196,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
               width: '12px',
               height: '12px',
               borderRadius: '50%',
-              backgroundColor: '#10b981'
+              backgroundColor: '#10b981',
             }}
           />
           <div
@@ -205,7 +207,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
               borderRadius: '4px',
               padding: '4px 12px',
               fontSize: '12px',
-              color: '#6b7280'
+              color: '#6b7280',
             }}
           >
             mirubato.com
@@ -223,7 +225,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
           overflow: 'hidden',
           borderRadius: showBrowserFrame ? '0 0 8px 8px' : '8px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-          backgroundColor: '#f3f4f6'
+          backgroundColor: '#f3f4f6',
         }}
       >
         <Img
@@ -234,7 +236,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
             height: '100%',
             objectFit: 'cover',
             transform: `scale(${zoomScale}) translate(${panX}px, ${panY}px)`,
-            transformOrigin: zoomTransformOrigin
+            transformOrigin: zoomTransformOrigin,
           }}
         />
 
@@ -250,7 +252,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
               backgroundColor: `rgba(251, 191, 36, ${highlightOpacity})`,
               border: '3px solid #fbbf24',
               borderRadius: '8px',
-              pointerEvents: 'none'
+              pointerEvents: 'none',
             }}
           >
             {highlight.label && (
@@ -266,7 +268,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
                   borderRadius: '4px',
                   fontSize: '14px',
                   fontWeight: 600,
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {highlight.label}
@@ -284,7 +286,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
               top: `${cursorY}%`,
               transform: `translate(-50%, -50%) scale(${cursorClickScale})`,
               pointerEvents: 'none',
-              zIndex: 100
+              zIndex: 100,
             }}
           >
             <svg
@@ -293,7 +295,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
               viewBox="0 0 24 24"
               fill="none"
               style={{
-                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))'
+                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
               }}
             >
               <path

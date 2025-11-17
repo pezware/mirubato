@@ -54,12 +54,14 @@ npm run generate
 ### Step-by-Step
 
 1. **Start the frontend dev server** (if not running):
+
 ```bash
 cd ../frontendv2
 pnpm run dev
 ```
 
 2. **Capture screenshots**:
+
 ```bash
 npm run capture
 # or from frontendv2:
@@ -67,11 +69,13 @@ cd ../frontendv2 && pnpm run test:screenshots
 ```
 
 3. **Preview screenshots**:
+
 ```bash
 ls -la public/screenshots/
 ```
 
 4. **Render video**:
+
 ```bash
 npm run render:video
 ```
