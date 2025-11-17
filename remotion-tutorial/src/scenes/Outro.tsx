@@ -8,10 +8,10 @@ export const Outro: React.FC = () => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
-  const logoOpacity = fadeIn(frame, 0, fps * 0.5)
-  const logoScale = scaleIn(frame, 0, fps * 0.5, 0.9, 1)
+  const logoOpacity = fadeIn(frame, 0, fps * 0.3)
+  const logoScale = scaleIn(frame, 0, fps * 0.3, 0.9, 1)
 
-  const ctaOpacity = fadeIn(frame, fps * 1, fps * 0.5)
+  const ctaOpacity = fadeIn(frame, fps * 0.5, fps * 0.3)
 
   const actions = [
     { label: 'Get Started', icon: '🚀' },
@@ -100,7 +100,7 @@ export const Outro: React.FC = () => {
         }}
       >
         {actions.map((action, index) => {
-          const buttonOpacity = staggeredAppearance(frame - fps * 2, index, 10)
+          const buttonOpacity = staggeredAppearance(frame - fps * 1.2, index, 8)
           const buttonScale = 0.9 + buttonOpacity * 0.1
 
           return (
@@ -137,14 +137,14 @@ export const Outro: React.FC = () => {
       </div>
 
       {/* GitHub URL */}
-      {frame > fps * 3 && (
+      {frame > fps * 2 && (
         <div
           style={{
             position: 'absolute',
             bottom: '10%',
             left: '50%',
             transform: 'translateX(-50%)',
-            opacity: fadeIn(frame, fps * 3, fps * 0.5),
+            opacity: fadeIn(frame, fps * 2, fps * 0.3),
           }}
         >
           <p

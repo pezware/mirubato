@@ -9,14 +9,14 @@ export const Architecture: React.FC = () => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
-  const titleOpacity = fadeIn(frame, 0, fps * 0.5)
+  const titleOpacity = fadeIn(frame, 0, fps * 0.3)
 
   // Cloud header
-  const cloudOpacity = fadeIn(frame, fps * 0.5, fps * 0.5)
+  const cloudOpacity = fadeIn(frame, fps * 0.3, fps * 0.3)
 
-  // Services (staggered appearance)
-  const services = ['Frontend', 'API', 'Scores', 'Dictionary']
-  const storages = ['D1 Database', 'R2 Storage', 'KV Cache']
+  // Services (staggered appearance) - Core services only, no beta features
+  const services = ['Frontend', 'API', 'Sync']
+  const storages = ['D1 Database', 'KV Cache', 'WebSockets']
 
   return (
     <div
@@ -82,7 +82,7 @@ export const Architecture: React.FC = () => {
       </div>
 
       {/* Connection Lines */}
-      {frame > fps * 2 && (
+      {frame > fps * 1 && (
         <svg
           style={{
             position: 'absolute',
@@ -95,7 +95,7 @@ export const Architecture: React.FC = () => {
           }}
         >
           {services.map((_, index) => {
-            const lineOpacity = fadeIn(frame, fps * 2 + index * 5, fps * 0.3)
+            const lineOpacity = fadeIn(frame, fps * 1 + index * 3, fps * 0.2)
             const xPercent = 10 + (80 / (services.length - 1)) * index
             return (
               <line
@@ -126,7 +126,7 @@ export const Architecture: React.FC = () => {
         }}
       >
         {storages.map((storage, index) => {
-          const storageOpacity = staggeredAppearance(frame - fps * 3, index, 15)
+          const storageOpacity = staggeredAppearance(frame - fps * 1.8, index, 10)
           return (
             <div key={storage} style={{ opacity: storageOpacity }}>
               <ArchitectureBox
@@ -140,7 +140,7 @@ export const Architecture: React.FC = () => {
       </div>
 
       {/* Storage Connection Lines */}
-      {frame > fps * 3.5 && (
+      {frame > fps * 2.2 && (
         <svg
           style={{
             position: 'absolute',
@@ -153,7 +153,7 @@ export const Architecture: React.FC = () => {
           }}
         >
           {storages.map((_, index) => {
-            const lineOpacity = fadeIn(frame, fps * 3.5 + index * 5, fps * 0.3)
+            const lineOpacity = fadeIn(frame, fps * 2.2 + index * 3, fps * 0.2)
             const xPercent = (100 / (storages.length - 1)) * index
             return (
               <line
@@ -173,7 +173,7 @@ export const Architecture: React.FC = () => {
       )}
 
       {/* Performance metrics */}
-      {frame > fps * 4 && (
+      {frame > fps * 2.8 && (
         <div
           style={{
             position: 'absolute',
@@ -183,7 +183,7 @@ export const Architecture: React.FC = () => {
             display: 'flex',
             justifyContent: 'center',
             gap: theme.spacing['3xl'],
-            opacity: fadeIn(frame, fps * 4, fps * 0.5),
+            opacity: fadeIn(frame, fps * 2.8, fps * 0.3),
           }}
         >
           {[

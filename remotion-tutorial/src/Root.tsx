@@ -7,7 +7,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="MirubatoIntro"
         component={MirubatoIntro}
-        durationInFrames={4290} // 143 seconds at 30fps (8+15+30+25+25+30+10)
+        durationInFrames={1950} // 65 seconds at 30fps (5+10+18+12+15+5) - optimized for 2x speed
         fps={30}
         width={1920}
         height={1080}
@@ -16,3 +16,4 @@ export const RemotionRoot: React.FC = () => {
     </>
   )
 }
+

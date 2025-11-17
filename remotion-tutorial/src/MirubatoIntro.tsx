@@ -3,24 +3,25 @@ import { Sequence, useVideoConfig } from 'remotion'
 import { Intro } from './scenes/Intro'
 import { Overview } from './scenes/Overview'
 import { LogbookDemo } from './scenes/LogbookDemo'
-import { ScorebookDemo } from './scenes/ScorebookDemo'
 import { ToolboxDemo } from './scenes/ToolboxDemo'
 import { Architecture } from './scenes/Architecture'
 import { Outro } from './scenes/Outro'
 import { Transition } from './components/Transition'
+import { theme } from './theme/mirubato'
 
 export const MirubatoIntro: React.FC = () => {
   const { fps } = useVideoConfig()
 
-  // Scene durations (in seconds)
+  // Scene durations (in seconds) - Optimized for 1.5x-2x speed
+  // Total: ~65 seconds (was 143 seconds)
   const scenes = {
-    intro: 8, // 8 seconds
-    overview: 15, // 15 seconds
-    logbook: 30, // 30 seconds
-    scorebook: 25, // 25 seconds
-    toolbox: 25, // 25 seconds
-    architecture: 30, // 30 seconds
-    outro: 10, // 10 seconds
+    intro: 5, // 5 seconds (was 8)
+    overview: 10, // 10 seconds (was 15)
+    logbook: 18, // 18 seconds (was 30)
+    // REMOVED: scorebook (beta feature)
+    toolbox: 12, // 12 seconds (was 25)
+    architecture: 15, // 15 seconds (was 30)
+    outro: 5, // 5 seconds (was 10)
   }
 
   // Calculate start frames
@@ -28,22 +29,13 @@ export const MirubatoIntro: React.FC = () => {
     intro: 0,
     overview: scenes.intro * fps,
     logbook: (scenes.intro + scenes.overview) * fps,
-    scorebook: (scenes.intro + scenes.overview + scenes.logbook) * fps,
-    toolbox:
-      (scenes.intro + scenes.overview + scenes.logbook + scenes.scorebook) *
-      fps,
+    toolbox: (scenes.intro + scenes.overview + scenes.logbook) * fps,
     architecture:
-      (scenes.intro +
-        scenes.overview +
-        scenes.logbook +
-        scenes.scorebook +
-        scenes.toolbox) *
-      fps,
+      (scenes.intro + scenes.overview + scenes.logbook + scenes.toolbox) * fps,
     outro:
       (scenes.intro +
         scenes.overview +
         scenes.logbook +
-        scenes.scorebook +
         scenes.toolbox +
         scenes.architecture) *
       fps,
@@ -54,7 +46,7 @@ export const MirubatoIntro: React.FC = () => {
       style={{
         width: '100%',
         height: '100%',
-        backgroundColor: '#0f172a',
+        backgroundColor: theme.colors.background,
       }}
     >
       {/* Intro Scene - Logo and tagline */}
@@ -63,7 +55,7 @@ export const MirubatoIntro: React.FC = () => {
         durationInFrames={scenes.intro * fps}
         name="Intro"
       >
-        <Transition type="fade" durationInFrames={fps * 0.5}>
+        <Transition type="fade" durationInFrames={fps * 0.3}>
           <Intro />
         </Transition>
       </Sequence>
@@ -74,7 +66,7 @@ export const MirubatoIntro: React.FC = () => {
         durationInFrames={scenes.overview * fps}
         name="Overview"
       >
-        <Transition type="fade" durationInFrames={fps * 0.5}>
+        <Transition type="fade" durationInFrames={fps * 0.3}>
           <Overview />
         </Transition>
       </Sequence>
@@ -85,19 +77,8 @@ export const MirubatoIntro: React.FC = () => {
         durationInFrames={scenes.logbook * fps}
         name="Logbook"
       >
-        <Transition type="slide" durationInFrames={fps * 0.5}>
+        <Transition type="slide" durationInFrames={fps * 0.3}>
           <LogbookDemo />
-        </Transition>
-      </Sequence>
-
-      {/* Scorebook Demo - Sheet music library */}
-      <Sequence
-        from={startFrames.scorebook}
-        durationInFrames={scenes.scorebook * fps}
-        name="Scorebook"
-      >
-        <Transition type="fade" durationInFrames={fps * 0.5}>
-          <ScorebookDemo />
         </Transition>
       </Sequence>
 
@@ -107,7 +88,7 @@ export const MirubatoIntro: React.FC = () => {
         durationInFrames={scenes.toolbox * fps}
         name="Toolbox"
       >
-        <Transition type="slide" durationInFrames={fps * 0.5}>
+        <Transition type="slide" durationInFrames={fps * 0.3}>
           <ToolboxDemo />
         </Transition>
       </Sequence>
@@ -118,7 +99,7 @@ export const MirubatoIntro: React.FC = () => {
         durationInFrames={scenes.architecture * fps}
         name="Architecture"
       >
-        <Transition type="fade" durationInFrames={fps * 0.5}>
+        <Transition type="fade" durationInFrames={fps * 0.3}>
           <Architecture />
         </Transition>
       </Sequence>
@@ -129,7 +110,7 @@ export const MirubatoIntro: React.FC = () => {
         durationInFrames={scenes.outro * fps}
         name="Outro"
       >
-        <Transition type="scale" durationInFrames={fps * 0.5}>
+        <Transition type="scale" durationInFrames={fps * 0.3}>
           <Outro />
         </Transition>
       </Sequence>

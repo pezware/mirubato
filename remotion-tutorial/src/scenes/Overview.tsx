@@ -8,13 +8,13 @@ export const Overview: React.FC = () => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
-  const titleOpacity = fadeIn(frame, 0, fps * 0.5)
+  const titleOpacity = fadeIn(frame, 0, fps * 0.3)
 
   const features = [
     'Track your practice sessions with precision',
-    'Organize your sheet music library',
     'Master essential music theory tools',
     'Build consistent practice habits',
+    'Visualize your progress over time',
   ]
 
   return (
@@ -42,7 +42,7 @@ export const Overview: React.FC = () => {
         }}
       >
         {features.map((feature, index) => {
-          const itemOpacity = staggeredAppearance(frame - fps * 1, index, 15)
+          const itemOpacity = staggeredAppearance(frame - fps * 0.5, index, 12)
 
           return (
             <div
