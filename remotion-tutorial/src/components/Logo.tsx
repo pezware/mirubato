@@ -1,31 +1,51 @@
 import React from 'react'
+import { Img, staticFile } from 'remotion'
 import { theme } from '../theme/mirubato'
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
   opacity?: number
   scale?: number
+  showText?: boolean
 }
 
 export const Logo: React.FC<LogoProps> = ({
   size = 'md',
   opacity = 1,
   scale = 1,
+  showText = true,
 }) => {
-  const getSizeValue = () => {
+  const getImageSize = () => {
     switch (size) {
       case 'sm':
-        return theme.fontSizes['4xl']
+        return 80
       case 'md':
-        return theme.fontSizes['6xl']
+        return 120
       case 'lg':
-        return theme.fontSizes['7xl']
+        return 160
       case 'xl':
-        return '6rem'
+        return 200
       default:
-        return theme.fontSizes['6xl']
+        return 120
     }
   }
+
+  const getTextSize = () => {
+    switch (size) {
+      case 'sm':
+        return theme.fontSizes['3xl']
+      case 'md':
+        return theme.fontSizes['5xl']
+      case 'lg':
+        return theme.fontSizes['6xl']
+      case 'xl':
+        return theme.fontSizes['7xl']
+      default:
+        return theme.fontSizes['5xl']
+    }
+  }
+
+  const imageSize = getImageSize()
 
   return (
     <div
@@ -38,28 +58,42 @@ export const Logo: React.FC<LogoProps> = ({
         transformOrigin: 'center',
       }}
     >
-      <h1
+      {/* Official Mirubato Logo */}
+      <Img
+        src={staticFile('assets/logo.png')}
         style={{
-          fontSize: getSizeValue(),
-          fontFamily: theme.fonts.music,
-          fontWeight: 500,
-          color: theme.colors.textPrimary,
-          margin: 0,
-          letterSpacing: '0.05em',
-          textShadow: theme.shadows.glow,
-        }}
-      >
-        Mirubato
-      </h1>
-      <div
-        style={{
-          width: '60%',
-          height: '3px',
-          background: `linear-gradient(90deg, transparent, ${theme.colors.primary}, transparent)`,
-          marginTop: theme.spacing.md,
-          borderRadius: '2px',
+          width: imageSize,
+          height: imageSize,
+          objectFit: 'contain',
         }}
       />
+
+      {showText && (
+        <>
+          <h1
+            style={{
+              fontSize: getTextSize(),
+              fontFamily: theme.fonts.headers,
+              fontWeight: 300,
+              color: theme.colors.textPrimary,
+              margin: 0,
+              marginTop: theme.spacing.lg,
+              letterSpacing: '0.05em',
+            }}
+          >
+            Mirubato
+          </h1>
+          <div
+            style={{
+              width: '80%',
+              height: '2px',
+              background: `linear-gradient(90deg, transparent, ${theme.colors.primary}, transparent)`,
+              marginTop: theme.spacing.sm,
+              borderRadius: '1px',
+            }}
+          />
+        </>
+      )}
     </div>
   )
 }

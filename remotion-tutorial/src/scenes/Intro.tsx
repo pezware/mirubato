@@ -8,11 +8,11 @@ export const Intro: React.FC = () => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
-  // Animation timings
+  // Animation timings - optimized for faster pacing
   const logoFadeStart = 0
-  const logoFadeDuration = fps * 0.5 // 0.5 seconds
-  const taglineStart = fps * 1 // 1 second
-  const taglineDuration = fps * 0.5
+  const logoFadeDuration = fps * 0.3 // 0.3 seconds
+  const taglineStart = fps * 0.6 // 0.6 second
+  const taglineDuration = fps * 0.3
 
   const logoOpacity = fadeIn(frame, logoFadeStart, logoFadeDuration)
   const logoScale = scaleIn(frame, logoFadeStart, logoFadeDuration, 0.9, 1)

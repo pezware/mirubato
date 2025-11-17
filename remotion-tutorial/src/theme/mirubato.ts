@@ -1,30 +1,42 @@
 // Mirubato brand colors and typography
+// Based on actual Morandi color palette from frontendv2/tailwind.config.js
 export const theme = {
   colors: {
-    // Primary colors
-    primary: '#6366f1', // Indigo
-    primaryDark: '#4f46e5',
-    primaryLight: '#818cf8',
+    // Primary colors - Morandi Sage (brand green)
+    primary: '#9ca888', // morandi-sage-400
+    primaryDark: '#818f6d', // morandi-sage-500
+    primaryLight: '#b8c2a9', // morandi-sage-300
 
-    // Background colors
-    background: '#0f172a', // Dark slate
-    backgroundLight: '#1e293b',
-    backgroundLighter: '#334155',
+    // Background colors - Morandi Stone (warm grays)
+    background: '#f8f7f6', // morandi-stone-50 (light theme)
+    backgroundLight: '#f0efec', // morandi-stone-100
+    backgroundLighter: '#e2dfd9', // morandi-stone-200
+    backgroundDark: '#3a3632', // morandi-stone-900 (for dark sections)
 
-    // Text colors
-    textPrimary: '#ffffff',
-    textSecondary: '#cbd5e1',
-    textMuted: '#94a3b8',
+    // Text colors - Morandi Stone tones
+    textPrimary: '#3a3632', // morandi-stone-900
+    textSecondary: '#5c5850', // morandi-stone-700
+    textMuted: '#7a756b', // morandi-stone-600
 
-    // Accent colors
-    accent: '#fbbf24', // Amber for highlights
-    accentAlt: '#22d3ee', // Cyan for tech elements
-    success: '#10b981',
-    error: '#ef4444',
+    // Accent colors - Morandi Purple for interactions
+    accent: '#b8a6c9', // morandi-purple-400
+    accentLight: '#d0c2db', // morandi-purple-300
+    accentAlt: '#a8bccb', // morandi-sky-400
+
+    // Status colors - Morandi palette
+    success: '#9ca888', // morandi-sage-400
+    error: '#d8a594', // morandi-blush-400
+    warning: '#c1a68b', // morandi-sand-400
 
     // Music-specific
-    musicTitle: '#f1f5f9',
-    musicComposer: '#e2e8f0',
+    musicTitle: '#3a3632', // morandi-stone-900
+    musicComposer: '#5c5850', // morandi-stone-700
+
+    // Additional Morandi colors for variety
+    blush: '#d8a594', // morandi-blush-400
+    sky: '#a8bccb', // morandi-sky-400
+    sand: '#c1a68b', // morandi-sand-400
+    purple: '#b8a6c9', // morandi-purple-400
   },
 
   fonts: {
@@ -65,9 +77,9 @@ export const theme = {
   },
 
   shadows: {
-    text: '0 4px 8px rgba(0, 0, 0, 0.3)',
-    box: '0 4px 12px rgba(0, 0, 0, 0.2)',
-    glow: '0 0 20px rgba(99, 102, 241, 0.5)',
+    text: '0 2px 4px rgba(58, 54, 50, 0.1)',
+    box: '0 4px 12px rgba(58, 54, 50, 0.08)',
+    glow: '0 0 20px rgba(156, 168, 136, 0.3)', // Sage glow
   },
 } as const
 
