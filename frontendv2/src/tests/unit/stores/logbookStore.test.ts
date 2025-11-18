@@ -142,7 +142,10 @@ describe('logbookStore', () => {
 
     // Reset sync API mocks
     mockSyncApi.push = vi.fn()
-    mockSyncApi.pull = vi.fn()
+    mockSyncApi.pull = vi.fn().mockResolvedValue({
+      entries: [],
+      timestamp: new Date().toISOString(),
+    })
   })
 
   afterEach(() => {
@@ -270,6 +273,11 @@ describe('logbookStore', () => {
 
       const state = useLogbookStore.getState()
       expect(state.error).toBe('Failed to create entry')
+
+      // Restore nanoid mock for subsequent tests
+      ;(nanoid as ReturnType<typeof vi.fn>).mockImplementation(
+        () => 'test-id-123'
+      )
     })
   })
 

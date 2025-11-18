@@ -37,12 +37,6 @@ describe('PlanCheckInModal', () => {
     getPrimaryInstrumentMock.mockReset()
     onCompleteMock.mockReset()
 
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    }))
-
     createEntryMock.mockResolvedValue({
       id: 'entry-123',
       timestamp: new Date().toISOString(),

@@ -11,13 +11,6 @@ describe('TemplatePublisherModal', () => {
     mockOnSubmit.mockReset()
     mockOnClose.mockReset()
     mockOnSubmit.mockResolvedValue(undefined)
-
-    // Mock ResizeObserver for Headless UI
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    }))
   })
 
   it('renders with default values', () => {

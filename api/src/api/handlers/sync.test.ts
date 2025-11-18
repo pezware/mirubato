@@ -18,9 +18,11 @@ const { mockBroadcastPlanningEvents } = vi.hoisted(() => ({
   mockBroadcastPlanningEvents: vi.fn(),
 }))
 
-// Mock dependencies
+// Mock dependencies (use function keyword for Vitest 4.0 constructor mocks)
 vi.mock('../../utils/database', () => ({
-  DatabaseHelpers: vi.fn(() => mockDbInstance),
+  DatabaseHelpers: vi.fn(function () {
+    return mockDbInstance
+  }),
   generateId: vi.fn(() => 'test-id-123'),
   calculateChecksum: vi.fn(() => 'test-checksum-abc'),
 }))

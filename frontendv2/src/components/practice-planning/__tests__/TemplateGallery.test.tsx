@@ -71,12 +71,6 @@ describe('TemplateGallery', () => {
   beforeEach(() => {
     mockOnAdopt.mockReset()
     mockOnAdopt.mockResolvedValue(undefined)
-
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    }))
   })
 
   it('renders list of templates', () => {
