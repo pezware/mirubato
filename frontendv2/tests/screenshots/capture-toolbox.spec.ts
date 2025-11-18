@@ -1,6 +1,10 @@
 import { test } from '@playwright/test'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import {
+  PRIVACY_CONSENT_KEY,
+  PRIVACY_VERSION,
+} from '../../src/components/privacy/privacyUtils'
 
 // ES module compatible __dirname
 const __filename = fileURLToPath(import.meta.url)
@@ -11,6 +15,19 @@ const SCREENSHOT_DIR = path.resolve(__dirname, '../../../remotion-tutorial/publi
 
 test.describe('Toolbox Screenshots for Tutorial Video', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(
+      ({ key, version }) => {
+        const consent = {
+          essential: true,
+          functional: true,
+          consentDate: new Date().toISOString(),
+          version,
+        }
+        window.localStorage.setItem(key, JSON.stringify(consent))
+      },
+      { key: PRIVACY_CONSENT_KEY, version: PRIVACY_VERSION }
+    )
+
     // Set viewport to match video resolution
     await page.setViewportSize({ width: 1920, height: 1080 })
   })
@@ -20,7 +37,7 @@ test.describe('Toolbox Screenshots for Tutorial Video', () => {
     const modalOverlay = page.locator('.fixed.inset-0.z-50.bg-black\\/30')
     if (await modalOverlay.isVisible({ timeout: 2000 }).catch(() => false)) {
       // Try to close the modal by clicking its close button or pressing Escape
-      const closeButton = page.locator('[aria-label="Close"], button:has-text("Close"), button:has-text("Got it"), button:has-text("OK")').first()
+      const closeButton = page.locator('[aria-label="Close"], [aria-label="Close banner"], button:has-text("Close"), button:has-text("Got it"), button:has-text("OK")').first()
       if (await closeButton.isVisible({ timeout: 1000 }).catch(() => false)) {
         await closeButton.click()
       } else {
@@ -38,7 +55,7 @@ test.describe('Toolbox Screenshots for Tutorial Video', () => {
     await dismissModalIfPresent(page)
 
     // Metronome is the default tab - wait for the metronome content to be visible
-    await page.waitForSelector('[data-testid="metronome-tab"], text=Metronome', { timeout: 10000 })
+    await page.getByTestId('metronome-tab').waitFor({ state: 'visible', timeout: 10000 })
     await page.waitForTimeout(1000)
 
     // Capture full metronome view
