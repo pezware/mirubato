@@ -51,9 +51,11 @@ const mockDbMethods = {
   queueForEnhancement: vi.fn().mockResolvedValue(undefined),
 }
 
-// Mock dependencies
+// Mock dependencies (use function keyword for Vitest 4.0 constructor mocks)
 vi.mock('../../services/storage/dictionary-database', () => ({
-  DictionaryDatabase: vi.fn().mockImplementation(() => mockDbMethods),
+  DictionaryDatabase: vi.fn().mockImplementation(function () {
+    return mockDbMethods
+  }),
 }))
 
 const mockGeneratorMethods = {
@@ -61,7 +63,9 @@ const mockGeneratorMethods = {
 }
 
 vi.mock('../../services/ai/dictionary-generator', () => ({
-  DictionaryGenerator: vi.fn().mockImplementation(() => mockGeneratorMethods),
+  DictionaryGenerator: vi.fn().mockImplementation(function () {
+    return mockGeneratorMethods
+  }),
 }))
 
 const mockGetCachedTerm = vi.fn()
@@ -69,11 +73,13 @@ const mockCacheTerm = vi.fn()
 const mockGetCachedById = vi.fn()
 
 vi.mock('../../services/storage/cache-service', () => ({
-  CacheService: vi.fn().mockImplementation(() => ({
-    getCachedTerm: mockGetCachedTerm,
-    cacheTerm: mockCacheTerm,
-    getCachedById: mockGetCachedById,
-  })),
+  CacheService: vi.fn().mockImplementation(function () {
+    return {
+      getCachedTerm: mockGetCachedTerm,
+      cacheTerm: mockCacheTerm,
+      getCachedById: mockGetCachedById,
+    }
+  }),
 }))
 
 describe('Terms Handler', () => {

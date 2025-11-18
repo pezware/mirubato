@@ -79,44 +79,46 @@ vi.mock('../../services/storage/dictionary-database', () => {
   }
 
   return {
-    DictionaryDatabase: vi.fn().mockImplementation(() => ({
-      findByTerms: vi.fn().mockImplementation(terms => {
-        const map = new Map()
-        mockEntries.concat(createdEntries).forEach(entry => {
-          if (terms.includes(entry.normalized_term)) {
-            map.set(entry.normalized_term, entry)
-          }
-        })
-        return Promise.resolve(map)
-      }),
-      insert: vi.fn(),
-      create: vi.fn().mockImplementation(entry => {
-        createdEntries.push(entry)
-        return Promise.resolve()
-      }),
-      update: vi.fn(),
-      findById: vi
-        .fn()
-        .mockImplementation(id =>
-          Promise.resolve(mockEntries.find(e => e.id === id))
-        ),
-      getEnhancementCandidates: vi.fn().mockResolvedValue(mockEntries),
-      getStatistics: vi.fn(),
-      getAnalyticsSummary: vi.fn().mockResolvedValue({
-        total_entries: 1000,
-        quality_distribution: {
-          excellent: 200,
-          good: 500,
-          fair: 250,
-          poor: 50,
-        },
-      }),
-      getPopularSearches: vi.fn().mockResolvedValue([
-        { term: 'piano', search_count: 100 },
-        { term: 'forte', search_count: 50 },
-      ]),
-      getRelatedTerms: vi.fn().mockResolvedValue([]),
-    })),
+    DictionaryDatabase: vi.fn().mockImplementation(function () {
+      return {
+        findByTerms: vi.fn().mockImplementation(terms => {
+          const map = new Map()
+          mockEntries.concat(createdEntries).forEach(entry => {
+            if (terms.includes(entry.normalized_term)) {
+              map.set(entry.normalized_term, entry)
+            }
+          })
+          return Promise.resolve(map)
+        }),
+        insert: vi.fn(),
+        create: vi.fn().mockImplementation(entry => {
+          createdEntries.push(entry)
+          return Promise.resolve()
+        }),
+        update: vi.fn(),
+        findById: vi
+          .fn()
+          .mockImplementation(id =>
+            Promise.resolve(mockEntries.find(e => e.id === id))
+          ),
+        getEnhancementCandidates: vi.fn().mockResolvedValue(mockEntries),
+        getStatistics: vi.fn(),
+        getAnalyticsSummary: vi.fn().mockResolvedValue({
+          total_entries: 1000,
+          quality_distribution: {
+            excellent: 200,
+            good: 500,
+            fair: 250,
+            poor: 50,
+          },
+        }),
+        getPopularSearches: vi.fn().mockResolvedValue([
+          { term: 'piano', search_count: 100 },
+          { term: 'forte', search_count: 50 },
+        ]),
+        getRelatedTerms: vi.fn().mockResolvedValue([]),
+      }
+    }),
     _resetMockState: resetMockState,
   }
 })
@@ -125,19 +127,23 @@ vi.mock('../../services/storage/dictionary-database', () => {
 // const createMock = vi.fn()
 
 vi.mock('../../services/ai/dictionary-generator', () => ({
-  DictionaryGenerator: vi.fn().mockImplementation(() => ({
-    generateEntry: vi.fn(),
-    enhanceEntry: vi.fn(),
-  })),
+  DictionaryGenerator: vi.fn().mockImplementation(function () {
+    return {
+      generateEntry: vi.fn(),
+      enhanceEntry: vi.fn(),
+    }
+  }),
 }))
 
 vi.mock('../../services/storage/cache-service', () => ({
-  CacheService: vi.fn().mockImplementation(() => ({
-    cacheTerm: vi.fn(),
-    invalidateTerm: vi.fn(),
-    getCachedTerm: vi.fn().mockResolvedValue(null),
-    cacheBatch: vi.fn().mockResolvedValue(undefined),
-  })),
+  CacheService: vi.fn().mockImplementation(function () {
+    return {
+      cacheTerm: vi.fn(),
+      invalidateTerm: vi.fn(),
+      getCachedTerm: vi.fn().mockResolvedValue(null),
+      cacheBatch: vi.fn().mockResolvedValue(undefined),
+    }
+  }),
 }))
 
 vi.mock('../../middleware/auth', () => ({

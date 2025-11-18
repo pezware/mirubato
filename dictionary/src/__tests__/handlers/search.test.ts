@@ -47,7 +47,9 @@ const mockDbMethods = {
 }
 
 vi.mock('../../services/storage/dictionary-database', () => ({
-  DictionaryDatabase: vi.fn().mockImplementation(() => mockDbMethods),
+  DictionaryDatabase: vi.fn().mockImplementation(function () {
+    return mockDbMethods
+  }),
 }))
 
 const mockCacheMethods = {
@@ -58,7 +60,9 @@ const mockCacheMethods = {
 }
 
 vi.mock('../../services/storage/cache-service', () => ({
-  CacheService: vi.fn().mockImplementation(() => mockCacheMethods),
+  CacheService: vi.fn().mockImplementation(function () {
+    return mockCacheMethods
+  }),
 }))
 
 const mockAiMethods = {
@@ -67,7 +71,9 @@ const mockAiMethods = {
 }
 
 vi.mock('../../services/ai/cloudflare-ai-service', () => ({
-  CloudflareAIService: vi.fn().mockImplementation(() => mockAiMethods),
+  CloudflareAIService: vi.fn().mockImplementation(function () {
+    return mockAiMethods
+  }),
 }))
 
 describe('Search Handler', () => {

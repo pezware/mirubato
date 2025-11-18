@@ -85,7 +85,9 @@ const { mockDbHelpersInstance, mockDatabaseHelpers, mockCalculateChecksum } =
 
     return {
       mockDbHelpersInstance,
-      mockDatabaseHelpers: vi.fn(() => mockDbHelpersInstance),
+      mockDatabaseHelpers: vi.fn(function () {
+        return mockDbHelpersInstance
+      }),
       mockCalculateChecksum: vi.fn().mockResolvedValue('checksum'),
     }
   })

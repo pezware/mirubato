@@ -102,14 +102,6 @@ vi.mock('../../../components/practice-reports/views/DataView', () => ({
   }: {
     analytics: { filteredEntries: LogbookEntry[] }
   }) => {
-    // Import the mock components we need
-    const _DataTableView = vi
-      .importActual('../../../components/practice-reports/views/DataTableView')
-      .then((mod: { default: unknown }) => mod.default)
-    const _AnalyticsView = vi
-      .importActual('../../../components/practice-reports/views/AnalyticsView')
-      .then((mod: { default: unknown }) => mod.default)
-
     // Render the data table view mock directly since that's what the tests expect
     const handleExportJSON = () => {
       const jsonContent = JSON.stringify(

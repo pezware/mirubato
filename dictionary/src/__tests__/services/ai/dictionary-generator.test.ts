@@ -80,8 +80,10 @@ describe('DictionaryGenerator', () => {
       parseJSONResponse: vi.fn(),
     }
 
-    // Mock the CloudflareAIService constructor
-    ;(CloudflareAIService as any).mockImplementation(() => mockAIService)
+    // Mock the CloudflareAIService constructor (use function keyword for Vitest 4.0)
+    ;(CloudflareAIService as any).mockImplementation(function () {
+      return mockAIService
+    })
 
     generator = new DictionaryGenerator(mockEnv)
   })

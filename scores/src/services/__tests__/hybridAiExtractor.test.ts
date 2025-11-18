@@ -21,12 +21,14 @@ describe('HybridAiExtractor', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Setup mocks
+    // Setup mocks (use function keyword for Vitest 4.0 constructor mocks)
     mockCloudflareExtractor = {
       extractFromImage: vi.fn(),
     }
     vi.mocked(cloudflareModule.CloudflareAiExtractor).mockImplementation(
-      () => mockCloudflareExtractor
+      function () {
+        return mockCloudflareExtractor
+      }
     )
 
     mockExtractMetadataFromPdf = vi.fn()
