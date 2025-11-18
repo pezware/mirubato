@@ -107,6 +107,7 @@ pids/
 !/frontendv2/public/*.jpeg
 !/frontendv2/public/*.png
 !/frontendv2/public/*.svg
+!/remotion-tutorial/public/assets/*.png
 
 # Documentation generated files
 docs/api/

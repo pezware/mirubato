@@ -1,5 +1,4 @@
 import { nanoid } from 'nanoid'
-import { createHash } from 'node:crypto'
 import type { D1Database } from '@cloudflare/workers-types'
 
 export interface IdempotencyRecord {
@@ -23,7 +22,7 @@ export class IdempotencyManager {
     userId: string,
     requestBody: unknown
   ): Promise<{ exists: true; response: unknown } | { exists: false }> {
-    const requestHash = this.createRequestHash(requestBody)
+    const requestHash = await this.createRequestHash(requestBody)
 
     try {
       const existing = await this.db
@@ -72,7 +71,7 @@ export class IdempotencyManager {
     response: unknown,
     ttlHours: number = 24
   ): Promise<void> {
-    const requestHash = this.createRequestHash(requestBody)
+    const requestHash = await this.createRequestHash(requestBody)
     const expiresAt = new Date(Date.now() + ttlHours * 60 * 60 * 1000)
 
     try {
@@ -118,12 +117,15 @@ export class IdempotencyManager {
   /**
    * Create a hash of the request body for comparison
    */
-  private createRequestHash(requestBody: unknown): string {
+  private async createRequestHash(requestBody: unknown): Promise<string> {
     // Normalize the request body to ensure consistent hashing
     const normalized = this.normalizeRequestBody(requestBody)
-    const hash = createHash('sha256')
-    hash.update(JSON.stringify(normalized))
-    return hash.digest('hex')
+    const encoder = new TextEncoder()
+    const data = encoder.encode(JSON.stringify(normalized))
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    return Array.from(new Uint8Array(hashBuffer))
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('')
   }
 
   /**
@@ -169,14 +171,19 @@ export class IdempotencyManager {
   /**
    * Create a deterministic key based on content
    */
-  static createDeterministicKey(
+  static async createDeterministicKey(
     userId: string,
     operation: string,
     content: unknown
-  ): string {
-    const hash = createHash('sha256')
-    hash.update(`${userId}:${operation}:${JSON.stringify(content)}`)
-    return `idem_${hash.digest('hex').substring(0, 16)}`
+  ): Promise<string> {
+    const encoder = new TextEncoder()
+    const payload = `${userId}:${operation}:${JSON.stringify(content)}`
+    const data = encoder.encode(payload)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashHex = Array.from(new Uint8Array(hashBuffer))
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('')
+    return `idem_${hashHex.substring(0, 16)}`
   }
 }
 
