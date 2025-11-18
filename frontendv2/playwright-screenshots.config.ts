@@ -20,7 +20,7 @@ export default defineConfig({
   timeout: 120000, // 2 minutes per test
 
   use: {
-    baseURL: 'http://localhost:4000',
+    baseURL: 'http://www-mirubato.localhost:4000',
     trace: 'off',
     screenshot: 'off', // We'll capture manually
     video: 'off',
@@ -41,13 +41,14 @@ export default defineConfig({
         headless: true,
       },
     },
-    {
-      name: 'mobile',
-      use: {
-        ...devices['Pixel 5'],
-        headless: true,
-      },
-    },
+    // Mobile project disabled - screenshots are only for desktop Remotion video
+    // {
+    //   name: 'mobile',
+    //   use: {
+    //     ...devices['Pixel 5'],
+    //     headless: true,
+    //   },
+    // },
   ],
 
   // Output directory for screenshots - goes directly to remotion-tutorial
@@ -55,7 +56,7 @@ export default defineConfig({
 
   webServer: {
     command: 'pnpm run dev',
-    port: 4000,
+    url: 'http://www-mirubato.localhost:4000',
     reuseExistingServer: true, // Reuse if already running
     timeout: 120 * 1000,
     stdout: 'pipe',

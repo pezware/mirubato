@@ -15,12 +15,30 @@ test.describe('Toolbox Screenshots for Tutorial Video', () => {
     await page.setViewportSize({ width: 1920, height: 1080 })
   })
 
+  // Helper to dismiss any modal overlay that might appear
+  async function dismissModalIfPresent(page: import('@playwright/test').Page) {
+    const modalOverlay = page.locator('.fixed.inset-0.z-50.bg-black\\/30')
+    if (await modalOverlay.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Try to close the modal by clicking its close button or pressing Escape
+      const closeButton = page.locator('[aria-label="Close"], button:has-text("Close"), button:has-text("Got it"), button:has-text("OK")').first()
+      if (await closeButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await closeButton.click()
+      } else {
+        // Press Escape as fallback
+        await page.keyboard.press('Escape')
+      }
+      await page.waitForTimeout(500)
+    }
+  }
+
   test('capture metronome tab', async ({ page }) => {
     await page.goto('/toolbox')
 
     await page.waitForLoadState('networkidle')
-    // Metronome is the default tab
-    await page.waitForSelector('button:has-text("BPM")', { timeout: 10000 })
+    await dismissModalIfPresent(page)
+
+    // Metronome is the default tab - wait for the metronome content to be visible
+    await page.waitForSelector('[data-testid="metronome-tab"], text=Metronome', { timeout: 10000 })
     await page.waitForTimeout(1000)
 
     // Capture full metronome view
@@ -58,6 +76,7 @@ test.describe('Toolbox Screenshots for Tutorial Video', () => {
     await page.goto('/toolbox')
 
     await page.waitForLoadState('networkidle')
+    await dismissModalIfPresent(page)
     await page.waitForTimeout(1000)
 
     // Click on Counter tab
@@ -91,6 +110,7 @@ test.describe('Toolbox Screenshots for Tutorial Video', () => {
     await page.goto('/toolbox')
 
     await page.waitForLoadState('networkidle')
+    await dismissModalIfPresent(page)
     await page.waitForTimeout(1000)
 
     // Click on Circle of Fifths tab
@@ -118,6 +138,7 @@ test.describe('Toolbox Screenshots for Tutorial Video', () => {
     await page.goto('/toolbox')
 
     await page.waitForLoadState('networkidle')
+    await dismissModalIfPresent(page)
     await page.waitForTimeout(1000)
 
     // Click on Dictionary tab
@@ -135,6 +156,7 @@ test.describe('Toolbox Screenshots for Tutorial Video', () => {
   test('capture all tabs in sequence', async ({ page }) => {
     await page.goto('/toolbox')
     await page.waitForLoadState('networkidle')
+    await dismissModalIfPresent(page)
 
     // Capture navigation header with all tabs visible
     const tabsContainer = page.locator('nav').first()
