@@ -98,6 +98,18 @@
     "week": "第 {{number}} 周",
     "year": "{{year}}"
   },
+  "periodSelector": {
+    "viewBy": "按周期查看",
+    "sessions": "练习次数",
+    "totalTime": "总时长",
+    "pieces": "曲目数",
+    "prevWeek": "上一周",
+    "nextWeek": "下一周",
+    "prevMonth": "上个月",
+    "nextMonth": "下个月",
+    "prevYear": "上一年",
+    "nextYear": "下一年"
+  },
   "timer": {
     "both": "视觉和声音",
     "confirmClose": "计时器正在运行。您确定要关闭吗？",

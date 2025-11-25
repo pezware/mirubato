@@ -90,6 +90,18 @@
     "month": "{{month}}",
     "year": "{{year}}"
   },
+  "periodSelector": {
+    "viewBy": "View by",
+    "sessions": "Sessions",
+    "totalTime": "Total time",
+    "pieces": "Pieces",
+    "prevWeek": "Previous",
+    "nextWeek": "Next",
+    "prevMonth": "Previous",
+    "nextMonth": "Next",
+    "prevYear": "Previous",
+    "nextYear": "Next"
+  },
   "mood": {
     "frustrated": "Frustrated",
     "neutral": "Neutral",
