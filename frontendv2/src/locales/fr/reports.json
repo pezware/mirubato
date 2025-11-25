@@ -345,8 +345,20 @@
         "plans": "Plans actifs",
         "upcoming": "À venir"
       },
-      "title": "Gardez le cap cette semaine"
+      "title": "Gardez le cap cette semaine",
+      "nextUp": "Suivant",
+      "comingUp": "À venir",
+      "scheduled": "Programmé",
+      "allCaughtUp": "Tout est à jour !",
+      "alsoScheduled": "Aussi programmé"
     },
+    "quickStats": {
+      "due": "dû",
+      "upcoming": "à venir",
+      "streak": "jours de suite",
+      "adherence": "assiduité"
+    },
+    "minutes": "min",
     "nextSession": "Prochaine session",
     "noUpcoming": "Aucune session à venir",
     "progress": {

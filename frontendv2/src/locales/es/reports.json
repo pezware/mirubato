@@ -345,8 +345,20 @@
         "plans": "Planes activos",
         "upcoming": "Próximos"
       },
-      "title": "Mantente al día esta semana"
+      "title": "Mantente al día esta semana",
+      "nextUp": "Siguiente",
+      "comingUp": "Próximamente",
+      "scheduled": "Programado",
+      "allCaughtUp": "¡Todo al día!",
+      "alsoScheduled": "También programado"
     },
+    "quickStats": {
+      "due": "vencidos",
+      "upcoming": "próximos",
+      "streak": "días de racha",
+      "adherence": "adherencia"
+    },
+    "minutes": "min",
     "nextSession": "Próxima sesión",
     "noUpcoming": "No hay sesiones próximas",
     "progress": {
