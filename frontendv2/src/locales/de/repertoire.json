@@ -178,5 +178,10 @@
   "unit": "Einheit",
   "viewAllSessions": "Alle {{count}} Sitzungen anzeigen",
   "viewDetails": "Details anzeigen",
-  "viewScore": "Noten ansehen"
+  "viewScore": "Noten ansehen",
+  "timeline": {
+    "title": "[NEEDS TRANSLATION] Practice Timeline",
+    "statusChanges": "[NEEDS TRANSLATION] Status Changes",
+    "noData": "[NEEDS TRANSLATION] No practice data available"
+  }
 }

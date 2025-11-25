@@ -34,6 +34,11 @@
     "statusChangeEntry": "Status changed: {{oldStatus}} → {{newStatus}}"
   },
   "statusHistory": "Status History",
+  "timeline": {
+    "title": "Practice Timeline",
+    "statusChanges": "Status Changes",
+    "noData": "No practice data available"
+  },
   "practiceHistory": "Practice History",
   "lastPracticed": "Last practiced {{time}}",
   "sessionCount": "{{count}} sessions",

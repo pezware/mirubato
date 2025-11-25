@@ -178,5 +178,10 @@
   "unit": "单位",
   "viewAllSessions": "查看所有 {{count}} 次练习",
   "viewDetails": "查看详情",
-  "viewScore": "查看乐谱"
+  "viewScore": "查看乐谱",
+  "timeline": {
+    "title": "[NEEDS TRANSLATION] Practice Timeline",
+    "statusChanges": "[NEEDS TRANSLATION] Status Changes",
+    "noData": "[NEEDS TRANSLATION] No practice data available"
+  }
 }
