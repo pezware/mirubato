@@ -16,6 +16,44 @@ type PlanSegment = z.infer<typeof PlanSegmentSchema>
 
 const SOURCE_PLAN_OCCURRENCE_LOOKBACK = 5
 
+// Retry configuration for adoption count updates
+const ADOPTION_COUNT_MAX_RETRIES = 3
+const ADOPTION_COUNT_BASE_DELAY_MS = 100
+
+/**
+ * Retry a function with exponential backoff
+ * @param fn - The async function to retry
+ * @param maxRetries - Maximum number of retry attempts
+ * @param baseDelayMs - Base delay in milliseconds (doubled each retry)
+ * @returns The result of the function or throws the last error
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = ADOPTION_COUNT_MAX_RETRIES,
+  baseDelayMs: number = ADOPTION_COUNT_BASE_DELAY_MS
+): Promise<T> {
+  let lastError: Error | null = null
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err))
+
+      if (attempt < maxRetries) {
+        const delayMs = baseDelayMs * Math.pow(2, attempt)
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+        console.warn(
+          `[Templates] Retry attempt ${attempt + 1}/${maxRetries} after ${delayMs}ms:`,
+          lastError.message
+        )
+      }
+    }
+  }
+
+  throw lastError
+}
+
 type SegmentCandidate = {
   label?: unknown
   durationMinutes?: unknown
@@ -416,8 +454,9 @@ templatesHandler.post(
         deviceId,
       })
 
-      // 5. Increment adoption count on template (fire and forget)
-      try {
+      // 5. Increment adoption count on template with retry logic
+      // This is non-blocking: errors are logged but don't fail the main request
+      const updateAdoptionCount = async () => {
         const updatedTemplate = {
           ...template,
           adoptionCount: (template.adoptionCount || 0) + 1,
@@ -432,10 +471,19 @@ templatesHandler.post(
           checksum: templateChecksum,
           deviceId,
         })
-      } catch (err) {
-        console.warn('Failed to increment adoption count:', err)
-        // Don't fail the request if this fails
+        console.log(
+          `[Templates] Adoption count incremented for template ${templateId}`
+        )
       }
+
+      // Run adoption count update with retries (non-blocking)
+      withRetry(updateAdoptionCount).catch(err => {
+        console.error(
+          `[Templates] Failed to increment adoption count after ${ADOPTION_COUNT_MAX_RETRIES} retries:`,
+          err instanceof Error ? err.message : err
+        )
+        // TODO: Consider adding to a dead-letter queue for later reconciliation
+      })
 
       // 6. Return the new plan and occurrences
       return c.json({

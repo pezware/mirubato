@@ -404,19 +404,37 @@
       "publicDesc": "[NEEDS TRANSLATION] Visible to all users"
     },
     "details": {
-      "description": "[NEEDS TRANSLATION] Description",
-      "schedule": "[NEEDS TRANSLATION] Schedule",
-      "scheduleType": "[NEEDS TRANSLATION] Type",
-      "duration": "[NEEDS TRANSLATION] Duration",
-      "timeOfDay": "[NEEDS TRANSLATION] Time of Day",
-      "flexibility": "[NEEDS TRANSLATION] Flexibility",
-      "recurrence": "[NEEDS TRANSLATION] Recurrence",
-      "focusAreas": "[NEEDS TRANSLATION] Focus Areas",
-      "techniques": "[NEEDS TRANSLATION] Techniques",
-      "pieces": "[NEEDS TRANSLATION] Pieces",
-      "segments": "[NEEDS TRANSLATION] Session Segments",
-      "tags": "[NEEDS TRANSLATION] Tags"
+      "description": "描述",
+      "schedule": "時間表",
+      "scheduleType": "類型",
+      "duration": "時長",
+      "timeOfDay": "時段",
+      "flexibility": "彈性",
+      "recurrence": "重複",
+      "focusAreas": "重點領域",
+      "techniques": "技巧",
+      "pieces": "曲目",
+      "segments": "練習段落",
+      "tags": "標籤",
+      "workloadSummary": "工作量摘要",
+      "sessionLength": "練習時長",
+      "segmentCount": "段落數"
     },
-    "viewDetails": "[NEEDS TRANSLATION] View Details"
+    "flexibility": {
+      "notSpecified": "未指定",
+      "fixed": "固定",
+      "sameDay": "當日",
+      "anytime": "任何時間"
+    },
+    "planType": {
+      "bootcamp": "訓練營",
+      "course": "課程",
+      "custom": "自訂"
+    },
+    "scheduleKind": {
+      "single": "單次練習",
+      "recurring": "週期性"
+    },
+    "viewDetails": "查看詳情"
   }
 }

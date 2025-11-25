@@ -303,7 +303,16 @@
       "techniques": "Techniques",
       "pieces": "Pieces",
       "segments": "Session Segments",
-      "tags": "Tags"
+      "tags": "Tags",
+      "workloadSummary": "Workload Summary",
+      "sessionLength": "Session Length",
+      "segmentCount": "Segments"
+    },
+    "flexibility": {
+      "notSpecified": "Not specified",
+      "fixed": "Fixed",
+      "sameDay": "Same Day",
+      "anytime": "Anytime"
     },
     "fromTemplate": "From Template",
     "galleryDescription": "Discover and adopt practice plan templates created by tutors and the community.",
@@ -332,6 +341,11 @@
       "tags": "e.g. beginner, scales, technique (comma-separated)",
       "title": "Enter template title"
     },
+    "planType": {
+      "bootcamp": "Bootcamp",
+      "course": "Course",
+      "custom": "Custom"
+    },
     "publish": "Publish Template",
     "publishAsTemplate": "Publish as Template",
     "publishedAsTemplate": "Published",
@@ -339,6 +353,10 @@
     "publishSuccessDetail": "Your plan is now available as a template",
     "publishTitle": "Publish as Template",
     "publishing": "Publishing...",
+    "scheduleKind": {
+      "single": "Single Session",
+      "recurring": "Recurring"
+    },
     "subtabs": {
       "browse": "Browse",
       "myTemplates": "My Templates"

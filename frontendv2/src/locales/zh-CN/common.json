@@ -404,19 +404,37 @@
       "publicDesc": "[NEEDS TRANSLATION] Visible to all users"
     },
     "details": {
-      "description": "[NEEDS TRANSLATION] Description",
-      "schedule": "[NEEDS TRANSLATION] Schedule",
-      "scheduleType": "[NEEDS TRANSLATION] Type",
-      "duration": "[NEEDS TRANSLATION] Duration",
-      "timeOfDay": "[NEEDS TRANSLATION] Time of Day",
-      "flexibility": "[NEEDS TRANSLATION] Flexibility",
-      "recurrence": "[NEEDS TRANSLATION] Recurrence",
-      "focusAreas": "[NEEDS TRANSLATION] Focus Areas",
-      "techniques": "[NEEDS TRANSLATION] Techniques",
-      "pieces": "[NEEDS TRANSLATION] Pieces",
-      "segments": "[NEEDS TRANSLATION] Session Segments",
-      "tags": "[NEEDS TRANSLATION] Tags"
+      "description": "描述",
+      "schedule": "时间表",
+      "scheduleType": "类型",
+      "duration": "时长",
+      "timeOfDay": "时段",
+      "flexibility": "弹性",
+      "recurrence": "重复",
+      "focusAreas": "重点领域",
+      "techniques": "技巧",
+      "pieces": "曲目",
+      "segments": "练习段落",
+      "tags": "标签",
+      "workloadSummary": "工作量摘要",
+      "sessionLength": "练习时长",
+      "segmentCount": "段落数"
     },
-    "viewDetails": "[NEEDS TRANSLATION] View Details"
+    "flexibility": {
+      "notSpecified": "未指定",
+      "fixed": "固定",
+      "sameDay": "当日",
+      "anytime": "任何时间"
+    },
+    "planType": {
+      "bootcamp": "训练营",
+      "course": "课程",
+      "custom": "自定义"
+    },
+    "scheduleKind": {
+      "single": "单次练习",
+      "recurring": "周期性"
+    },
+    "viewDetails": "查看详情"
   }
 }

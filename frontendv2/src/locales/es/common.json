@@ -404,19 +404,37 @@
       "publicDesc": "[NEEDS TRANSLATION] Visible to all users"
     },
     "details": {
-      "description": "[NEEDS TRANSLATION] Description",
-      "schedule": "[NEEDS TRANSLATION] Schedule",
-      "scheduleType": "[NEEDS TRANSLATION] Type",
-      "duration": "[NEEDS TRANSLATION] Duration",
-      "timeOfDay": "[NEEDS TRANSLATION] Time of Day",
-      "flexibility": "[NEEDS TRANSLATION] Flexibility",
-      "recurrence": "[NEEDS TRANSLATION] Recurrence",
-      "focusAreas": "[NEEDS TRANSLATION] Focus Areas",
-      "techniques": "[NEEDS TRANSLATION] Techniques",
-      "pieces": "[NEEDS TRANSLATION] Pieces",
-      "segments": "[NEEDS TRANSLATION] Session Segments",
-      "tags": "[NEEDS TRANSLATION] Tags"
+      "description": "Descripción",
+      "schedule": "Horario",
+      "scheduleType": "Tipo",
+      "duration": "Duración",
+      "timeOfDay": "Hora del día",
+      "flexibility": "Flexibilidad",
+      "recurrence": "Recurrencia",
+      "focusAreas": "Áreas de enfoque",
+      "techniques": "Técnicas",
+      "pieces": "Piezas",
+      "segments": "Segmentos de sesión",
+      "tags": "Etiquetas",
+      "workloadSummary": "Resumen de carga",
+      "sessionLength": "Duración de sesión",
+      "segmentCount": "Segmentos"
     },
-    "viewDetails": "[NEEDS TRANSLATION] View Details"
+    "flexibility": {
+      "notSpecified": "No especificado",
+      "fixed": "Fijo",
+      "sameDay": "Mismo día",
+      "anytime": "Cualquier momento"
+    },
+    "planType": {
+      "bootcamp": "Bootcamp",
+      "course": "Curso",
+      "custom": "Personalizado"
+    },
+    "scheduleKind": {
+      "single": "Sesión única",
+      "recurring": "Recurrente"
+    },
+    "viewDetails": "Ver detalles"
   }
 }
