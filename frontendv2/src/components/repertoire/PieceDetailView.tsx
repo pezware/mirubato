@@ -24,6 +24,7 @@ import {
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
 import { EditPieceModal } from '../practice-reports/EditPieceModal'
+import { PieceTimeline } from './PieceTimeline'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { toast } from '@/utils/toastManager'
@@ -629,6 +630,14 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             </div>
           </div>
         </Card>
+
+        {/* Practice Timeline Chart */}
+        {sessions.length > 0 && (
+          <PieceTimeline
+            sessions={sessions}
+            personalNotes={item.personalNotes}
+          />
+        )}
 
         {/* Practice History List using LogbookSplitView */}
         {sessionsAsEntries.length > 0 ? (
