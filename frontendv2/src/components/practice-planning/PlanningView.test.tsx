@@ -213,10 +213,10 @@ describe('PlanningView', () => {
         getNextOccurrenceForPlan: mockProps.getNextOccurrenceForPlan,
       })
 
-      // Check that the next session info is displayed
-      expect(screen.getByText('Next session')).toBeInTheDocument()
       // Should show the plan title
       expect(screen.getAllByText(plan.title).length).toBeGreaterThan(0)
+      // Check In button should be visible
+      expect(screen.getAllByText('Check In').length).toBeGreaterThan(0)
     })
 
     it('should show completed occurrences', () => {
@@ -230,8 +230,8 @@ describe('PlanningView', () => {
 
       // Plan title should be visible
       expect(screen.getAllByText(plan.title).length).toBeGreaterThan(0)
-      // The component shows the occurrence count at the bottom
-      expect(screen.getByText('1 scheduled session')).toBeInTheDocument()
+      // The plan card should be visible with progress rail
+      expect(screen.getAllByRole('group').length).toBeGreaterThan(0) // Progress rail uses role="group"
     })
 
     it('should display occurrence segments', () => {
@@ -304,8 +304,10 @@ describe('PlanningView', () => {
 
       renderPlanningView({ plans: [plan], occurrences: [occurrence] })
 
+      // Plan title should be visible in the plans section
       expect(screen.getByText('Reminder Plan')).toBeInTheDocument()
-      expect(screen.getByText('Due today')).toBeInTheDocument()
+      // Check In button should be available for the plan
+      expect(screen.getAllByText('Check In').length).toBeGreaterThan(0)
     })
   })
 

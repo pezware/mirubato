@@ -17,7 +17,7 @@ const getSectionColor = (key: 'completed' | 'due' | 'upcoming') => {
     case 'completed':
       return 'bg-morandi-sage-500'
     case 'due':
-      return 'bg-morandi-saffron-500'
+      return 'bg-morandi-peach-400'
     case 'upcoming':
     default:
       return 'bg-morandi-stone-300'
@@ -90,7 +90,7 @@ const PlanProgressRail = ({
   ]
 
   return (
-    <div className={cn('space-y-3', className)}>
+    <div className={cn('space-y-2', className)}>
       <p id={summaryId} className="sr-only">
         {t('planningView.progress.summary', {
           defaultValue:
@@ -100,48 +100,45 @@ const PlanProgressRail = ({
           upcoming: normalizedUpcoming,
         })}
       </p>
+      {/* Progress Bar */}
       <div
         role="group"
         aria-labelledby={summaryId}
-        className="flex flex-col gap-1 sm:flex-row sm:items-center"
+        className="flex items-center gap-1 h-2 rounded-full overflow-hidden bg-morandi-stone-100"
       >
-        <div className="flex flex-col gap-1 sm:flex-row sm:w-full sm:gap-2">
-          {sections.length === 0 ? (
+        {sections.length === 0 ? (
+          <div className="w-full h-full" aria-hidden="true" />
+        ) : (
+          sections.map(section => (
             <div
-              className="h-2 sm:h-3 rounded-full bg-morandi-stone-100 w-full"
-              aria-hidden="true"
+              key={section.key}
+              className={cn(
+                'h-full transition-all duration-500 ease-out first:rounded-l-full last:rounded-r-full',
+                getSectionColor(section.key)
+              )}
+              style={{
+                width: `${formatPercentage(section.value, total)}%`,
+              }}
+              aria-label={`${section.label}: ${section.value}`}
             />
-          ) : (
-            sections.map(section => (
-              <div
-                key={section.key}
-                className={cn(
-                  'rounded-full h-2 sm:h-3 transition-all duration-300',
-                  getSectionColor(section.key)
-                )}
-                style={{
-                  flexBasis: `${formatPercentage(section.value, total)}%`,
-                }}
-                aria-label={`${section.label}: ${section.value}`}
-              />
-            ))
-          )}
-        </div>
+          ))
+        )}
       </div>
+      {/* Compact Legend */}
       <p id={legendLabelId} className="sr-only">
         {t('planningView.progress.legend', 'Plan progress legend')}
       </p>
       <dl
         aria-labelledby={legendLabelId}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-morandi-stone-600"
+        className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-morandi-stone-600"
       >
         {legendItems.map(item => (
-          <div
-            key={item.key}
-            className="flex items-center justify-between rounded-lg bg-morandi-stone-50 px-3 py-2"
-          >
-            <dt className="font-medium text-morandi-stone-700">{item.label}</dt>
-            <dd className="text-morandi-stone-900 font-semibold">
+          <div key={item.key} className="flex items-center gap-1.5">
+            <div
+              className={cn('w-2 h-2 rounded-full', getSectionColor(item.key))}
+            />
+            <dt className="text-morandi-stone-500">{item.label}</dt>
+            <dd className="font-semibold text-morandi-stone-700">
               {item.value}
             </dd>
           </div>

@@ -146,6 +146,21 @@ export const i18nMock = {
       if (key === 'reports:planningView.reminders.dueToday') return 'Due today'
       if (key === 'reports:planningView.reminders.upcoming') return 'Upcoming'
       if (key === 'reports:planningView.untitledPlan') return 'Practice plan'
+      // New hero/quick stats translations
+      if (key === 'reports:planningView.hero.nextUp') return 'Next Up'
+      if (key === 'reports:planningView.hero.comingUp') return 'Coming Up'
+      if (key === 'reports:planningView.hero.scheduled') return 'Scheduled'
+      if (key === 'reports:planningView.hero.allCaughtUp')
+        return "You're all caught up!"
+      if (key === 'reports:planningView.hero.alsoScheduled')
+        return 'Also scheduled'
+      if (key === 'reports:planningView.quickStats.due') return 'due'
+      if (key === 'reports:planningView.quickStats.upcoming') return 'upcoming'
+      if (key === 'reports:planningView.quickStats.streak') return 'day streak'
+      if (key === 'reports:planningView.quickStats.adherence')
+        return 'adherence'
+      if (key === 'reports:planningView.minutes') return 'min'
+      if (key === 'reports:planningView.viewPlan') return 'Open Plan'
       if (key === 'reports:planningView.occurrence.scheduled')
         return 'Scheduled'
       if (key === 'reports:planningView.occurrence.completed')

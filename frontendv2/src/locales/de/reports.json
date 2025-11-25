@@ -345,8 +345,20 @@
         "plans": "Aktive Pläne",
         "upcoming": "Anstehend"
       },
-      "title": "Bleiben Sie diese Woche auf Kurs"
+      "title": "Bleiben Sie diese Woche auf Kurs",
+      "nextUp": "Als Nächstes",
+      "comingUp": "Demnächst",
+      "scheduled": "Geplant",
+      "allCaughtUp": "Alles erledigt!",
+      "alsoScheduled": "Auch geplant"
     },
+    "quickStats": {
+      "due": "fällig",
+      "upcoming": "anstehend",
+      "streak": "Tage Serie",
+      "adherence": "Einhaltung"
+    },
+    "minutes": "Min.",
     "nextSession": "Nächste Einheit",
     "noUpcoming": "Keine kommende Einheit",
     "progress": {

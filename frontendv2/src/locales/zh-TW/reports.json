@@ -345,8 +345,20 @@
         "plans": "進行中的計畫",
         "upcoming": "即將到來"
       },
-      "title": "本週保持進度"
+      "title": "本週保持進度",
+      "nextUp": "下一個",
+      "comingUp": "即將到來",
+      "scheduled": "已排程",
+      "allCaughtUp": "一切完成！",
+      "alsoScheduled": "也已排程"
     },
+    "quickStats": {
+      "due": "到期",
+      "upcoming": "即將",
+      "streak": "天連續",
+      "adherence": "執行率"
+    },
+    "minutes": "分鐘",
     "nextSession": "下次練習",
     "noUpcoming": "沒有即將到來的練習",
     "progress": {

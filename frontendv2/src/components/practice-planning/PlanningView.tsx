@@ -26,7 +26,6 @@ import {
   useCompletedOccurrences,
   useDueTodayOccurrences,
   useUpcomingOccurrences,
-  useNextActionableOccurrence,
   type CreatePlanDraft,
 } from '@/stores/planningStore'
 import {
@@ -36,7 +35,7 @@ import {
   BookTemplate,
   Share2,
 } from 'lucide-react'
-import PlanReminderCard, { type PlanReminderStatus } from './PlanReminderCard'
+import { type PlanReminderStatus } from './PlanReminderCard'
 import PlanProgressRail from './PlanProgressRail'
 import PlanningAnalyticsPanel from './PlanningAnalyticsPanel'
 import { UndoCheckInBanner } from './UndoCheckInBanner'
@@ -62,16 +61,6 @@ const formatDateTime = (value?: string | null, locale?: string) => {
   return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(date)
-}
-
-const formatTimeOnly = (value?: string | null, locale?: string) => {
-  if (!value) return null
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return null
-  return new Intl.DateTimeFormat(locale, {
-    hour: 'numeric',
-    minute: '2-digit',
   }).format(date)
 }
 
@@ -110,7 +99,6 @@ const PlanningView = ({
   const dueTodayOccurrences = useDueTodayOccurrences()
   const upcomingOccurrences = useUpcomingOccurrences()
   const completedOccurrences = useCompletedOccurrences()
-  const nextActionableOccurrence = useNextActionableOccurrence()
   const { getPrimaryInstrument } = useUserPreferences()
   const fallbackInstrument = getPrimaryInstrument()
 
@@ -475,20 +463,18 @@ const PlanningView = ({
 
   const heroReminders = reminderItems.slice(0, 3)
 
-  const heroStats = [
-    {
-      label: t('reports:planningView.hero.stats.due', 'Due today'),
-      value: dueTodayOccurrences.length,
-    },
-    {
-      label: t('reports:planningView.hero.stats.upcoming', 'Upcoming'),
-      value: upcomingOccurrences.length,
-    },
-    {
-      label: t('reports:planningView.hero.stats.plans', 'Active plans'),
-      value: plans.length,
-    },
-  ]
+  // Simplified quick stats for compact display
+  const quickStats = {
+    dueToday: dueTodayOccurrences.length,
+    upcoming: upcomingOccurrences.length,
+    activePlans: plans.length,
+    streak: planningAnalytics.streak.currentStreak,
+    adherence: planningAnalytics.adherence.overall,
+  }
+
+  // Primary next action - THE thing the user should do
+  const primaryReminder = heroReminders[0]
+  const hasUrgentAction = primaryReminder && primaryReminder.status === 'due'
 
   if (isLoading && plans.length === 0) {
     return (
@@ -581,50 +567,299 @@ const PlanningView = ({
   }
 
   return (
-    <div className="p-3 sm:p-4 space-y-4">
-      <Card className="border-none bg-gradient-to-br from-morandi-sage-50 via-white to-morandi-stone-50 shadow-sm">
-        <CardContent className="p-5 sm:p-6">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
-            <div className="space-y-4 lg:max-w-sm">
+    <div className="p-3 sm:p-4 space-y-4 sm:space-y-6">
+      {/* Compact Quick Stats Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <div className="flex items-center gap-4 sm:gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <div
+              className={`h-2.5 w-2.5 rounded-full ${quickStats.dueToday > 0 ? 'bg-morandi-peach-400 animate-pulse' : 'bg-morandi-stone-300'}`}
+            />
+            <span className="text-morandi-stone-600">
+              <span className="font-semibold text-morandi-stone-900">
+                {quickStats.dueToday}
+              </span>{' '}
+              {t('reports:planningView.quickStats.due', 'due')}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-morandi-stone-600">
+              <span className="font-semibold text-morandi-stone-900">
+                {quickStats.upcoming}
+              </span>{' '}
+              {t('reports:planningView.quickStats.upcoming', 'upcoming')}
+            </span>
+          </div>
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-morandi-stone-600">
+              <span className="font-semibold text-morandi-stone-900">
+                {quickStats.streak}
+              </span>{' '}
+              {t('reports:planningView.quickStats.streak', 'day streak')}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => openCreateModal('hero')}
+            leftIcon={<Plus className="h-4 w-4" />}
+          >
+            {t('reports:planningView.createPlan', 'Create plan')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Focused Hero: Next Up Section */}
+      {primaryReminder ? (
+        <Card
+          className={`border-none shadow-md overflow-hidden ${
+            hasUrgentAction
+              ? 'bg-gradient-to-br from-morandi-sage-100 via-morandi-sage-50 to-white ring-2 ring-morandi-sage-200'
+              : 'bg-gradient-to-br from-morandi-stone-50 via-white to-morandi-sky-50'
+          }`}
+        >
+          <CardContent className="p-0">
+            <div className="flex flex-col lg:flex-row">
+              {/* Left: Main Focus Area */}
+              <div className="flex-1 p-5 sm:p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                        hasUrgentAction
+                          ? 'bg-morandi-sage-500 text-white'
+                          : 'bg-morandi-stone-200 text-morandi-stone-700'
+                      }`}
+                    >
+                      <Calendar className="h-3 w-3" />
+                      {hasUrgentAction
+                        ? t('reports:planningView.hero.nextUp', 'Next Up')
+                        : t('reports:planningView.hero.comingUp', 'Coming Up')}
+                    </div>
+                    {quickStats.adherence > 0 && (
+                      <span className="text-xs text-morandi-stone-500">
+                        {quickStats.adherence}%{' '}
+                        {t(
+                          'reports:planningView.quickStats.adherence',
+                          'adherence'
+                        )}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Typography
+                      variant="h2"
+                      className="text-morandi-stone-900 text-xl sm:text-2xl"
+                    >
+                      {primaryReminder.plan?.title ??
+                        t('reports:planningView.untitledPlan', 'Practice plan')}
+                    </Typography>
+                    {primaryReminder.plan?.description && (
+                      <Typography
+                        variant="body"
+                        className="text-morandi-stone-600 line-clamp-2"
+                      >
+                        {primaryReminder.plan.description}
+                      </Typography>
+                    )}
+                  </div>
+
+                  {/* Primary Action */}
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    <Button
+                      onClick={() => {
+                        if (primaryReminder.plan) {
+                          startCheckIn(
+                            primaryReminder.plan,
+                            primaryReminder.occurrence,
+                            'reminder'
+                          )
+                        }
+                      }}
+                      disabled={!primaryReminder.plan}
+                      className={
+                        hasUrgentAction
+                          ? 'bg-morandi-sage-600 hover:bg-morandi-sage-500 shadow-lg shadow-morandi-sage-200'
+                          : ''
+                      }
+                    >
+                      {t('reports:planningView.checkIn', 'Check In')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        if (primaryReminder.plan) {
+                          trackPlanningEvent('planning.plan.reminder.open', {
+                            planId: primaryReminder.plan.id,
+                            occurrenceId: primaryReminder.occurrence.id,
+                          })
+                          openEditModal(
+                            primaryReminder.plan,
+                            primaryReminder.occurrence
+                          )
+                        }
+                      }}
+                      disabled={!primaryReminder.plan}
+                    >
+                      {t('reports:planningView.viewPlan', 'Open Plan')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setActiveTab('templates')}
+                      leftIcon={<BookTemplate className="h-4 w-4" />}
+                    >
+                      {t(
+                        'common:templates.browseTemplates',
+                        'Browse Templates'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Quick Info Panel */}
+              <div className="lg:w-64 bg-white/60 backdrop-blur-sm border-t lg:border-t-0 lg:border-l border-morandi-stone-100 p-4 sm:p-5">
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                  <div className="space-y-1">
+                    <Typography
+                      variant="caption"
+                      className="text-morandi-stone-500 uppercase tracking-wide text-xs"
+                    >
+                      {t('reports:planningView.hero.scheduled', 'Scheduled')}
+                    </Typography>
+                    <Typography
+                      variant="body"
+                      className="text-morandi-stone-900 font-medium"
+                    >
+                      {new Intl.DateTimeFormat(i18n.language, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      }).format(
+                        primaryReminder.occurrence.scheduledStart
+                          ? new Date(primaryReminder.occurrence.scheduledStart)
+                          : new Date()
+                      )}
+                    </Typography>
+                  </div>
+                  {primaryReminder.plan?.schedule?.durationMinutes && (
+                    <div className="space-y-1">
+                      <Typography
+                        variant="caption"
+                        className="text-morandi-stone-500 uppercase tracking-wide text-xs"
+                      >
+                        {t('reports:planningView.durationLabel', 'Duration')}
+                      </Typography>
+                      <Typography
+                        variant="body"
+                        className="text-morandi-stone-900 font-medium"
+                      >
+                        {primaryReminder.plan.schedule.durationMinutes}{' '}
+                        {t('reports:planningView.minutes', 'min')}
+                      </Typography>
+                    </div>
+                  )}
+                  {(primaryReminder.occurrence.segments?.length ?? 0) > 0 && (
+                    <div className="space-y-1">
+                      <Typography
+                        variant="caption"
+                        className="text-morandi-stone-500 uppercase tracking-wide text-xs"
+                      >
+                        {t('reports:planningView.segmentsLabel', 'Segments')}
+                      </Typography>
+                      <Typography
+                        variant="body"
+                        className="text-morandi-stone-900 font-medium"
+                      >
+                        {primaryReminder.occurrence.segments?.length}
+                      </Typography>
+                    </div>
+                  )}
+                </div>
+
+                {/* Upcoming queue preview */}
+                {heroReminders.length > 1 && (
+                  <div className="mt-4 pt-4 border-t border-morandi-stone-100">
+                    <Typography
+                      variant="caption"
+                      className="text-morandi-stone-500 uppercase tracking-wide text-xs mb-2 block"
+                    >
+                      {t(
+                        'reports:planningView.hero.alsoScheduled',
+                        'Also scheduled'
+                      )}
+                    </Typography>
+                    <div className="space-y-2">
+                      {heroReminders.slice(1, 3).map(item => (
+                        <button
+                          key={item.occurrence.id}
+                          onClick={() => {
+                            if (item.plan) {
+                              openEditModal(item.plan, item.occurrence)
+                            }
+                          }}
+                          className="w-full text-left p-2 rounded-lg hover:bg-morandi-stone-100 transition-colors"
+                        >
+                          <Typography
+                            variant="body-sm"
+                            className="text-morandi-stone-900 font-medium truncate"
+                          >
+                            {item.plan?.title ??
+                              t(
+                                'reports:planningView.untitledPlan',
+                                'Practice plan'
+                              )}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            className="text-morandi-stone-500"
+                          >
+                            {item.status === 'due'
+                              ? t(
+                                  'reports:planningView.reminders.dueToday',
+                                  'Due today'
+                                )
+                              : t(
+                                  'reports:planningView.reminders.upcoming',
+                                  'Upcoming'
+                                )}
+                          </Typography>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Empty State Hero */
+        <Card className="border-none bg-gradient-to-br from-morandi-stone-50 via-white to-morandi-sage-50 shadow-sm">
+          <CardContent className="p-6 sm:p-8">
+            <div className="text-center space-y-4 max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full bg-morandi-sage-100 flex items-center justify-center mx-auto">
+                <Calendar className="h-8 w-8 text-morandi-sage-600" />
+              </div>
               <div className="space-y-2">
-                <Typography
-                  variant="body-sm"
-                  className="text-xs uppercase tracking-wide text-morandi-sage-700"
-                >
-                  {t('reports:planningView.hero.eyebrow', 'Practice planning')}
-                </Typography>
-                <Typography variant="h2" className="text-morandi-stone-900">
+                <Typography variant="h3" className="text-morandi-stone-900">
                   {t(
-                    'reports:planningView.hero.title',
-                    'Stay on track this week'
+                    'reports:planningView.hero.allCaughtUp',
+                    "You're all caught up!"
                   )}
                 </Typography>
                 <Typography variant="body" className="text-morandi-stone-600">
                   {t(
-                    'reports:planningView.hero.description',
-                    'Review what is due, log progress, and let Mirubato nudge you when it is time to practice.'
+                    'reports:planningView.reminders.none',
+                    "You're all set. We'll surface new reminders once sessions are scheduled."
                   )}
                 </Typography>
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {heroStats.map(stat => (
-                  <div
-                    key={stat.label}
-                    className="rounded-2xl bg-white/80 px-4 py-3 shadow-inner"
-                  >
-                    <Typography
-                      variant="caption"
-                      className="uppercase text-morandi-stone-500"
-                    >
-                      {stat.label}
-                    </Typography>
-                    <Typography variant="h2" className="text-morandi-stone-900">
-                      {stat.value}
-                    </Typography>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap justify-center gap-3 pt-2">
                 <Button
                   onClick={() => openCreateModal('hero')}
                   leftIcon={<Plus className="h-4 w-4" />}
@@ -640,45 +875,9 @@ const PlanningView = ({
                 </Button>
               </div>
             </div>
-            <div className="flex-1 space-y-3">
-              {heroReminders.length > 0 ? (
-                heroReminders.map(item => (
-                  <PlanReminderCard
-                    key={item.occurrence.id}
-                    occurrence={item.occurrence}
-                    plan={item.plan}
-                    status={item.status}
-                    isPrimary={Boolean(
-                      nextActionableOccurrence &&
-                        nextActionableOccurrence.id === item.occurrence.id
-                    )}
-                    fallbackInstrument={fallbackInstrument}
-                    onCheckIn={(plan, occurrence) =>
-                      startCheckIn(plan, occurrence, 'reminder')
-                    }
-                    onOpenPlan={(plan, occurrence) => {
-                      trackPlanningEvent('planning.plan.reminder.open', {
-                        planId: plan.id,
-                        occurrenceId: occurrence.id,
-                      })
-                      openEditModal(plan, occurrence)
-                    }}
-                  />
-                ))
-              ) : (
-                <div className="rounded-2xl border border-dashed border-morandi-stone-200 bg-white/60 p-4">
-                  <Typography variant="body" className="text-morandi-stone-600">
-                    {t(
-                      'reports:planningView.reminders.none',
-                      "You're all set. We'll surface new reminders once sessions are scheduled."
-                    )}
-                  </Typography>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Undo Check-In Banner - shown after recent check-in */}
       {recentlyCompletedOccurrence && (
@@ -737,240 +936,190 @@ const PlanningView = ({
         </>
       )}
 
-      {activeTab === 'plans' &&
-        plans.map(plan => {
-          const nextOccurrence = getNextOccurrenceForPlan(plan.id)
-          const allOccurrences = occurrencesByPlan.get(plan.id) ?? []
-          const primaryOccurrence = nextOccurrence ?? allOccurrences[0]
-          const segmentCount = getSegmentCount(primaryOccurrence)
+      {/* Plans List */}
+      {activeTab === 'plans' && (
+        <div className="space-y-3">
+          {plans.map(plan => {
+            const nextOccurrence = getNextOccurrenceForPlan(plan.id)
+            const allOccurrences = occurrencesByPlan.get(plan.id) ?? []
+            const primaryOccurrence = nextOccurrence ?? allOccurrences[0]
+            const segmentCount = getSegmentCount(primaryOccurrence)
 
-          const startTime = formatDateTime(
-            primaryOccurrence?.scheduledStart,
-            i18n.language
-          )
-          const timeOfDay = formatTimeOnly(
-            primaryOccurrence?.scheduledStart,
-            i18n.language
-          )
+            const startTime = formatDateTime(
+              primaryOccurrence?.scheduledStart,
+              i18n.language
+            )
 
-          return (
-            <Card key={plan.id}>
-              <CardHeader className="pb-3">
-                <div className="flex gap-3 sm:gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-morandi-sage-100">
-                      <Calendar className="h-5 w-5 text-morandi-sage-600" />
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <CardTitle className="text-lg sm:text-xl">
-                            {plan.title}
-                          </CardTitle>
-                          {plan.templateVersion && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-morandi-sage-100 text-morandi-sage-700">
-                              <BookTemplate className="h-3 w-3" />
-                              {t(
-                                'common:templates.fromTemplate',
-                                'From Template'
-                              )}
-                            </span>
-                          )}
-                          {publishedPlanIds.has(plan.id) && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-morandi-sky-100 text-morandi-navy-600">
-                              <Share2 className="h-3 w-3" />
-                              {t(
-                                'common:templates.publishedAsTemplate',
-                                'Published'
-                              )}
-                            </span>
-                          )}
-                        </div>
-                        {plan.description && (
-                          <CardDescription className="mt-1">
-                            {plan.description}
-                          </CardDescription>
+            // Check if this plan has a due occurrence
+            const hasDueOccurrence = (dueCountsByPlan.get(plan.id) ?? 0) > 0
+
+            return (
+              <Card
+                key={plan.id}
+                className={
+                  hasDueOccurrence
+                    ? 'border-morandi-sage-200 shadow-sm'
+                    : 'border-morandi-stone-100'
+                }
+              >
+                <CardContent className="p-4 sm:p-5">
+                  {/* Header Row */}
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CardTitle className="text-base sm:text-lg">
+                          {plan.title}
+                        </CardTitle>
+                        {plan.templateVersion && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-morandi-sage-100 text-morandi-sage-700">
+                            <BookTemplate className="h-2.5 w-2.5" />
+                          </span>
+                        )}
+                        {publishedPlanIds.has(plan.id) && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-morandi-sky-100 text-morandi-navy-600">
+                            <Share2 className="h-2.5 w-2.5" />
+                          </span>
                         )}
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          onClick={() => {
-                            if (!primaryOccurrence) return
-                            startCheckIn(plan, primaryOccurrence, 'plan-card')
-                          }}
-                          disabled={!primaryOccurrence}
-                          size="sm"
+                      {plan.description && (
+                        <Typography
+                          variant="body-sm"
+                          className="text-morandi-stone-500 mt-0.5 line-clamp-1"
                         >
-                          {t('reports:planningView.checkIn', 'Check In')}
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => {
-                            trackPlanningEvent('planning.plan.edit', {
-                              planId: plan.id,
-                            })
-                            openEditModal(plan, primaryOccurrence)
-                          }}
-                        >
-                          {t('reports:planningView.editPlan', 'Edit plan')}
-                        </Button>
-                        <DropdownMenu
-                          items={[
-                            {
-                              label: t(
-                                'common:templates.publishAsTemplate',
-                                'Publish as Template'
-                              ),
-                              icon: <Share2 className="h-4 w-4" />,
-                              onClick: () => {
-                                openPublishModal(plan)
-                                setOpenDropdownId(null)
-                              },
+                          {plan.description}
+                        </Typography>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <Button
+                        onClick={() => {
+                          if (!primaryOccurrence) return
+                          startCheckIn(plan, primaryOccurrence, 'plan-card')
+                        }}
+                        disabled={!primaryOccurrence}
+                        size="sm"
+                      >
+                        {t('reports:planningView.checkIn', 'Check In')}
+                      </Button>
+                      <DropdownMenu
+                        items={[
+                          {
+                            label: t('reports:planningView.editPlan', 'Edit'),
+                            onClick: () => {
+                              trackPlanningEvent('planning.plan.edit', {
+                                planId: plan.id,
+                              })
+                              openEditModal(plan, primaryOccurrence)
+                              setOpenDropdownId(null)
                             },
-                          ]}
-                          isOpen={openDropdownId === plan.id}
-                          onToggle={() =>
-                            setOpenDropdownId(
-                              openDropdownId === plan.id ? null : plan.id
-                            )
-                          }
-                          onClose={() => setOpenDropdownId(null)}
-                          icon={<MoreVertical className="h-4 w-4" />}
-                          ariaLabel={t('common:more', 'More')}
-                        />
-                      </div>
+                          },
+                          {
+                            label: t(
+                              'common:templates.publishAsTemplate',
+                              'Publish as Template'
+                            ),
+                            icon: <Share2 className="h-4 w-4" />,
+                            onClick: () => {
+                              openPublishModal(plan)
+                              setOpenDropdownId(null)
+                            },
+                          },
+                        ]}
+                        isOpen={openDropdownId === plan.id}
+                        onToggle={() =>
+                          setOpenDropdownId(
+                            openDropdownId === plan.id ? null : plan.id
+                          )
+                        }
+                        onClose={() => setOpenDropdownId(null)}
+                        icon={<MoreVertical className="h-4 w-4" />}
+                        ariaLabel={t('common:more', 'More')}
+                      />
                     </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <PlanProgressRail
-                  completedCount={completedCountsByPlan.get(plan.id) ?? 0}
-                  dueCount={dueCountsByPlan.get(plan.id) ?? 0}
-                  upcomingCount={upcomingCountsByPlan.get(plan.id) ?? 0}
-                />
 
-                <div className="flex flex-wrap gap-3 text-sm text-morandi-stone-600">
-                  <div>
-                    <span className="font-medium text-morandi-stone-900">
-                      {t('reports:planningView.nextSession', 'Next session')}
-                    </span>
-                    {' · '}
-                    <span>
-                      {startTime ??
-                        t(
-                          'reports:planningView.noUpcoming',
-                          'No upcoming session'
-                        )}
-                    </span>
-                  </div>
-                </div>
+                  {/* Progress Rail */}
+                  <PlanProgressRail
+                    completedCount={completedCountsByPlan.get(plan.id) ?? 0}
+                    dueCount={dueCountsByPlan.get(plan.id) ?? 0}
+                    upcomingCount={upcomingCountsByPlan.get(plan.id) ?? 0}
+                    className="mb-3"
+                  />
 
-                <div className="flex flex-wrap gap-4 text-sm text-morandi-stone-600">
-                  {plan.schedule?.durationMinutes && (
-                    <div>
-                      <span className="font-medium text-morandi-stone-900">
-                        {t('reports:planningView.durationLabel', 'Duration')}
-                      </span>
-                      {' · '}
-                      <span>{plan.schedule.durationMinutes}m</span>
-                    </div>
-                  )}
-                  {plan.schedule?.flexibility && (
-                    <div>
-                      <span className="font-medium text-morandi-stone-900">
-                        {t(
-                          'reports:planningView.flexibilityLabel',
-                          'Flexibility'
-                        )}
-                      </span>
-                      {' · '}
-                      <span className="capitalize">
-                        {plan.schedule.flexibility.replace('-', ' ')}
-                      </span>
-                    </div>
-                  )}
-                  {segmentCount > 0 && (
-                    <div>
-                      <span className="font-medium text-morandi-stone-900">
-                        {t('reports:planningView.segmentsLabel', 'Segments')}
-                      </span>
-                      {' · '}
+                  {/* Compact Metadata Row */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-morandi-stone-500">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
                       <span>
+                        {startTime ??
+                          t(
+                            'reports:planningView.noUpcoming',
+                            'No upcoming session'
+                          )}
+                      </span>
+                    </div>
+                    {plan.schedule?.durationMinutes && (
+                      <div>{plan.schedule.durationMinutes}m</div>
+                    )}
+                    {segmentCount > 0 && (
+                      <div>
                         {t('reports:planningView.segmentCount', {
                           count: segmentCount,
                         })}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    )}
+                    {allOccurrences.length > 1 && (
+                      <div>
+                        {t('reports:planningView.scheduledSessions', {
+                          count: allOccurrences.length,
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-                {primaryOccurrence && primaryOccurrence.segments && (
-                  <div className="space-y-3 pt-2">
-                    <Typography variant="h5" className="text-morandi-stone-700">
-                      {t('reports:planningView.segmentsLabel', 'Segments')}
-                      {timeOfDay && (
-                        <span className="ml-2 text-sm font-normal text-morandi-stone-500">
-                          {timeOfDay}
-                        </span>
-                      )}
-                    </Typography>
-                    <ul className="space-y-2">
-                      {primaryOccurrence.segments.map(segment => (
-                        <li
-                          key={segment.id ?? segment.label}
-                          className="rounded-lg border border-morandi-stone-200 bg-morandi-stone-50/50 p-3"
-                        >
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <Typography
-                              variant="h6"
-                              className="text-morandi-stone-900"
-                            >
-                              {segment.label}
-                            </Typography>
-                            {segment.durationMinutes && (
-                              <Typography
-                                variant="body-sm"
-                                className="text-morandi-stone-600"
+                  {/* Expandable Segments - Only show first few on mobile */}
+                  {primaryOccurrence &&
+                    primaryOccurrence.segments &&
+                    primaryOccurrence.segments.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-morandi-stone-100">
+                        <div className="flex flex-wrap gap-2">
+                          {primaryOccurrence.segments
+                            .slice(0, 4)
+                            .map((segment, idx) => (
+                              <div
+                                key={segment.id ?? segment.label ?? idx}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-morandi-stone-50 text-xs"
                               >
-                                {segment.durationMinutes}m
-                              </Typography>
-                            )}
-                          </div>
-                          {segment.instructions && (
-                            <Typography
-                              variant="body-sm"
-                              className="mt-2 text-morandi-stone-600"
-                            >
-                              {segment.instructions}
-                            </Typography>
-                          )}
-                          {segment.techniques &&
-                            segment.techniques.length > 0 && (
-                              <div className="mt-2 text-xs text-morandi-stone-500">
-                                {segment.techniques.join(' · ')}
+                                <span className="font-medium text-morandi-stone-700">
+                                  {segment.label}
+                                </span>
+                                {segment.durationMinutes && (
+                                  <span className="text-morandi-stone-400">
+                                    {segment.durationMinutes}m
+                                  </span>
+                                )}
                               </div>
-                            )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {allOccurrences.length > 0 && (
-                  <div className="border-t border-morandi-stone-200 pt-2 text-xs text-morandi-stone-500">
-                    {t('reports:planningView.scheduledSessions', {
-                      count: allOccurrences.length,
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )
-        })}
+                            ))}
+                          {primaryOccurrence.segments.length > 4 && (
+                            <button
+                              onClick={() =>
+                                openEditModal(plan, primaryOccurrence)
+                              }
+                              className="inline-flex items-center px-2.5 py-1 rounded-lg bg-morandi-stone-50 text-xs text-morandi-stone-500 hover:bg-morandi-stone-100 transition-colors"
+                            >
+                              +{primaryOccurrence.segments.length - 4}{' '}
+                              {t('common:more', 'more')}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
       {/* Templates Tab Content */}
       {activeTab === 'templates' && (

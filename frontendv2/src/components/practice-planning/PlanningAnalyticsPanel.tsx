@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   TrendingUp,
@@ -6,30 +6,29 @@ import {
   Target,
   AlertTriangle,
   Clock,
+  ChevronDown,
+  ChevronUp,
+  BarChart3,
 } from 'lucide-react'
 import type { PlanningAnalyticsData } from '@/hooks/usePlanningAnalytics'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Typography,
-  Tag,
-} from '@/components/ui'
+import { Card, Typography, Tag } from '@/components/ui'
 import { cn } from '@/utils/cn'
 import { format, parseISO } from 'date-fns'
 
 interface PlanningAnalyticsPanelProps {
   analytics: PlanningAnalyticsData
   className?: string
+  defaultExpanded?: boolean
 }
 
 const PlanningAnalyticsPanel = ({
   analytics,
   className,
+  defaultExpanded = false,
 }: PlanningAnalyticsPanelProps) => {
   const { t } = useTranslation('reports')
   const panelId = useId()
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
   const { adherence, streak, missed, forecast } = analytics
 
@@ -42,225 +41,257 @@ const PlanningAnalyticsPanel = ({
 
   const adherenceStatus = getAdherenceStatus(adherence.overall)
 
-  // Format forecast peak day
-  const formattedPeakDay = forecast.peakDay
-    ? format(parseISO(forecast.peakDay.date), 'EEEE, MMM d')
-    : null
+  // Check if there's meaningful data to show
+  const hasData =
+    forecast.totalOccurrences > 0 ||
+    missed.overdueCount > 0 ||
+    streak.currentStreak > 0 ||
+    adherence.overall > 0
+
+  if (!hasData) {
+    return null // Don't render if no data
+  }
 
   return (
-    <div
-      className={cn('space-y-4', className)}
-      aria-labelledby={`${panelId}-title`}
-    >
-      {/* Panel Title */}
-      <div id={`${panelId}-title`}>
-        <Typography variant="h4" className="text-morandi-stone-900">
-          {t('planningView.analytics.title', 'Practice Analytics')}
-        </Typography>
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Adherence Card */}
-        <Card className="border-morandi-stone-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Target size={16} className="text-morandi-sage-600" />
-              {t('planningView.analytics.adherence', 'Adherence')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-baseline gap-2">
-                <Typography variant="h2" className="text-morandi-stone-900">
-                  {adherence.overall}%
-                </Typography>
-                <Tag variant={adherenceStatus} size="sm" className="text-xs">
-                  {adherenceStatus === 'success' &&
-                    t('planningView.analytics.excellent', 'Excellent')}
-                  {adherenceStatus === 'warning' &&
-                    t('planningView.analytics.good', 'Good')}
-                  {adherenceStatus === 'danger' &&
-                    t('planningView.analytics.needsWork', 'Needs Work')}
-                </Tag>
-              </div>
-              <div className="text-xs text-morandi-stone-600 space-y-1">
-                <p>
-                  {t('planningView.analytics.thisWeek', 'This week')}:{' '}
-                  <span className="font-medium">{adherence.thisWeek}%</span>
-                </p>
-                <p>
-                  {t('planningView.analytics.thisMonth', 'This month')}:{' '}
-                  <span className="font-medium">{adherence.thisMonth}%</span>
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Streak Card */}
-        <Card className="border-morandi-stone-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <TrendingUp size={16} className="text-morandi-sage-600" />
-              {t('planningView.analytics.streak', 'Streak')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Typography variant="h2" className="text-morandi-stone-900">
-                {streak.currentStreak}
-                <span className="text-base font-normal text-morandi-stone-600 ml-2">
-                  {t('planningView.analytics.days', {
-                    count: streak.currentStreak,
-                  })}
-                </span>
-              </Typography>
-              <div className="text-xs text-morandi-stone-600 space-y-1">
-                <p>
-                  {t('planningView.analytics.longestStreak', 'Longest')}:{' '}
-                  <span className="font-medium">
-                    {streak.longestStreak}{' '}
-                    {t('planningView.analytics.days', {
-                      count: streak.longestStreak,
-                    })}
-                  </span>
-                </p>
-                {streak.lastCompletedDate && (
-                  <p className="text-morandi-stone-500">
-                    {t(
-                      'planningView.analytics.lastCompleted',
-                      'Last completed'
-                    )}
-                    : {format(parseISO(streak.lastCompletedDate), 'MMM d')}
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Missed Occurrences Card */}
-        <Card
-          className={cn(
-            'border-morandi-stone-200',
-            missed.overdueCount > 0 && 'border-morandi-saffron-300'
-          )}
+    <div className={cn('', className)} aria-labelledby={`${panelId}-title`}>
+      {/* Collapsible Header */}
+      <Card className="border-morandi-stone-200 overflow-hidden">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full text-left"
+          aria-expanded={isExpanded}
+          aria-controls={`${panelId}-content`}
         >
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle
-                size={16}
-                className={cn(
-                  missed.overdueCount > 0
-                    ? 'text-morandi-saffron-600'
-                    : 'text-morandi-stone-400'
-                )}
-              />
-              {t('planningView.analytics.missed', 'Missed')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Typography
-                variant="h2"
-                className={cn(
-                  missed.overdueCount > 0
-                    ? 'text-morandi-saffron-700'
-                    : 'text-morandi-stone-900'
-                )}
-              >
-                {missed.overdueCount}
-              </Typography>
-              <div className="text-xs text-morandi-stone-600 space-y-1">
-                <p>
-                  {t('planningView.analytics.missedThisWeek', 'This week')}:{' '}
-                  <span className="font-medium">{missed.missedThisWeek}</span>
-                </p>
-                <p>
-                  {t('planningView.analytics.missedThisMonth', 'This month')}:{' '}
-                  <span className="font-medium">{missed.missedThisMonth}</span>
-                </p>
+          <div className="flex items-center justify-between p-4 hover:bg-morandi-stone-50/50 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-morandi-sage-100">
+                <BarChart3 className="h-4 w-4 text-morandi-sage-600" />
               </div>
-              {missed.overdueCount > 0 && (
-                <p className="text-xs text-morandi-saffron-700 font-medium mt-2">
-                  {t('planningView.analytics.catchUp', 'Time to catch up!')}
-                </p>
-              )}
+              <div>
+                <Typography
+                  variant="h5"
+                  className="text-morandi-stone-900"
+                  id={`${panelId}-title`}
+                >
+                  {t('planningView.analytics.title', 'Practice Analytics')}
+                </Typography>
+              </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Forecast Card */}
-        <Card className="border-morandi-stone-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Calendar size={16} className="text-morandi-sage-600" />
-              {t('planningView.analytics.forecast', '7-Day Forecast')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Typography variant="h2" className="text-morandi-stone-900">
-                {forecast.totalOccurrences}
-                <span className="text-base font-normal text-morandi-stone-600 ml-2">
-                  {t('planningView.analytics.sessions', {
-                    count: forecast.totalOccurrences,
-                  })}
-                </span>
-              </Typography>
-              <div className="text-xs text-morandi-stone-600 space-y-1">
-                <div className="flex items-center gap-1">
-                  <Clock size={12} />
-                  <span>
-                    {forecast.totalMinutes}{' '}
-                    {t('planningView.analytics.minutes', 'min')}
+            {/* Compact Summary (always visible) */}
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-1.5">
+                  <Target size={14} className="text-morandi-sage-600" />
+                  <span className="text-morandi-stone-600">
+                    <span className="font-semibold text-morandi-stone-900">
+                      {adherence.overall}%
+                    </span>
                   </span>
                 </div>
-                {formattedPeakDay && (
-                  <p className="text-morandi-stone-700 font-medium">
-                    {t('planningView.analytics.peakDay', 'Peak')}:{' '}
-                    {formattedPeakDay}
-                  </p>
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp size={14} className="text-morandi-sage-600" />
+                  <span className="text-morandi-stone-600">
+                    <span className="font-semibold text-morandi-stone-900">
+                      {streak.currentStreak}
+                    </span>{' '}
+                    {t('planningView.analytics.days', {
+                      count: streak.currentStreak,
+                    })}
+                  </span>
+                </div>
+                {missed.overdueCount > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle
+                      size={14}
+                      className="text-morandi-peach-500"
+                    />
+                    <span className="text-morandi-peach-500 font-semibold">
+                      {missed.overdueCount}{' '}
+                      {t('planningView.analytics.missed', 'missed')}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-morandi-stone-100 transition-colors">
+                {isExpanded ? (
+                  <ChevronUp className="h-5 w-5 text-morandi-stone-500" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-morandi-stone-500" />
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </button>
 
-      {/* Forecast Details */}
-      {forecast.totalOccurrences > 0 && (
-        <Card className="border-morandi-stone-200">
-          <CardHeader>
-            <CardTitle className="text-sm">
-              {t(
-                'planningView.analytics.upcomingSchedule',
-                'Upcoming Schedule'
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {forecast.days.map(day => {
-                if (day.count === 0) return null
-
-                const dayDate = parseISO(day.date)
-                const isToday = format(new Date(), 'yyyy-MM-dd') === day.date
-
-                return (
-                  <div
-                    key={day.date}
-                    className={cn(
-                      'flex items-center justify-between py-2 px-3 rounded-lg',
-                      isToday
-                        ? 'bg-morandi-sage-50 border border-morandi-sage-200'
-                        : 'bg-morandi-stone-50'
-                    )}
+        {/* Expanded Content */}
+        <div
+          id={`${panelId}-content`}
+          className={cn(
+            'transition-all duration-300 ease-in-out overflow-hidden',
+            isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+          )}
+        >
+          <div className="border-t border-morandi-stone-100 p-4 space-y-4">
+            {/* Compact Metrics Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {/* Adherence */}
+              <div className="rounded-xl bg-morandi-stone-50 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target size={14} className="text-morandi-sage-600" />
+                  <Typography
+                    variant="caption"
+                    className="text-morandi-stone-600 uppercase tracking-wide text-xs"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="text-sm">
-                        <p
+                    {t('planningView.analytics.adherence', 'Adherence')}
+                  </Typography>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <Typography variant="h3" className="text-morandi-stone-900">
+                    {adherence.overall}%
+                  </Typography>
+                  <Tag variant={adherenceStatus} size="sm" className="text-xs">
+                    {adherenceStatus === 'success' &&
+                      t('planningView.analytics.excellent', 'Excellent')}
+                    {adherenceStatus === 'warning' &&
+                      t('planningView.analytics.good', 'Good')}
+                    {adherenceStatus === 'danger' &&
+                      t('planningView.analytics.needsWork', 'Needs Work')}
+                  </Tag>
+                </div>
+                <div className="text-xs text-morandi-stone-500 mt-1">
+                  {t('planningView.analytics.thisWeek', 'This week')}:{' '}
+                  {adherence.thisWeek}%
+                </div>
+              </div>
+
+              {/* Streak */}
+              <div className="rounded-xl bg-morandi-stone-50 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp size={14} className="text-morandi-sage-600" />
+                  <Typography
+                    variant="caption"
+                    className="text-morandi-stone-600 uppercase tracking-wide text-xs"
+                  >
+                    {t('planningView.analytics.streak', 'Streak')}
+                  </Typography>
+                </div>
+                <Typography variant="h3" className="text-morandi-stone-900">
+                  {streak.currentStreak}
+                  <span className="text-sm font-normal text-morandi-stone-600 ml-1">
+                    {t('planningView.analytics.days', {
+                      count: streak.currentStreak,
+                    })}
+                  </span>
+                </Typography>
+                <div className="text-xs text-morandi-stone-500 mt-1">
+                  {t('planningView.analytics.longestStreak', 'Best')}:{' '}
+                  {streak.longestStreak}{' '}
+                  {t('planningView.analytics.days', {
+                    count: streak.longestStreak,
+                  })}
+                </div>
+              </div>
+
+              {/* Missed */}
+              <div
+                className={cn(
+                  'rounded-xl p-3',
+                  missed.overdueCount > 0
+                    ? 'bg-morandi-peach-50'
+                    : 'bg-morandi-stone-50'
+                )}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle
+                    size={14}
+                    className={
+                      missed.overdueCount > 0
+                        ? 'text-morandi-peach-500'
+                        : 'text-morandi-stone-400'
+                    }
+                  />
+                  <Typography
+                    variant="caption"
+                    className="text-morandi-stone-600 uppercase tracking-wide text-xs"
+                  >
+                    {t('planningView.analytics.missed', 'Missed')}
+                  </Typography>
+                </div>
+                <Typography
+                  variant="h3"
+                  className={
+                    missed.overdueCount > 0
+                      ? 'text-morandi-peach-500'
+                      : 'text-morandi-stone-900'
+                  }
+                >
+                  {missed.overdueCount}
+                </Typography>
+                <div className="text-xs text-morandi-stone-500 mt-1">
+                  {t('planningView.analytics.thisWeek', 'This week')}:{' '}
+                  {missed.missedThisWeek}
+                </div>
+              </div>
+
+              {/* Forecast */}
+              <div className="rounded-xl bg-morandi-stone-50 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar size={14} className="text-morandi-sage-600" />
+                  <Typography
+                    variant="caption"
+                    className="text-morandi-stone-600 uppercase tracking-wide text-xs"
+                  >
+                    {t('planningView.analytics.forecast', '7-Day')}
+                  </Typography>
+                </div>
+                <Typography variant="h3" className="text-morandi-stone-900">
+                  {forecast.totalOccurrences}
+                  <span className="text-sm font-normal text-morandi-stone-600 ml-1">
+                    {t('planningView.analytics.sessions', {
+                      count: forecast.totalOccurrences,
+                    })}
+                  </span>
+                </Typography>
+                <div className="text-xs text-morandi-stone-500 mt-1 flex items-center gap-1">
+                  <Clock size={10} />
+                  {forecast.totalMinutes}{' '}
+                  {t('planningView.analytics.minutes', 'min')}
+                </div>
+              </div>
+            </div>
+
+            {/* Upcoming Schedule (Compact Timeline) */}
+            {forecast.totalOccurrences > 0 && (
+              <div className="pt-2">
+                <Typography
+                  variant="caption"
+                  className="text-morandi-stone-600 uppercase tracking-wide text-xs mb-3 block"
+                >
+                  {t(
+                    'planningView.analytics.upcomingSchedule',
+                    'Upcoming Schedule'
+                  )}
+                </Typography>
+                <div className="flex flex-wrap gap-2">
+                  {forecast.days.map(day => {
+                    if (day.count === 0) return null
+
+                    const dayDate = parseISO(day.date)
+                    const isToday =
+                      format(new Date(), 'yyyy-MM-dd') === day.date
+
+                    return (
+                      <div
+                        key={day.date}
+                        className={cn(
+                          'inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm',
+                          isToday
+                            ? 'bg-morandi-sage-100 border border-morandi-sage-200'
+                            : 'bg-morandi-stone-100'
+                        )}
+                      >
+                        <div
                           className={cn(
                             'font-medium',
                             isToday
@@ -268,61 +299,20 @@ const PlanningAnalyticsPanel = ({
                               : 'text-morandi-stone-900'
                           )}
                         >
-                          {format(dayDate, 'EEEE')}
-                        </p>
-                        <p className="text-xs text-morandi-stone-600">
-                          {format(dayDate, 'MMM d')}
-                        </p>
+                          {format(dayDate, 'EEE')}
+                        </div>
+                        <div className="text-morandi-stone-500 text-xs">
+                          {day.count} ×
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-1 text-morandi-stone-700">
-                        <span className="font-medium">{day.count}</span>
-                        <span className="text-xs text-morandi-stone-600">
-                          {t('planningView.analytics.sessions', {
-                            count: day.count,
-                          })}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1 text-morandi-stone-600">
-                        <Clock size={14} />
-                        <span className="text-xs">{day.totalMinutes} min</span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Empty State */}
-      {forecast.totalOccurrences === 0 &&
-        missed.overdueCount === 0 &&
-        streak.currentStreak === 0 && (
-          <Card className="border-morandi-stone-200">
-            <CardContent className="py-8">
-              <div className="text-center space-y-2">
-                <Typography variant="body" className="text-morandi-stone-600">
-                  {t(
-                    'planningView.analytics.noData',
-                    'No practice sessions scheduled yet'
-                  )}
-                </Typography>
-                <Typography
-                  variant="body-sm"
-                  className="text-morandi-stone-500"
-                >
-                  {t(
-                    'planningView.analytics.createPlan',
-                    'Create a practice plan to get started'
-                  )}
-                </Typography>
+                    )
+                  })}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </div>
+        </div>
+      </Card>
     </div>
   )
 }

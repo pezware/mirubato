@@ -345,8 +345,20 @@
         "plans": "进行中的计划",
         "upcoming": "即将到来"
       },
-      "title": "本周保持进度"
+      "title": "本周保持进度",
+      "nextUp": "下一个",
+      "comingUp": "即将到来",
+      "scheduled": "已排程",
+      "allCaughtUp": "一切完成！",
+      "alsoScheduled": "也已排程"
     },
+    "quickStats": {
+      "due": "到期",
+      "upcoming": "即将",
+      "streak": "天连续",
+      "adherence": "执行率"
+    },
+    "minutes": "分钟",
     "nextSession": "下次练习",
     "noUpcoming": "没有即将到来的练习",
     "progress": {
