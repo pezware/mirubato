@@ -28,30 +28,47 @@ interface TemplateDetailModalProps {
   isAdopting?: boolean
 }
 
-const formatScheduleKind = (kind: string): string => {
+type TranslateFunction = (key: string, fallback: string) => string
+
+const formatScheduleKind = (kind: string, t: TranslateFunction): string => {
   switch (kind) {
     case 'single':
-      return 'Single Session'
+      return t('templates.scheduleKind.single', 'Single Session')
     case 'recurring':
-      return 'Recurring'
+      return t('templates.scheduleKind.recurring', 'Recurring')
     default:
       return kind
   }
 }
 
-const formatFlexibility = (flexibility?: string): string => {
-  if (!flexibility) return 'Not specified'
-  return flexibility.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+const formatFlexibility = (
+  flexibility: string | undefined,
+  t: TranslateFunction
+): string => {
+  if (!flexibility)
+    return t('templates.flexibility.notSpecified', 'Not specified')
+  switch (flexibility) {
+    case 'fixed':
+      return t('templates.flexibility.fixed', 'Fixed')
+    case 'same-day':
+      return t('templates.flexibility.sameDay', 'Same Day')
+    case 'anytime':
+      return t('templates.flexibility.anytime', 'Anytime')
+    default:
+      return flexibility
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase())
+  }
 }
 
-const formatPlanType = (type: string): string => {
+const formatPlanType = (type: string, t: TranslateFunction): string => {
   switch (type) {
     case 'bootcamp':
-      return 'Bootcamp'
+      return t('templates.planType.bootcamp', 'Bootcamp')
     case 'course':
-      return 'Course'
+      return t('templates.planType.course', 'Course')
     case 'custom':
-      return 'Custom'
+      return t('templates.planType.custom', 'Custom')
     default:
       return type
   }
@@ -130,7 +147,7 @@ export function TemplateDetailModal({
           {/* Header badges */}
           <div className="flex flex-wrap gap-2">
             <Tag variant="primary" size="sm">
-              {formatPlanType(template.type)}
+              {formatPlanType(template.type, t)}
             </Tag>
             {template.visibility === 'public' && (
               <Tag variant="success" size="sm">
@@ -185,7 +202,7 @@ export function TemplateDetailModal({
                   variant="body-sm"
                   className="text-morandi-stone-900"
                 >
-                  {formatScheduleKind(template.schedule.kind)}
+                  {formatScheduleKind(template.schedule.kind, t)}
                 </Typography>
               </div>
               {template.schedule.durationMinutes && (
@@ -233,7 +250,7 @@ export function TemplateDetailModal({
                     variant="body-sm"
                     className="text-morandi-stone-900"
                   >
-                    {formatFlexibility(template.schedule.flexibility)}
+                    {formatFlexibility(template.schedule.flexibility, t)}
                   </Typography>
                 </div>
               )}

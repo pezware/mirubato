@@ -404,19 +404,37 @@
       "publicDesc": "[NEEDS TRANSLATION] Visible to all users"
     },
     "details": {
-      "description": "[NEEDS TRANSLATION] Description",
-      "schedule": "[NEEDS TRANSLATION] Schedule",
-      "scheduleType": "[NEEDS TRANSLATION] Type",
-      "duration": "[NEEDS TRANSLATION] Duration",
-      "timeOfDay": "[NEEDS TRANSLATION] Time of Day",
-      "flexibility": "[NEEDS TRANSLATION] Flexibility",
-      "recurrence": "[NEEDS TRANSLATION] Recurrence",
-      "focusAreas": "[NEEDS TRANSLATION] Focus Areas",
-      "techniques": "[NEEDS TRANSLATION] Techniques",
-      "pieces": "[NEEDS TRANSLATION] Pieces",
-      "segments": "[NEEDS TRANSLATION] Session Segments",
-      "tags": "[NEEDS TRANSLATION] Tags"
+      "description": "Beschreibung",
+      "schedule": "Zeitplan",
+      "scheduleType": "Typ",
+      "duration": "Dauer",
+      "timeOfDay": "Tageszeit",
+      "flexibility": "Flexibilität",
+      "recurrence": "Wiederholung",
+      "focusAreas": "Schwerpunkte",
+      "techniques": "Techniken",
+      "pieces": "Stücke",
+      "segments": "Sitzungsabschnitte",
+      "tags": "Tags",
+      "workloadSummary": "Arbeitsübersicht",
+      "sessionLength": "Sitzungsdauer",
+      "segmentCount": "Abschnitte"
     },
-    "viewDetails": "[NEEDS TRANSLATION] View Details"
+    "flexibility": {
+      "notSpecified": "Nicht angegeben",
+      "fixed": "Fest",
+      "sameDay": "Gleicher Tag",
+      "anytime": "Jederzeit"
+    },
+    "planType": {
+      "bootcamp": "Bootcamp",
+      "course": "Kurs",
+      "custom": "Benutzerdefiniert"
+    },
+    "scheduleKind": {
+      "single": "Einzelsitzung",
+      "recurring": "Wiederkehrend"
+    },
+    "viewDetails": "Details anzeigen"
   }
 }
