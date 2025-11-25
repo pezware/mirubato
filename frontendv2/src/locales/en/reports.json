@@ -411,8 +411,20 @@
         "plans": "Active plans",
         "upcoming": "Upcoming"
       },
-      "title": "Stay on track this week"
+      "title": "Stay on track this week",
+      "nextUp": "Next Up",
+      "comingUp": "Coming Up",
+      "scheduled": "Scheduled",
+      "allCaughtUp": "You're all caught up!",
+      "alsoScheduled": "Also scheduled"
     },
+    "quickStats": {
+      "due": "due",
+      "upcoming": "upcoming",
+      "streak": "day streak",
+      "adherence": "adherence"
+    },
+    "minutes": "min",
     "heading": "Practice planning",
     "headingDescription": "Schedule upcoming sessions and track progress as you go.",
     "nextSession": "Next session",
