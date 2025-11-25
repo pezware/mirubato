@@ -35,6 +35,9 @@ export { default as SplitButton } from './SplitButton'
 
 export { default as TimelineNav } from './TimelineNav'
 
+export { PeriodSelector } from './PeriodSelector'
+export type { PeriodLevel, PeriodDate, PeriodStats } from './PeriodSelector'
+
 export { DropdownMenu } from './DropdownMenu'
 export type { DropdownMenuItem } from './DropdownMenu'
 

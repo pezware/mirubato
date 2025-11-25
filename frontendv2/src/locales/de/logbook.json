@@ -98,6 +98,18 @@
     "week": "Woche {{number}}",
     "year": "{{year}}"
   },
+  "periodSelector": {
+    "viewBy": "Anzeigen nach",
+    "sessions": "Sitzungen",
+    "totalTime": "Gesamtzeit",
+    "pieces": "Stücke",
+    "prevWeek": "Zurück",
+    "nextWeek": "Weiter",
+    "prevMonth": "Zurück",
+    "nextMonth": "Weiter",
+    "prevYear": "Zurück",
+    "nextYear": "Weiter"
+  },
   "timer": {
     "both": "Visuell und Ton",
     "confirmClose": "Timer läuft. Bist du sicher, dass du schließen möchtest?",

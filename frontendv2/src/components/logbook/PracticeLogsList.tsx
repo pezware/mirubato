@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, ChevronRight, Clock } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { LogbookEntry } from '@/api/logbook'
-import { CompactEntryRow, DateSeparator } from '@/components/ui'
-import TimelineNav from '@/components/ui/TimelineNav'
+import { CompactEntryRow, DateSeparator, PeriodSelector } from '@/components/ui'
+import type { PeriodLevel } from '@/components/ui'
 import { formatDuration, formatDateSeparator } from '@/utils/dateUtils'
 
-type TimelineLevelType = 'year' | 'month' | 'week'
+// Using PeriodLevel from PeriodSelector component
 
 interface PracticeLogsListProps {
   entries: LogbookEntry[]
@@ -36,7 +36,7 @@ export function PracticeLogsList({
   hidePieceInfo = false,
 }: PracticeLogsListProps) {
   const { t, i18n } = useTranslation(['logbook', 'common'])
-  const [selectedLevel, setSelectedLevel] = useState<TimelineLevelType>('week')
+  const [selectedLevel, setSelectedLevel] = useState<PeriodLevel>('week')
   const [selectedDate, setSelectedDate] = useState<{
     year: number
     month: number
@@ -119,15 +119,27 @@ export function PracticeLogsList({
     return Array.from(groups.values())
   }, [filteredEntries, i18n.language])
 
-  // Stats for display
+  // Stats for display including unique pieces
   const stats = useMemo(() => {
     const totalDuration = filteredEntries.reduce(
       (sum, entry) => sum + entry.duration,
       0
     )
+
+    // Count unique pieces
+    const uniquePieceTitles = new Set<string>()
+    filteredEntries.forEach(entry => {
+      entry.pieces.forEach(piece => {
+        if (piece.title) {
+          uniquePieceTitles.add(piece.title.toLowerCase().trim())
+        }
+      })
+    })
+
     return {
       entries: filteredEntries.length,
       totalDuration,
+      uniquePieces: uniquePieceTitles.size,
     }
   }, [filteredEntries])
 
@@ -242,79 +254,18 @@ export function PracticeLogsList({
     }
   }
 
-  // Timeline breadcrumb items
-  const timelineItems = useMemo(() => {
-    if (!selectedDate) return []
-
-    const monthNames = [
-      t('common:months.january'),
-      t('common:months.february'),
-      t('common:months.march'),
-      t('common:months.april'),
-      t('common:months.may'),
-      t('common:months.june'),
-      t('common:months.july'),
-      t('common:months.august'),
-      t('common:months.september'),
-      t('common:months.october'),
-      t('common:months.november'),
-      t('common:months.december'),
-    ]
-
-    return [
-      {
-        label: selectedDate.year.toString(),
-        value: 'year',
-        level: 'year' as const,
-      },
-      {
-        label: monthNames[selectedDate.month],
-        value: 'month',
-        level: 'month' as const,
-      },
-      {
-        label: t('logbook:timeline.week', { number: selectedDate.week }),
-        value: 'week',
-        level: 'week' as const,
-      },
-    ]
-  }, [selectedDate, t])
-
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Timeline Navigation */}
+      {/* Period Selector - Enhanced timeline navigation */}
       {showTimeline && selectedDate && (
-        <div className="bg-white rounded-lg p-4 shadow-sm border border-morandi-stone-200">
-          <div className="mb-4">
-            <h2 className="text-sm font-medium text-morandi-stone-600 uppercase tracking-wide">
-              {t('logbook:entry.foundEntries', { count: stats.entries })}
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrevious}
-              className="p-2 hover:bg-morandi-stone-100 rounded-lg transition-colors"
-              aria-label={t('common:previous')}
-            >
-              <ChevronLeft className="w-5 h-5 text-morandi-stone-600" />
-            </button>
-
-            <TimelineNav
-              levels={timelineItems}
-              selectedLevel={selectedLevel}
-              onLevelChange={level => setSelectedLevel(level.level)}
-            />
-
-            <button
-              onClick={handleNext}
-              className="p-2 hover:bg-morandi-stone-100 rounded-lg transition-colors"
-              aria-label={t('common:next')}
-            >
-              <ChevronRight className="w-5 h-5 text-morandi-stone-600" />
-            </button>
-          </div>
-        </div>
+        <PeriodSelector
+          selectedLevel={selectedLevel}
+          selectedDate={selectedDate}
+          stats={stats}
+          onLevelChange={setSelectedLevel}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+        />
       )}
 
       {/* Entries List */}

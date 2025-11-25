@@ -98,6 +98,18 @@
     "week": "Semaine {{number}}",
     "year": "{{year}}"
   },
+  "periodSelector": {
+    "viewBy": "Voir par",
+    "sessions": "Séances",
+    "totalTime": "Temps total",
+    "pieces": "Pièces",
+    "prevWeek": "Précédent",
+    "nextWeek": "Suivant",
+    "prevMonth": "Précédent",
+    "nextMonth": "Suivant",
+    "prevYear": "Précédent",
+    "nextYear": "Suivant"
+  },
   "timer": {
     "both": "Visuel et son",
     "confirmClose": "Le chronomètre est en cours. Êtes-vous sûr de vouloir fermer ?",
