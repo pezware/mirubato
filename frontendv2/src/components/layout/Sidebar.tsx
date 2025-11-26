@@ -332,13 +332,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     >
                       {t('common:navigation.profileSettings')}
                     </Link>
-                    <Link
-                      to="/profile?tab=preferences"
-                      onClick={() => setShowUserDropdown(false)}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors"
-                    >
-                      {t('common:navigation.preferences')}
-                    </Link>
                     <div className="border-t border-gray-100 my-1" />
                     <button
                       onClick={async () => {

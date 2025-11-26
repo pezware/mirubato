@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BookOpen, Plus, Wrench, Clock, User } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
@@ -18,6 +18,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
 }) => {
   const { t } = useTranslation(['common', 'auth'])
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, isAuthenticated, logout } = useAuthStore()
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -164,6 +165,16 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
                         )}
                       </div>
                       <div className="p-1">
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false)
+                            navigate('/profile')
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          {t('common:navigation.profileSettings')}
+                        </button>
+                        <div className="border-t border-gray-100 my-1" />
                         <button
                           onClick={async () => {
                             await logout()
