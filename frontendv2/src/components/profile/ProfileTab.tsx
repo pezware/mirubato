@@ -17,19 +17,30 @@ export function ProfileTab() {
   const { repertoire } = useRepertoireStore()
   const { preferences, updatePreferences } = useUserPreferences()
 
-  // Username state - use local preferences for anonymous users, auth user for authenticated
-  const [displayName, setDisplayName] = useState('')
+  // Get the effective display name - localStorage takes priority, then server, then email
+  const getEffectiveDisplayName = () => {
+    // Priority: 1. Local preferences (user's choice), 2. Server displayName, 3. Email prefix
+    if (preferences.displayName) {
+      return preferences.displayName
+    }
+    if (isAuthenticated && user?.displayName) {
+      return user.displayName
+    }
+    return ''
+  }
+
+  // Username state - initialize from effective display name
+  const [displayName, setDisplayName] = useState(getEffectiveDisplayName)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
+  // Update displayName when preferences or user changes
   useEffect(() => {
-    // Initialize displayName from user (if authenticated) or preferences (if anonymous)
-    if (isAuthenticated && user?.displayName) {
-      setDisplayName(user.displayName)
-    } else if (preferences.displayName) {
-      setDisplayName(preferences.displayName)
+    const effectiveName = getEffectiveDisplayName()
+    if (effectiveName && !isEditing) {
+      setDisplayName(effectiveName)
     }
-  }, [isAuthenticated, user?.displayName, preferences.displayName])
+  }, [preferences.displayName, user?.displayName, isAuthenticated, isEditing])
 
   const getUserInitials = () => {
     const name = displayName || user?.email || ''
@@ -150,14 +161,8 @@ export function ProfileTab() {
                       size="sm"
                       onClick={() => {
                         setIsEditing(false)
-                        // Reset to original value
-                        if (isAuthenticated && user?.displayName) {
-                          setDisplayName(user.displayName)
-                        } else if (preferences.displayName) {
-                          setDisplayName(preferences.displayName)
-                        } else {
-                          setDisplayName('')
-                        }
+                        // Reset to saved value
+                        setDisplayName(getEffectiveDisplayName())
                       }}
                       disabled={isSaving}
                     >

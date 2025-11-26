@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BookOpen, Plus, Wrench, Clock, User } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import { useGlobalTimer, formatCompactTime } from '@/hooks/useGlobalTimer'
+import { useUserPreferences } from '../../hooks/useUserPreferences'
 
 interface BottomTabsProps {
   onAddClick?: () => void
@@ -20,14 +21,20 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
   const location = useLocation()
   const navigate = useNavigate()
   const { user, isAuthenticated, logout } = useAuthStore()
+  const { preferences } = useUserPreferences()
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { seconds, isRunning, openModal: openTimerModal } = useGlobalTimer()
 
+  // Get display name from localStorage first, then server
+  const getDisplayName = () => {
+    return preferences.displayName || user?.displayName || user?.email || ''
+  }
+
   const getUserInitials = () => {
     if (!user) return '?'
-    const firstNameOrEmail = user.displayName || user.email || ''
-    const firstName = firstNameOrEmail.split(' ')[0]
+    const displayName = getDisplayName()
+    const firstName = displayName.split(/[\s@]/)[0]
     return firstName[0]?.toUpperCase() || '?'
   }
 
@@ -64,9 +71,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
     {
       id: 'profile',
       label: isAuthenticated
-        ? user?.displayName?.split(' ')[0] ||
-          user?.email?.split('@')[0] ||
-          'Profile'
+        ? getDisplayName().split(/[\s@]/)[0] || 'Profile'
         : t('auth:signIn'),
       path: null, // Changed to null - will show dropdown instead
       icon: User,
@@ -156,7 +161,9 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
                     >
                       <div className="p-3 border-b border-gray-100">
                         <div className="font-medium text-gray-900 text-sm">
-                          {user?.displayName || user?.email?.split('@')[0]}
+                          {preferences.displayName ||
+                            user?.displayName ||
+                            user?.email}
                         </div>
                         {user?.email && (
                           <div className="text-xs text-gray-500 mt-1">
