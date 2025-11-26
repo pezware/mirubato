@@ -217,7 +217,9 @@
       "searchFailed": "Search failed. Please try again.",
       "loadFailed": "Failed to load term. Please try again.",
       "rateLimitExceeded": "Too many requests. Please try again after a while.",
-      "tryAgainIn": "Try again in {{time}}."
+      "tryAgainIn": "Try again in {{time}}.",
+      "serviceUnavailable": "Dictionary service is temporarily unavailable. Please try again later.",
+      "serviceUnavailableDetail": "The dictionary service will be available again shortly. Please try again in a few moments."
     },
     "searchAllLanguages": "Search in all languages",
     "currentLanguage": "Current language: {{lang}}",

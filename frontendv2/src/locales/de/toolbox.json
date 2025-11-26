@@ -114,7 +114,9 @@
       "loadFailed": "Fehler beim Laden des Begriffs. Bitte versuchen Sie es erneut.",
       "rateLimitExceeded": "Zu viele Anfragen. Bitte versuchen Sie es später noch einmal.",
       "searchFailed": "Suche fehlgeschlagen. Bitte versuchen Sie es erneut.",
-      "tryAgainIn": "Versuchen Sie es in {{time}} erneut."
+      "tryAgainIn": "Versuchen Sie es in {{time}} erneut.",
+      "serviceUnavailable": "Der Wörterbuchdienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.",
+      "serviceUnavailableDetail": "Der Wörterbuchdienst wird in Kürze wieder verfügbar sein. Bitte versuchen Sie es in wenigen Augenblicken erneut."
     },
     "estimatedTime": "Geschätzte Zeit: {{time}}",
     "etymology": "Etymologie",

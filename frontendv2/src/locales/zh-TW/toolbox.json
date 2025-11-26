@@ -114,7 +114,9 @@
       "loadFailed": "載入術語失敗。請重試。",
       "rateLimitExceeded": "請求過多。請稍後再試。",
       "searchFailed": "搜尋失敗。請重試。",
-      "tryAgainIn": "請在{{time}}後重試。"
+      "tryAgainIn": "請在{{time}}後重試。",
+      "serviceUnavailable": "詞典服務暫時無法使用。請稍後再試。",
+      "serviceUnavailableDetail": "詞典服務將很快恢復。請稍後再試。"
     },
     "estimatedTime": "預計完成時間：{{time}}",
     "etymology": "詞源",

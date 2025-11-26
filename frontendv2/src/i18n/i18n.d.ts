@@ -7,6 +7,10 @@ import type errors from '../locales/en/errors.json'
 import type scorebook from '../locales/en/scorebook.json'
 import type toolbox from '../locales/en/toolbox.json'
 import type ui from '../locales/en/ui.json'
+import type about from '../locales/en/about.json'
+import type privacy from '../locales/en/privacy.json'
+import type repertoire from '../locales/en/repertoire.json'
+import type validation from '../locales/en/validation.json'
 
 declare module 'react-i18next' {
   interface CustomTypeOptions {
@@ -20,6 +24,10 @@ declare module 'react-i18next' {
       scorebook: typeof scorebook
       toolbox: typeof toolbox
       ui: typeof ui
+      about: typeof about
+      privacy: typeof privacy
+      repertoire: typeof repertoire
+      validation: typeof validation
     }
   }
 }
