@@ -31,6 +31,7 @@ const ScoreBrowser = lazy(() => import('./pages/ScoreBrowser'))
 const CollectionView = lazy(() => import('./pages/CollectionView'))
 const Toolbox = lazy(() => import('./pages/Toolbox'))
 const About = lazy(() => import('./pages/About'))
+const Profile = lazy(() => import('./pages/Profile'))
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -165,6 +166,7 @@ function App() {
                   <Route path="/auth/verify" element={<AuthVerifyPage />} />
                   <Route path="/toolbox" element={<Toolbox />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/profile" element={<Profile />} />
 
                   {/* Dictionary SEO routes */}
                   <Route path="/dictionary/:lang/:term" element={<Toolbox />} />

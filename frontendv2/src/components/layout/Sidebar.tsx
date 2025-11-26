@@ -325,12 +325,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                     )}
                   </div>
                   <div className="p-1">
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
+                    <Link
+                      to="/profile"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors"
+                    >
                       {t('common:navigation.profileSettings')}
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
+                    </Link>
+                    <Link
+                      to="/profile?tab=preferences"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors"
+                    >
                       {t('common:navigation.preferences')}
-                    </button>
+                    </Link>
                     <div className="border-t border-gray-100 my-1" />
                     <button
                       onClick={async () => {

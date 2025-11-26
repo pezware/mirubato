@@ -1,0 +1,75 @@
+{
+  "title": "Benutzerprofil",
+  "subtitle": "Verwalten Sie Ihr Profil, Einstellungen und Daten",
+  "tabs": {
+    "profile": "Profil",
+    "preferences": "Einstellungen",
+    "data": "Daten",
+    "account": "Konto"
+  },
+  "sections": {
+    "profile": "Ihr Profil",
+    "statistics": "Ihre Statistiken",
+    "language": "Sprache",
+    "instrument": "Hauptinstrument",
+    "dataOverview": "Ihre Daten",
+    "dataMigration": "Datenmigration",
+    "account": "Konto",
+    "signIn": "Anmelden",
+    "signOut": "Abmelden",
+    "dangerZone": "Gefahrenzone"
+  },
+  "displayNamePlaceholder": "Geben Sie Ihren Anzeigenamen ein",
+  "displayNameSaved": "Anzeigename gespeichert",
+  "displayNameError": "Fehler beim Speichern des Namens",
+  "editDisplayName": "Anzeigenamen bearbeiten",
+  "anonymous": "Anonymer Benutzer",
+  "anonymousNote": "Sie verwenden Mirubato ohne Konto. Ihre Daten werden lokal in diesem Browser gespeichert. Melden Sie sich an, um Ihre Daten auf allen Geräten zu synchronisieren.",
+  "memberSince": "Mitglied seit",
+  "stats": {
+    "totalPractice": "Gesamte Übungszeit",
+    "entries": "Übungseinträge",
+    "pieces": "Repertoire-Stücke",
+    "goals": "Ziele"
+  },
+  "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche.",
+  "languageChanged": "Sprache aktualisiert",
+  "currentLanguage": "Aktuell",
+  "instrumentDescription": "Legen Sie Ihr Hauptinstrument für das Üben und Empfehlungen fest.",
+  "instrumentChanged": "Hauptinstrument aktualisiert",
+  "customInstruments": "Benutzerdefinierte Instrumente",
+  "customInstrumentAdded": "Benutzerdefiniertes Instrument hinzugefügt",
+  "customInstrumentRemoved": "Benutzerdefiniertes Instrument entfernt",
+  "noCustomInstruments": "Noch keine benutzerdefinierten Instrumente hinzugefügt.",
+  "data": {
+    "entries": "Einträge",
+    "pieces": "Stücke",
+    "goals": "Ziele",
+    "plans": "Pläne",
+    "storageCloud": "Daten werden mit Cloud-Speicher synchronisiert",
+    "storageLocal": "Daten werden lokal in Ihrem Browser gespeichert"
+  },
+  "dataMigrationDescription": "Exportieren Sie Ihre Daten zur Sicherung oder Übertragung auf ein anderes Gerät, oder importieren Sie Daten aus einem früheren Export.",
+  "exportData": "Daten exportieren",
+  "importData": "Daten importieren",
+  "syncNote": "Daten werden vor dem Export mit dem Cloud-Speicher synchronisiert.",
+  "email": "E-Mail",
+  "authProvider": "Anmeldemethode",
+  "magicLink": "Magic Link",
+  "signInDescription": "Melden Sie sich an, um Ihre Daten auf allen Geräten zu synchronisieren und von überall auf Ihren Übungsverlauf zuzugreifen.",
+  "signInBenefits": {
+    "title": "Vorteile der Anmeldung:",
+    "sync": "Daten auf allen Geräten synchronisieren",
+    "backup": "Automatische Cloud-Sicherung",
+    "access": "Zugriff auf Ihre Daten von jedem Browser"
+  },
+  "signOutDescription": "Melden Sie sich von Ihrem Konto ab. Ihre Daten bleiben synchronisiert und verfügbar, wenn Sie sich wieder anmelden.",
+  "signedOut": "Sie wurden abgemeldet",
+  "signOutError": "Fehler beim Abmelden",
+  "deleteAccountDescription": "Löschen Sie Ihr Konto und alle zugehörigen Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "deleteAccount": "Konto löschen",
+  "anonymousUsage": {
+    "title": "Ohne Konto verwenden",
+    "description": "Sie können Mirubato weiter ohne Anmeldung verwenden. Ihre Daten werden lokal in diesem Browser gespeichert. Beachten Sie, dass Sie Ihre Daten verlieren können, wenn Sie den Browser-Speicher löschen oder das Gerät wechseln."
+  }
+}
