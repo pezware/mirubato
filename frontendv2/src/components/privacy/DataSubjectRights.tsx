@@ -361,7 +361,7 @@ export function DataSubjectRights() {
 
       // Import goals
       if (importPreview.goals?.length > 0) {
-        const existingGoals = safeParseJson<Goal[]>(
+        const existingGoals = safeParseJson<LogbookGoal[]>(
           'mirubato:logbook:goals',
           []
         )
@@ -393,7 +393,7 @@ export function DataSubjectRights() {
 
       // Import repertoire goals
       if (importPreview.repertoireGoals?.length > 0) {
-        const existingGoals = safeParseJson<Goal[]>(
+        const existingGoals = safeParseJson<RepertoireGoal[]>(
           'mirubato:repertoire:goals',
           []
         )
@@ -558,7 +558,10 @@ export function DataSubjectRights() {
             'mirubato:logbook:entries',
             []
           )
-          const allGoals = safeParseJson<Goal[]>('mirubato:logbook:goals', [])
+          const allGoals = safeParseJson<LogbookGoal[]>(
+            'mirubato:logbook:goals',
+            []
+          )
 
           await syncApi.push({
             changes: {
