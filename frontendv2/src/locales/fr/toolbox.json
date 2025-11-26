@@ -114,7 +114,9 @@
       "loadFailed": "Échec du chargement du terme. Veuillez réessayer.",
       "rateLimitExceeded": "Trop de requêtes. Veuillez réessayer dans un moment.",
       "searchFailed": "La recherche a échoué. Veuillez réessayer.",
-      "tryAgainIn": "Réessayez dans {{time}}."
+      "tryAgainIn": "Réessayez dans {{time}}.",
+      "serviceUnavailable": "Le service de dictionnaire est temporairement indisponible. Veuillez réessayer plus tard.",
+      "serviceUnavailableDetail": "Le service de dictionnaire sera bientôt disponible. Veuillez réessayer dans quelques instants."
     },
     "estimatedTime": "Temps estimé : {{time}}",
     "etymology": "Étymologie",

@@ -192,8 +192,7 @@ const Dictionary: React.FC = () => {
       if (!dictionaryAPI.isServiceAvailable()) {
         setState(prev => ({
           ...prev,
-          error:
-            'Dictionary service is temporarily unavailable. Please try again later.',
+          error: t('toolbox:dictionary.errors.serviceUnavailable'),
           errorDetails: { code: 'SERVICE_UNAVAILABLE' },
           isLoading: false,
         }))
@@ -555,10 +554,9 @@ const Dictionary: React.FC = () => {
                     {t('toolbox:dictionary.aiWillGenerate')}
                   </p>
                 )}
-                {state.error.includes('temporarily unavailable') && (
+                {state.errorDetails?.code === 'SERVICE_UNAVAILABLE' && (
                   <p className="text-sm mt-1 text-amber-600">
-                    The dictionary service will be available again shortly.
-                    Please try again in a few moments.
+                    {t('toolbox:dictionary.errors.serviceUnavailableDetail')}
                   </p>
                 )}
               </div>
