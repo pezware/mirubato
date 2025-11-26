@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useState, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../stores/authStore'
 import GoogleSignInButton from '../components/GoogleSignInButton'
@@ -18,11 +18,42 @@ const PianoLoader = () => (
 export default function HomePage() {
   const { t } = useTranslation(['common', 'auth', 'logbook'])
   const navigate = useNavigate()
-  const { user, isAuthenticated, login, logout, isLoading, error } =
-    useAuthStore()
+  const {
+    user,
+    isAuthenticated,
+    isAuthInitialized,
+    login,
+    logout,
+    isLoading,
+    error,
+  } = useAuthStore()
   const [email, setEmail] = useState('')
   const [showLoginForm, setShowLoginForm] = useState(false)
   const [loginSuccess, setLoginSuccess] = useState(false)
+
+  // Redirect returning users to logbook repertoire tab
+  useEffect(() => {
+    if (!isAuthInitialized) return
+
+    // Check if user is authenticated (returning user)
+    if (isAuthenticated && user) {
+      navigate('/logbook?tab=repertoire', { replace: true })
+      return
+    }
+
+    // Check if user has local data (non-authenticated returning user)
+    const hasLocalEntries = localStorage.getItem('mirubato:logbook:entries')
+    if (hasLocalEntries) {
+      try {
+        const entries = JSON.parse(hasLocalEntries)
+        if (Array.isArray(entries) && entries.length > 0) {
+          navigate('/logbook?tab=repertoire', { replace: true })
+        }
+      } catch {
+        // Invalid JSON, ignore
+      }
+    }
+  }, [isAuthInitialized, isAuthenticated, user, navigate])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
