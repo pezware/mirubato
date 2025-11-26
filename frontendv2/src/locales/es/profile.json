@@ -1,0 +1,75 @@
+{
+  "title": "Perfil de Usuario",
+  "subtitle": "Gestiona tu perfil, preferencias y datos",
+  "tabs": {
+    "profile": "Perfil",
+    "preferences": "Preferencias",
+    "data": "Datos",
+    "account": "Cuenta"
+  },
+  "sections": {
+    "profile": "Tu Perfil",
+    "statistics": "Tus Estadísticas",
+    "language": "Idioma",
+    "instrument": "Instrumento Principal",
+    "dataOverview": "Tus Datos",
+    "dataMigration": "Migración de Datos",
+    "account": "Cuenta",
+    "signIn": "Iniciar Sesión",
+    "signOut": "Cerrar Sesión",
+    "dangerZone": "Zona de Peligro"
+  },
+  "displayNamePlaceholder": "Introduce tu nombre para mostrar",
+  "displayNameSaved": "Nombre guardado",
+  "displayNameError": "Error al guardar el nombre",
+  "editDisplayName": "Editar nombre",
+  "anonymous": "Usuario Anónimo",
+  "anonymousNote": "Estás usando Mirubato sin una cuenta. Tus datos se almacenan localmente en este navegador. Inicia sesión para sincronizar tus datos en todos los dispositivos.",
+  "memberSince": "Miembro desde",
+  "stats": {
+    "totalPractice": "Práctica Total",
+    "entries": "Entradas de Práctica",
+    "pieces": "Piezas del Repertorio",
+    "goals": "Objetivos"
+  },
+  "languageDescription": "Elige tu idioma preferido para la interfaz.",
+  "languageChanged": "Idioma actualizado",
+  "currentLanguage": "Actual",
+  "instrumentDescription": "Configura tu instrumento principal para el seguimiento de práctica y recomendaciones.",
+  "instrumentChanged": "Instrumento principal actualizado",
+  "customInstruments": "Instrumentos Personalizados",
+  "customInstrumentAdded": "Instrumento personalizado añadido",
+  "customInstrumentRemoved": "Instrumento personalizado eliminado",
+  "noCustomInstruments": "No hay instrumentos personalizados añadidos aún.",
+  "data": {
+    "entries": "Entradas",
+    "pieces": "Piezas",
+    "goals": "Objetivos",
+    "plans": "Planes",
+    "storageCloud": "Los datos están sincronizados con almacenamiento en la nube",
+    "storageLocal": "Los datos están almacenados localmente en tu navegador"
+  },
+  "dataMigrationDescription": "Exporta tus datos para hacer una copia de seguridad o transferir a otro dispositivo, o importa datos de una exportación anterior.",
+  "exportData": "Exportar Datos",
+  "importData": "Importar Datos",
+  "syncNote": "Los datos se sincronizarán con el almacenamiento en la nube antes de exportar.",
+  "email": "Correo electrónico",
+  "authProvider": "Método de inicio de sesión",
+  "magicLink": "Enlace Mágico",
+  "signInDescription": "Inicia sesión para sincronizar tus datos en todos los dispositivos y acceder a tu historial de práctica desde cualquier lugar.",
+  "signInBenefits": {
+    "title": "Beneficios de iniciar sesión:",
+    "sync": "Sincroniza datos en todos tus dispositivos",
+    "backup": "Copia de seguridad automática en la nube",
+    "access": "Accede a tus datos desde cualquier navegador"
+  },
+  "signOutDescription": "Cierra sesión de tu cuenta. Tus datos permanecerán sincronizados y disponibles cuando vuelvas a iniciar sesión.",
+  "signedOut": "Has cerrado sesión",
+  "signOutError": "Error al cerrar sesión",
+  "deleteAccountDescription": "Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
+  "deleteAccount": "Eliminar Cuenta",
+  "anonymousUsage": {
+    "title": "Usar sin cuenta",
+    "description": "Puedes continuar usando Mirubato sin iniciar sesión. Tus datos se almacenarán localmente en este navegador. Ten en cuenta que puedes perder tus datos si borras el almacenamiento del navegador o cambias de dispositivo."
+  }
+}

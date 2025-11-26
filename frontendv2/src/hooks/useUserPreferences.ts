@@ -5,6 +5,7 @@ interface UserPreferences {
   notificationSettings?: Record<string, unknown>
   primaryInstrument?: string
   customInstruments?: string[]
+  displayName?: string
 }
 
 const USER_PREFERENCES_KEY = 'mirubato:user-preferences'

@@ -1,0 +1,75 @@
+{
+  "title": "用户档案",
+  "subtitle": "管理您的档案、偏好设置和数据",
+  "tabs": {
+    "profile": "档案",
+    "preferences": "偏好设置",
+    "data": "数据",
+    "account": "账户"
+  },
+  "sections": {
+    "profile": "您的档案",
+    "statistics": "您的统计数据",
+    "language": "语言",
+    "instrument": "主要乐器",
+    "dataOverview": "您的数据",
+    "dataMigration": "数据迁移",
+    "account": "账户",
+    "signIn": "登录",
+    "signOut": "退出登录",
+    "dangerZone": "危险区域"
+  },
+  "displayNamePlaceholder": "输入您的显示名称",
+  "displayNameSaved": "显示名称已保存",
+  "displayNameError": "保存名称失败",
+  "editDisplayName": "编辑显示名称",
+  "anonymous": "匿名用户",
+  "anonymousNote": "您正在无账户的情况下使用 Mirubato。您的数据存储在此浏览器的本地端。登录以在所有设备间同步您的数据。",
+  "memberSince": "会员自",
+  "stats": {
+    "totalPractice": "练习总时长",
+    "entries": "练习记录",
+    "pieces": "曲目数量",
+    "goals": "目标"
+  },
+  "languageDescription": "选择您偏好的界面语言。",
+  "languageChanged": "语言已更新",
+  "currentLanguage": "当前",
+  "instrumentDescription": "设置您的主要乐器以进行练习跟踪和推荐。",
+  "instrumentChanged": "主要乐器已更新",
+  "customInstruments": "自定义乐器",
+  "customInstrumentAdded": "已添加自定义乐器",
+  "customInstrumentRemoved": "已移除自定义乐器",
+  "noCustomInstruments": "尚未添加自定义乐器。",
+  "data": {
+    "entries": "记录",
+    "pieces": "曲目",
+    "goals": "目标",
+    "plans": "计划",
+    "storageCloud": "数据已同步至云端存储",
+    "storageLocal": "数据存储在您浏览器的本地端"
+  },
+  "dataMigrationDescription": "导出您的数据以备份或转移到其他设备，或从先前的导出文件导入数据。",
+  "exportData": "导出数据",
+  "importData": "导入数据",
+  "syncNote": "导出前将与云端存储同步数据。",
+  "email": "电子邮件",
+  "authProvider": "登录方式",
+  "magicLink": "魔法链接",
+  "signInDescription": "登录以在所有设备间同步您的数据，并从任何地方访问您的练习历史。",
+  "signInBenefits": {
+    "title": "登录的好处：",
+    "sync": "在所有设备间同步数据",
+    "backup": "自动云端备份",
+    "access": "从任何浏览器访问您的数据"
+  },
+  "signOutDescription": "退出您的账户。您的数据将保持同步，并在您重新登录时可用。",
+  "signedOut": "您已退出登录",
+  "signOutError": "退出登录失败",
+  "deleteAccountDescription": "永久删除您的账户和所有相关数据。此操作无法撤销。",
+  "deleteAccount": "删除账户",
+  "anonymousUsage": {
+    "title": "无账户使用",
+    "description": "您可以在不登录的情况下继续使用 Mirubato。您的数据将存储在此浏览器的本地端。请注意，如果您清除浏览器存储或更换设备，可能会丢失数据。"
+  }
+}

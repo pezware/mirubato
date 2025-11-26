@@ -1,0 +1,75 @@
+{
+  "title": "User Profile",
+  "subtitle": "Manage your profile, preferences, and data",
+  "tabs": {
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "data": "Data",
+    "account": "Account"
+  },
+  "sections": {
+    "profile": "Your Profile",
+    "statistics": "Your Statistics",
+    "language": "Language",
+    "instrument": "Primary Instrument",
+    "dataOverview": "Your Data",
+    "dataMigration": "Data Migration",
+    "account": "Account",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "dangerZone": "Danger Zone"
+  },
+  "displayNamePlaceholder": "Enter your display name",
+  "displayNameSaved": "Display name saved",
+  "displayNameError": "Failed to save display name",
+  "editDisplayName": "Edit display name",
+  "anonymous": "Anonymous User",
+  "anonymousNote": "You are using Mirubato without an account. Your data is stored locally in this browser. Sign in to sync your data across devices.",
+  "memberSince": "Member since",
+  "stats": {
+    "totalPractice": "Total Practice",
+    "entries": "Practice Entries",
+    "pieces": "Repertoire Pieces",
+    "goals": "Goals"
+  },
+  "languageDescription": "Choose your preferred language for the interface.",
+  "languageChanged": "Language updated",
+  "currentLanguage": "Current",
+  "instrumentDescription": "Set your primary instrument for practice tracking and recommendations.",
+  "instrumentChanged": "Primary instrument updated",
+  "customInstruments": "Custom Instruments",
+  "customInstrumentAdded": "Custom instrument added",
+  "customInstrumentRemoved": "Custom instrument removed",
+  "noCustomInstruments": "No custom instruments added yet.",
+  "data": {
+    "entries": "Entries",
+    "pieces": "Pieces",
+    "goals": "Goals",
+    "plans": "Plans",
+    "storageCloud": "Data is synced to cloud storage",
+    "storageLocal": "Data is stored locally in your browser"
+  },
+  "dataMigrationDescription": "Export your data to backup or transfer to another device, or import data from a previous export.",
+  "exportData": "Export Data",
+  "importData": "Import Data",
+  "syncNote": "Data will be synced with cloud storage before export.",
+  "email": "Email",
+  "authProvider": "Sign-in method",
+  "magicLink": "Magic Link",
+  "signInDescription": "Sign in to sync your data across devices and access your practice history from anywhere.",
+  "signInBenefits": {
+    "title": "Benefits of signing in:",
+    "sync": "Sync data across all your devices",
+    "backup": "Automatic cloud backup",
+    "access": "Access your data from any browser"
+  },
+  "signOutDescription": "Sign out of your account. Your data will remain synced and available when you sign back in.",
+  "signedOut": "You have been signed out",
+  "signOutError": "Failed to sign out",
+  "deleteAccountDescription": "Permanently delete your account and all associated data. This action cannot be undone.",
+  "deleteAccount": "Delete Account",
+  "anonymousUsage": {
+    "title": "Using without an account",
+    "description": "You can continue using Mirubato without signing in. Your data will be stored locally in this browser. Note that you may lose your data if you clear browser storage or switch devices."
+  }
+}

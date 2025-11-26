@@ -17,6 +17,7 @@ import { SyncIndicator } from '../SyncIndicator'
 import { useBetaFeature } from '../../hooks/useBetaFeatures'
 import { TimerWidget } from '../timer/TimerWidget'
 import { useGlobalTimer } from '@/hooks/useGlobalTimer'
+import { useUserPreferences } from '../../hooks/useUserPreferences'
 
 interface SidebarProps {
   className?: string
@@ -44,6 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   ])
   const location = useLocation()
   const { user, isAuthenticated, logout } = useAuthStore()
+  const { preferences } = useUserPreferences()
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const isScorebookEnabled = useBetaFeature('scorebook')
@@ -51,6 +53,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Show timer widget instead of button when timer is active
   const showTimerWidget = seconds > 0 || isRunning
+
+  // Get display name from localStorage first, then server
+  const getDisplayName = () => {
+    return preferences.displayName || user?.displayName || user?.email || ''
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -99,8 +106,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const getUserInitials = () => {
     if (!user) return '?'
-    const firstNameOrEmail = user.displayName || user.email || ''
-    const firstName = firstNameOrEmail.split(' ')[0]
+    const displayName = getDisplayName()
+    const firstName = displayName.split(/[\s@]/)[0]
     return firstName[0]?.toUpperCase() || '?'
   }
 
@@ -303,7 +310,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {!isCollapsed && (
                   <div className="flex-1 text-left">
                     <div className="text-sm font-medium text-gray-900">
-                      {user?.displayName || user?.email?.split('@')[0]}
+                      {getDisplayName().split('@')[0] ||
+                        user?.email?.split('@')[0]}
                     </div>
                   </div>
                 )}
@@ -316,7 +324,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <div className="p-4 border-b border-gray-100">
                     <div className="font-medium text-gray-900">
-                      {user?.displayName || user?.email}
+                      {preferences.displayName ||
+                        user?.displayName ||
+                        user?.email}
                     </div>
                     {user?.email && (
                       <div className="text-sm text-gray-500 mt-1">
@@ -325,12 +335,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                     )}
                   </div>
                   <div className="p-1">
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
+                    <Link
+                      to="/profile"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors"
+                    >
                       {t('common:navigation.profileSettings')}
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
-                      {t('common:navigation.preferences')}
-                    </button>
+                    </Link>
                     <div className="border-t border-gray-100 my-1" />
                     <button
                       onClick={async () => {
