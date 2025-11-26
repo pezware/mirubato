@@ -165,15 +165,10 @@ export function PreferencesTab() {
 
           <Select
             value={preferences.primaryInstrument || 'piano'}
-            onChange={e => handleInstrumentChange(e.target.value)}
+            onChange={value => handleInstrumentChange(String(value))}
+            options={instrumentOptions}
             className="max-w-xs"
-          >
-            {instrumentOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+          />
 
           {/* Custom Instruments Section */}
           <div className="pt-4 border-t border-morandi-stone-200">
