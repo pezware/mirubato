@@ -19,8 +19,9 @@ import { useRepertoireStore } from '../../stores/repertoireStore'
 import { usePlanningStore } from '../../stores/planningStore'
 import { showToast } from '../../utils/toastManager'
 import { syncApi } from '../../api/sync'
-import { LogbookEntry, Goal } from '../../api/logbook'
+import { LogbookEntry, Goal as LogbookGoal } from '../../api/logbook'
 import { RepertoireItem } from '../../api/repertoire'
+import { Goal as RepertoireGoal } from '../../api/goals'
 import type {
   PracticePlan,
   PlanOccurrence,
@@ -41,9 +42,9 @@ import type {
 interface DataExportFormat {
   // Core practice data
   logbook: LogbookEntry[]
-  goals: Goal[]
+  goals: LogbookGoal[]
   repertoire: RepertoireItem[]
-  repertoireGoals: Goal[]
+  repertoireGoals: RepertoireGoal[]
 
   // Planning data
   practicePlans: PracticePlan[]
