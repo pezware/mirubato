@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -12,14 +12,75 @@ import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ImportScoreModal from '../components/score/ImportScoreModal'
 import CollectionsManager from '../components/score/CollectionsManager'
 import ScoreListItem from '../components/score/ScoreListItem'
+import ScoreGridItem from '../components/score/ScoreGridItem'
 import TimerEntry from '../components/TimerEntry'
 import { useAuthStore } from '../stores/authStore'
 import { useModals } from '../hooks/useModal'
 import Button from '../components/ui/Button'
-import { Tabs } from '../components/ui'
-import { Plus, BookOpen, Folder, User } from 'lucide-react'
+import { Tabs, Select } from '../components/ui'
+import { Input } from '../components/ui/Input'
+import {
+  Plus,
+  BookOpen,
+  Folder,
+  User,
+  Search,
+  LayoutGrid,
+  List,
+  X,
+} from 'lucide-react'
 
 type TabView = 'scores' | 'publicCollections' | 'myCollections'
+type ViewMode = 'list' | 'grid'
+type SortBy = 'title' | 'composer' | 'difficulty' | 'createdAt' | 'popularity'
+type SortOrder = 'asc' | 'desc'
+
+// Custom hook for debounced search
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
+
+// Persist user preferences in localStorage
+const STORAGE_KEY = 'mirubato_scorebrowser_prefs'
+
+interface UserPreferences {
+  viewMode: ViewMode
+  sortBy: SortBy
+  sortOrder: SortOrder
+}
+
+const getStoredPreferences = (): UserPreferences => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return { viewMode: 'list', sortBy: 'createdAt', sortOrder: 'desc' }
+}
+
+const setStoredPreferences = (prefs: Partial<UserPreferences>) => {
+  try {
+    const current = getStoredPreferences()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, ...prefs }))
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 export default function ScoreBrowserPage() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -54,10 +115,91 @@ export default function ScoreBrowserPage() {
   const [isLoadingDefaultCollection, setIsLoadingDefaultCollection] =
     useState(false)
 
+  // New state for search, sort, and view mode
+  const storedPrefs = useMemo(() => getStoredPreferences(), [])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<ViewMode>(storedPrefs.viewMode)
+  const [sortBy, setSortBy] = useState<SortBy>(storedPrefs.sortBy)
+  const [sortOrder, setSortOrder] = useState<SortOrder>(storedPrefs.sortOrder)
+  const [totalScores, setTotalScores] = useState(0)
+
+  // Debounce search query to avoid excessive API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+
+  // Sort options for the dropdown
+  const sortOptions = useMemo(
+    () => [
+      {
+        value: 'createdAt-desc',
+        label: t('scorebook:sort.recentFirst', 'Recently Added'),
+      },
+      {
+        value: 'createdAt-asc',
+        label: t('scorebook:sort.oldestFirst', 'Oldest First'),
+      },
+      { value: 'title-asc', label: t('scorebook:sort.titleAZ', 'Title (A-Z)') },
+      {
+        value: 'title-desc',
+        label: t('scorebook:sort.titleZA', 'Title (Z-A)'),
+      },
+      {
+        value: 'composer-asc',
+        label: t('scorebook:sort.composerAZ', 'Composer (A-Z)'),
+      },
+      {
+        value: 'composer-desc',
+        label: t('scorebook:sort.composerZA', 'Composer (Z-A)'),
+      },
+      {
+        value: 'difficulty-asc',
+        label: t('scorebook:sort.difficultyEasy', 'Difficulty (Easy First)'),
+      },
+      {
+        value: 'difficulty-desc',
+        label: t('scorebook:sort.difficultyHard', 'Difficulty (Hard First)'),
+      },
+      {
+        value: 'popularity-desc',
+        label: t('scorebook:sort.popular', 'Most Popular'),
+      },
+    ],
+    [t]
+  )
+
+  // Handle sort change
+  const handleSortChange = useCallback((value: string | number) => {
+    const [newSortBy, newSortOrder] = (value as string).split('-') as [
+      SortBy,
+      SortOrder,
+    ]
+    setSortBy(newSortBy)
+    setSortOrder(newSortOrder)
+    setStoredPreferences({ sortBy: newSortBy, sortOrder: newSortOrder })
+  }, [])
+
+  // Handle view mode change
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode)
+    setStoredPreferences({ viewMode: mode })
+  }, [])
+
+  // Clear search
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('')
+  }, [])
+
   useEffect(() => {
     loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, selectedInstrument, selectedDifficulty, isAuthenticated])
+  }, [
+    slug,
+    selectedInstrument,
+    selectedDifficulty,
+    isAuthenticated,
+    debouncedSearchQuery,
+    sortBy,
+    sortOrder,
+  ])
 
   // Set default tab to "My Collections" if user is authenticated and has collections
   useEffect(() => {
@@ -104,6 +246,9 @@ export default function ScoreBrowserPage() {
         const collection = await scoreService.getCollection(slug)
         const collectionScores = await scoreService.getScores({
           tags: [collection.slug],
+          sortBy,
+          sortOrder,
+          query: debouncedSearchQuery || undefined,
         })
         // Normalize scores to ensure tags property exists
         loadedScores = collectionScores.items.map(score => ({
@@ -111,11 +256,16 @@ export default function ScoreBrowserPage() {
           tags: score.tags || [],
         }))
         setScores(loadedScores)
+        setTotalScores(collectionScores.total)
       } else {
-        // Load all scores with filters
-        const params: ScoreSearchParams = {}
+        // Load all scores with filters, search, and sort
+        const params: ScoreSearchParams = {
+          sortBy,
+          sortOrder,
+        }
         if (selectedInstrument) params.instrument = selectedInstrument
         if (selectedDifficulty) params.difficulty = selectedDifficulty
+        if (debouncedSearchQuery) params.query = debouncedSearchQuery
 
         const scoresData = await scoreService.getScores(params)
         // Normalize scores to ensure tags property exists
@@ -124,6 +274,7 @@ export default function ScoreBrowserPage() {
           tags: score.tags || [],
         }))
         setScores(loadedScores)
+        setTotalScores(scoresData.total)
       }
 
       // Load collections for each score
@@ -172,42 +323,35 @@ export default function ScoreBrowserPage() {
       }
     })
 
-    // If authenticated, also load user's private collections for scores
+    // If authenticated, load user's private collections for all scores in a single batch request
     if (isAuthenticated) {
-      const userCollectionIds = allCollections
-        .filter(col => col.visibility !== 'public')
-        .map(col => col.id)
+      const collectionById = new Map(allCollections.map(col => [col.id, col]))
 
-      if (userCollectionIds.length > 0) {
-        const collectionById = new Map(allCollections.map(col => [col.id, col]))
+      try {
+        // Use batch endpoint to get collections for all scores at once (eliminates N+1 queries)
+        const scoreIds = scores.map(s => s.id)
+        const batchCollections =
+          await scoreService.getBatchScoreCollections(scoreIds)
 
-        await Promise.all(
-          scores.map(async score => {
-            try {
-              const collectionIds = await scoreService.getScoreCollections(
-                score.id
-              )
-              const userScoreCollections = collectionIds
-                .map(id => collectionById.get(id))
-                .filter(
-                  (col): col is Collection =>
-                    col !== undefined && col.visibility !== 'public'
-                )
+        // Process batch results
+        for (const score of scores) {
+          const collectionsForScore = batchCollections[score.id] || []
+          const userScoreCollections = collectionsForScore
+            .map(c => collectionById.get(c.id))
+            .filter(
+              (col): col is Collection =>
+                col !== undefined && col.visibility !== 'public'
+            )
 
-              if (userScoreCollections.length > 0) {
-                collectionMap[score.id] = [
-                  ...(collectionMap[score.id] || []),
-                  ...userScoreCollections,
-                ]
-              }
-            } catch (error) {
-              console.error(
-                `Failed to load collections for score ${score.id}:`,
-                error
-              )
-            }
-          })
-        )
+          if (userScoreCollections.length > 0) {
+            collectionMap[score.id] = [
+              ...(collectionMap[score.id] || []),
+              ...userScoreCollections,
+            ]
+          }
+        }
+      } catch (error) {
+        console.error('Failed to batch load score collections:', error)
       }
     }
 
@@ -542,58 +686,147 @@ export default function ScoreBrowserPage() {
         />
 
         <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200">
-          {/* Import Button - moved here after tabs */}
-          {isAuthenticated && tabView === 'scores' && (
-            <div className="flex items-center justify-end px-4 md:px-6 pt-4">
-              <Button
-                onClick={() => modals.open('import')}
-                size="sm"
-                variant="primary"
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                {t('scorebook:importScore', 'Import Score')}
-              </Button>
-            </div>
-          )}
-
-          {/* Filters - only show for scores tab */}
+          {/* Search, Sort, and Actions Bar - only show for scores tab */}
           {tabView === 'scores' && (
-            <div className="p-3 md:p-4 border-b border-morandi-stone-200">
-              <div className="flex gap-4">
-                <select
-                  value={selectedInstrument}
-                  onChange={e => setSelectedInstrument(e.target.value)}
-                  className="px-4 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
-                >
-                  <option value="">
-                    {t('scorebook:allInstruments', 'All Instruments')}
-                  </option>
-                  <option value="piano">{t('scorebook:piano', 'Piano')}</option>
-                  <option value="guitar">
-                    {t('scorebook:guitar', 'Guitar')}
-                  </option>
-                </select>
-
-                <select
-                  value={selectedDifficulty}
-                  onChange={e => setSelectedDifficulty(e.target.value)}
-                  className="px-4 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
-                >
-                  <option value="">
-                    {t('scorebook:allDifficulties', 'All Difficulties')}
-                  </option>
-                  <option value="beginner">
-                    {t('scorebook:beginner', 'Beginner')}
-                  </option>
-                  <option value="intermediate">
-                    {t('scorebook:intermediate', 'Intermediate')}
-                  </option>
-                  <option value="advanced">
-                    {t('scorebook:advanced', 'Advanced')}
-                  </option>
-                </select>
+            <div className="p-3 md:p-4 border-b border-morandi-stone-200 space-y-3">
+              {/* Search Input */}
+              <div className="relative">
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder={t(
+                    'scorebook:searchPlaceholder',
+                    'Search by title, composer, or opus...'
+                  )}
+                  leftIcon={<Search className="w-4 h-4" />}
+                  rightIcon={
+                    searchQuery ? (
+                      <button
+                        onClick={handleClearSearch}
+                        className="p-1 hover:bg-morandi-stone-100 rounded-full transition-colors pointer-events-auto"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    ) : undefined
+                  }
+                  fullWidth
+                  className="text-sm"
+                />
               </div>
+
+              {/* Filters, Sort, View Mode, and Import Button Row */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  <select
+                    value={selectedInstrument}
+                    onChange={e => setSelectedInstrument(e.target.value)}
+                    className="px-3 py-1.5 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
+                  >
+                    <option value="">
+                      {t('scorebook:allInstruments', 'All Instruments')}
+                    </option>
+                    <option value="piano">
+                      {t('scorebook:piano', 'Piano')}
+                    </option>
+                    <option value="guitar">
+                      {t('scorebook:guitar', 'Guitar')}
+                    </option>
+                  </select>
+
+                  <select
+                    value={selectedDifficulty}
+                    onChange={e => setSelectedDifficulty(e.target.value)}
+                    className="px-3 py-1.5 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
+                  >
+                    <option value="">
+                      {t('scorebook:allDifficulties', 'All Difficulties')}
+                    </option>
+                    <option value="beginner">
+                      {t('scorebook:beginner', 'Beginner')}
+                    </option>
+                    <option value="intermediate">
+                      {t('scorebook:intermediate', 'Intermediate')}
+                    </option>
+                    <option value="advanced">
+                      {t('scorebook:advanced', 'Advanced')}
+                    </option>
+                  </select>
+                </div>
+
+                {/* Sort, View Toggle, and Import Button */}
+                <div className="flex items-center gap-2 sm:gap-3">
+                  {/* Sort Dropdown */}
+                  <Select
+                    value={`${sortBy}-${sortOrder}`}
+                    onChange={handleSortChange}
+                    options={sortOptions}
+                    className="min-w-[160px]"
+                  />
+
+                  {/* View Mode Toggle */}
+                  <div className="flex items-center border border-morandi-stone-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => handleViewModeChange('list')}
+                      className={`p-2 transition-colors ${
+                        viewMode === 'list'
+                          ? 'bg-morandi-sage-100 text-morandi-sage-700'
+                          : 'bg-white text-morandi-stone-500 hover:bg-morandi-stone-50'
+                      }`}
+                      title={t('scorebook:listView', 'List view')}
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleViewModeChange('grid')}
+                      className={`p-2 transition-colors ${
+                        viewMode === 'grid'
+                          ? 'bg-morandi-sage-100 text-morandi-sage-700'
+                          : 'bg-white text-morandi-stone-500 hover:bg-morandi-stone-50'
+                      }`}
+                      title={t('scorebook:gridView', 'Grid view')}
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Import Button */}
+                  {isAuthenticated && (
+                    <Button
+                      onClick={() => modals.open('import')}
+                      size="sm"
+                      variant="primary"
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span className="hidden sm:inline">
+                        {t('scorebook:importScore', 'Import')}
+                      </span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Results count */}
+              {!isLoading && (
+                <div className="text-xs text-morandi-stone-500">
+                  {debouncedSearchQuery ? (
+                    <>
+                      {t('scorebook:searchResults', '{{count}} results for', {
+                        count: totalScores,
+                      })}{' '}
+                      <span className="font-medium">
+                        "{debouncedSearchQuery}"
+                      </span>
+                    </>
+                  ) : (
+                    t('scorebook:totalScores', '{{count}} scores', {
+                      count: totalScores,
+                    })
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -610,24 +843,81 @@ export default function ScoreBrowserPage() {
               <div>
                 {/* Scores Tab */}
                 {tabView === 'scores' && (
-                  <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden">
+                  <>
                     {scores.length === 0 ? (
-                      <div className="p-8 text-center text-morandi-stone-600">
-                        {t('scorebook:noScoresFound', 'No scores found')}
+                      <div className="bg-white rounded-lg border border-morandi-stone-200 p-8 text-center">
+                        {debouncedSearchQuery ? (
+                          <div>
+                            <Search className="w-12 h-12 mx-auto text-morandi-stone-300 mb-4" />
+                            <p className="text-morandi-stone-600 mb-2">
+                              {t(
+                                'scorebook:noSearchResults',
+                                'No scores found matching your search'
+                              )}
+                            </p>
+                            <p className="text-sm text-morandi-stone-500 mb-4">
+                              {t(
+                                'scorebook:tryDifferentSearch',
+                                'Try a different search term or clear filters'
+                              )}
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleClearSearch}
+                            >
+                              {t('scorebook:clearSearch', 'Clear Search')}
+                            </Button>
+                          </div>
+                        ) : (
+                          <div>
+                            <BookOpen className="w-12 h-12 mx-auto text-morandi-stone-300 mb-4" />
+                            <p className="text-morandi-stone-600 mb-2">
+                              {t('scorebook:noScoresFound', 'No scores found')}
+                            </p>
+                            {isAuthenticated && (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => modals.open('import')}
+                                className="mt-4"
+                              >
+                                <Plus className="w-4 h-4 mr-2" />
+                                {t(
+                                  'scorebook:importFirstScore',
+                                  'Import your first score'
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : viewMode === 'list' ? (
+                      <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden">
+                        {scores.map(score => (
+                          <ScoreListItem
+                            key={score.id}
+                            score={score}
+                            onAddToCollection={handleAddToCollection}
+                            collections={scoreCollections[score.id]}
+                            showCollections={true}
+                            showTagsInCollapsed={true}
+                          />
+                        ))}
                       </div>
                     ) : (
-                      scores.map(score => (
-                        <ScoreListItem
-                          key={score.id}
-                          score={score}
-                          onAddToCollection={handleAddToCollection}
-                          collections={scoreCollections[score.id]}
-                          showCollections={true}
-                          showTagsInCollapsed={true}
-                        />
-                      ))
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                        {scores.map(score => (
+                          <ScoreGridItem
+                            key={score.id}
+                            score={score}
+                            onAddToCollection={handleAddToCollection}
+                            collections={scoreCollections[score.id]}
+                          />
+                        ))}
+                      </div>
                     )}
-                  </div>
+                  </>
                 )}
 
                 {/* Public Collections Tab */}

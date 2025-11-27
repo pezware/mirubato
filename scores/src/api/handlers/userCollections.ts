@@ -683,4 +683,79 @@ userCollectionsHandler.get('/score/:scoreId', async c => {
   }
 })
 
+// Batch: Get collections for multiple scores at once (eliminates N+1 queries)
+userCollectionsHandler.post('/batch/score-collections', async c => {
+  try {
+    const body = await c.req.json()
+    const { scoreIds } = body
+
+    if (!Array.isArray(scoreIds) || scoreIds.length === 0) {
+      throw new HTTPException(400, {
+        message: 'scoreIds array is required and must not be empty',
+      })
+    }
+
+    // Limit batch size to prevent abuse
+    if (scoreIds.length > 100) {
+      throw new HTTPException(400, {
+        message: 'Maximum 100 score IDs per batch request',
+      })
+    }
+
+    // Get authenticated user
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
+    if (!user) {
+      throw new HTTPException(401, { message: 'Authentication required' })
+    }
+
+    // Get all collection memberships for all scores in a single query
+    const placeholders = scoreIds.map(() => '?').join(',')
+    const memberships = await c.env.DB.prepare(
+      `SELECT cm.score_id, uc.id as collection_id, uc.name as collection_name
+       FROM collection_members cm
+       JOIN user_collections uc ON cm.collection_id = uc.id
+       WHERE uc.user_id = ? AND cm.score_id IN (${placeholders})`
+    )
+      .bind(user.id, ...scoreIds)
+      .all()
+
+    // Build a map of scoreId -> array of collection info
+    const scoreCollections: Record<
+      string,
+      Array<{ id: string; name: string }>
+    > = {}
+
+    // Initialize all requested scoreIds with empty arrays
+    for (const scoreId of scoreIds) {
+      scoreCollections[scoreId] = []
+    }
+
+    // Populate with actual memberships
+    for (const row of memberships.results) {
+      const scoreId = row.score_id as string
+      if (scoreCollections[scoreId]) {
+        scoreCollections[scoreId].push({
+          id: row.collection_id as string,
+          name: row.collection_name as string,
+        })
+      }
+    }
+
+    return c.json({
+      success: true,
+      data: scoreCollections,
+    })
+  } catch (error) {
+    if (error instanceof HTTPException) throw error
+    console.error('Error batch fetching score collections:', error)
+    throw new HTTPException(500, {
+      message: 'Failed to batch fetch score collections',
+    })
+  }
+})
+
 export { userCollectionsHandler }
