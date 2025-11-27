@@ -16,6 +16,7 @@ interface ShareCardPreviewProps {
   data: ShareCardData
   variant: CardVariant
   showUsername?: boolean
+  showNotes?: boolean
   className?: string
 }
 
@@ -120,249 +121,302 @@ function MiniHeatmap({
 export const ShareCardPreview = forwardRef<
   HTMLDivElement,
   ShareCardPreviewProps
->(({ data, variant, showUsername = true, className }, ref) => {
-  const { t } = useTranslation(['common', 'share'])
+>(
+  (
+    { data, variant, showUsername = true, showNotes = false, className },
+    ref
+  ) => {
+    const { t } = useTranslation(['common', 'share'])
 
-  const isStory = variant === 'story'
-  const cardWidth = isStory ? 540 : 540
-  const cardHeight = isStory ? 960 : 540
+    const isStory = variant === 'story'
+    const cardWidth = isStory ? 540 : 540
+    const cardHeight = isStory ? 960 : 540
 
-  // Limit pieces to show
-  const maxPieces = isStory ? 4 : 2
-  const piecesToShow = data.todayPieces.slice(0, maxPieces)
+    // Limit pieces to show (fewer if notes are shown)
+    const hasNotes = showNotes && data.todayNotes.length > 0
+    const maxPieces = hasNotes ? (isStory ? 2 : 1) : isStory ? 4 : 2
+    const piecesToShow = data.todayPieces.slice(0, maxPieces)
 
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        width: cardWidth,
-        height: cardHeight,
-        background: 'linear-gradient(180deg, #f5f3f0 0%, #e8e5e0 100%)',
-        borderRadius: 24,
-        padding: isStory ? 32 : 24,
-        display: 'flex',
-        flexDirection: 'column',
-        fontFamily: 'Inter, system-ui, sans-serif',
-        overflow: 'hidden',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* Header */}
+    // Combine notes into a single display string (truncate if too long)
+    const combinedNotes = data.todayNotes.join(' • ')
+    const maxNotesLength = isStory ? 200 : 100
+    const displayNotes =
+      combinedNotes.length > maxNotesLength
+        ? combinedNotes.slice(0, maxNotesLength).trim() + '...'
+        : combinedNotes
+
+    return (
       <div
+        ref={ref}
+        className={className}
         style={{
+          width: cardWidth,
+          height: cardHeight,
+          background: 'linear-gradient(180deg, #f5f3f0 0%, #e8e5e0 100%)',
+          borderRadius: 24,
+          padding: isStory ? 32 : 24,
           display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          marginBottom: isStory ? 24 : 16,
+          flexDirection: 'column',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
-        <img
-          src="/logo-48x48.png"
-          alt=""
-          style={{ width: 32, height: 32, borderRadius: 6 }}
-        />
-        <div>
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            marginBottom: isStory ? 24 : 16,
+          }}
+        >
+          <img
+            src="/logo-48x48.png"
+            alt=""
+            style={{ width: 32, height: 32, borderRadius: 6 }}
+          />
+          <div>
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: '#3d3d3d',
+                fontFamily: 'Lexend, Inter, sans-serif',
+              }}
+            >
+              {t('common:appName')}
+            </div>
+            <div style={{ fontSize: 11, color: '#7a7a7a' }}>
+              {t('share:practiceJournal', 'Practice Journal')}
+            </div>
+          </div>
+        </div>
+
+        {/* Today's Practice Section */}
+        <div
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            borderRadius: 16,
+            padding: isStory ? 24 : 16,
+            marginBottom: isStory ? 20 : 12,
+            textAlign: 'center',
+          }}
+        >
           <div
             style={{
-              fontSize: 16,
-              fontWeight: 600,
+              fontSize: 12,
+              fontWeight: 500,
+              color: '#7a7a7a',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
+            {t('share:todaysPractice', "Today's Practice")}
+          </div>
+          <div
+            style={{
+              fontSize: isStory ? 48 : 36,
+              fontWeight: 300,
               color: '#3d3d3d',
               fontFamily: 'Lexend, Inter, sans-serif',
             }}
           >
-            {t('common:appName')}
+            {data.todayTotalFormatted || '0m'}
           </div>
-          <div style={{ fontSize: 11, color: '#7a7a7a' }}>
-            {t('share:practiceJournal', 'Practice Journal')}
+          <div style={{ fontSize: 14, color: '#7a7a7a', marginTop: 4 }}>
+            {data.todayFormatted}
           </div>
         </div>
-      </div>
 
-      {/* Today's Practice Section */}
-      <div
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.7)',
-          borderRadius: 16,
-          padding: isStory ? 24 : 16,
-          marginBottom: isStory ? 20 : 12,
-          textAlign: 'center',
-        }}
-      >
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: '#7a7a7a',
-            textTransform: 'uppercase',
-            letterSpacing: 1,
-            marginBottom: 8,
-          }}
-        >
-          {t('share:todaysPractice', "Today's Practice")}
-        </div>
-        <div
-          style={{
-            fontSize: isStory ? 48 : 36,
-            fontWeight: 300,
-            color: '#3d3d3d',
-            fontFamily: 'Lexend, Inter, sans-serif',
-          }}
-        >
-          {data.todayTotalFormatted || '0m'}
-        </div>
-        <div style={{ fontSize: 14, color: '#7a7a7a', marginTop: 4 }}>
-          {data.todayFormatted}
-        </div>
-      </div>
+        {/* Pieces Section */}
+        {piecesToShow.length > 0 && (
+          <div
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+              borderRadius: 16,
+              padding: isStory ? 20 : 14,
+              marginBottom: isStory ? 20 : 12,
+              flex: isStory ? 1 : 'none',
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: '#7a7a7a',
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                marginBottom: 12,
+              }}
+            >
+              {t('share:piecesPracticed', 'Pieces Practiced')}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {piecesToShow.map((piece, index) => (
+                <div
+                  key={index}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}
+                >
+                  <span style={{ fontSize: 16, marginTop: 2 }}>&#119070;</span>
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        fontSize: isStory ? 16 : 14,
+                        fontWeight: 500,
+                        color: '#3d3d3d',
+                        fontFamily: '"Noto Serif", Georgia, serif',
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {piece.title}
+                    </div>
+                    {piece.composer && (
+                      <div
+                        style={{
+                          fontSize: isStory ? 13 : 12,
+                          color: '#666',
+                          fontFamily: '"Noto Serif", Georgia, serif',
+                        }}
+                      >
+                        {piece.composer}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {data.todayPieces.length > maxPieces && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: '#7a7a7a',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  +{data.todayPieces.length - maxPieces}{' '}
+                  {t('share:morePieces', 'more pieces')}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-      {/* Pieces Section */}
-      {piecesToShow.length > 0 && (
+        {/* Notes Section */}
+        {hasNotes && (
+          <div
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+              borderRadius: 16,
+              padding: isStory ? 20 : 14,
+              marginBottom: isStory ? 20 : 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: '#7a7a7a',
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                marginBottom: 8,
+              }}
+            >
+              {t('share:practiceNotes', 'Practice Notes')}
+            </div>
+            <div
+              style={{
+                fontSize: isStory ? 15 : 13,
+                color: '#4a4a4a',
+                lineHeight: 1.5,
+                fontStyle: 'italic',
+              }}
+            >
+              "{displayNotes}"
+            </div>
+          </div>
+        )}
+
+        {/* Stats & Heatmap Section */}
         <div
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.5)',
             borderRadius: 16,
             padding: isStory ? 20 : 14,
             marginBottom: isStory ? 20 : 12,
-            flex: isStory ? 1 : 'none',
           }}
         >
           <div
             style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: '#7a7a7a',
-              textTransform: 'uppercase',
-              letterSpacing: 1,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               marginBottom: 12,
             }}
           >
-            {t('share:piecesPracticed', 'Pieces Practiced')}
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: '#7a7a7a',
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+              }}
+            >
+              {t('share:practiceJourney', 'Practice Journey')}
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: '#3d3d3d' }}>
+              {t('share:totalTime', 'Total')}: {data.totalFormatted}
+            </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {piecesToShow.map((piece, index) => (
-              <div
-                key={index}
-                style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}
-              >
-                <span style={{ fontSize: 16, marginTop: 2 }}>&#119070;</span>
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: isStory ? 16 : 14,
-                      fontWeight: 500,
-                      color: '#3d3d3d',
-                      fontFamily: '"Noto Serif", Georgia, serif',
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {piece.title}
-                  </div>
-                  {piece.composer && (
-                    <div
-                      style={{
-                        fontSize: isStory ? 13 : 12,
-                        color: '#666',
-                        fontFamily: '"Noto Serif", Georgia, serif',
-                      }}
-                    >
-                      {piece.composer}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {data.todayPieces.length > maxPieces && (
-              <div
-                style={{ fontSize: 12, color: '#7a7a7a', fontStyle: 'italic' }}
-              >
-                +{data.todayPieces.length - maxPieces}{' '}
-                {t('share:morePieces', 'more pieces')}
-              </div>
-            )}
-          </div>
+          <MiniHeatmap data={data.heatmapData} months={isStory ? 4 : 3} />
         </div>
-      )}
 
-      {/* Stats & Heatmap Section */}
-      <div
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.5)',
-          borderRadius: 16,
-          padding: isStory ? 20 : 14,
-          marginBottom: isStory ? 20 : 12,
-        }}
-      >
+        {/* Footer */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: 12,
+            marginTop: 'auto',
           }}
         >
+          {showUsername && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  backgroundColor: '#6b8f6b',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                {data.displayName[0]?.toUpperCase() || '?'}
+              </div>
+              <span style={{ fontSize: 13, color: '#3d3d3d', fontWeight: 500 }}>
+                @{data.displayName.toLowerCase().replace(/\s+/g, '')}
+              </span>
+            </div>
+          )}
           <div
             style={{
               fontSize: 11,
-              fontWeight: 500,
               color: '#7a7a7a',
-              textTransform: 'uppercase',
-              letterSpacing: 1,
+              marginLeft: showUsername ? 0 : 'auto',
             }}
           >
-            {t('share:practiceJourney', 'Practice Journey')}
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: '#3d3d3d' }}>
-            {t('share:totalTime', 'Total')}: {data.totalFormatted}
+            mirubato.com
           </div>
         </div>
-        <MiniHeatmap data={data.heatmapData} months={isStory ? 4 : 3} />
       </div>
-
-      {/* Footer */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: 'auto',
-        }}
-      >
-        {showUsername && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: '50%',
-                backgroundColor: '#6b8f6b',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              {data.displayName[0]?.toUpperCase() || '?'}
-            </div>
-            <span style={{ fontSize: 13, color: '#3d3d3d', fontWeight: 500 }}>
-              @{data.displayName.toLowerCase().replace(/\s+/g, '')}
-            </span>
-          </div>
-        )}
-        <div
-          style={{
-            fontSize: 11,
-            color: '#7a7a7a',
-            marginLeft: showUsername ? 0 : 'auto',
-          }}
-        >
-          mirubato.com
-        </div>
-      </div>
-    </div>
-  )
-})
+    )
+  }
+)
 
 ShareCardPreview.displayName = 'ShareCardPreview'

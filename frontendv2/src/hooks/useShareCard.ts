@@ -26,6 +26,7 @@ export interface ShareCardData {
   todayPieces: ShareCardPiece[]
   todayTotalMinutes: number
   todayTotalFormatted: string
+  todayNotes: string[] // Array of notes from today's entries
 
   // Total stats
   totalMinutes: number
@@ -75,12 +76,18 @@ export function useShareCard(): ShareCardData {
       return isWithinInterval(entryDate, { start: todayStart, end: todayEnd })
     })
 
-    // Aggregate today's pieces with their durations
+    // Aggregate today's pieces with their durations and collect notes
     const pieceMap = new Map<string, ShareCardPiece>()
+    const todayNotes: string[] = []
     let todayTotalMinutes = 0
 
     todayEntries.forEach(entry => {
       todayTotalMinutes += entry.duration || 0
+
+      // Collect notes from entries
+      if (entry.notes && entry.notes.trim()) {
+        todayNotes.push(entry.notes.trim())
+      }
 
       entry.pieces?.forEach(piece => {
         const key = `${piece.title}|${piece.composer || ''}`
@@ -151,6 +158,7 @@ export function useShareCard(): ShareCardData {
       ),
       todayTotalMinutes,
       todayTotalFormatted: formatDuration(todayTotalMinutes),
+      todayNotes,
       totalMinutes,
       totalFormatted: formatTotalDuration(totalMinutes),
       totalEntries: entries.length,

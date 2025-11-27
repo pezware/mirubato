@@ -74,8 +74,12 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
 
   const [variant, setVariant] = useState<CardVariant>('story')
   const [showUsername, setShowUsername] = useState(true)
+  const [showNotes, setShowNotes] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  // Check if user has notes to share
+  const hasNotes = shareCardData.todayNotes.length > 0
 
   const variantOptions = [
     { value: 'story', label: t('share:story', 'Story (9:16)') },
@@ -234,6 +238,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
               data={shareCardData}
               variant={variant}
               showUsername={showUsername}
+              showNotes={showNotes}
             />
           </div>
         </div>
@@ -267,6 +272,29 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
               </span>
             </label>
           </div>
+
+          {/* Show Notes Toggle */}
+          {hasNotes && (
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showNotes}
+                  onChange={e => setShowNotes(e.target.checked)}
+                  className="rounded border-gray-300 text-morandi-sage-500 focus:ring-morandi-sage-500"
+                />
+                <span className="text-sm text-gray-700">
+                  {t('share:showNotes', 'Include practice notes')}
+                </span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1 ml-6">
+                {t(
+                  'share:notesHint',
+                  "Share your thoughts from today's practice"
+                )}
+              </p>
+            </div>
+          )}
 
           {/* No Data Notice */}
           {!shareCardData.hasData && (
