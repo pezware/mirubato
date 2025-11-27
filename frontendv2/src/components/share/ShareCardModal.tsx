@@ -241,26 +241,43 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
     >
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Preview Panel */}
-        <div className="flex-1 flex flex-col items-center">
+        <div className="flex-1 flex flex-col items-center overflow-hidden">
           <div
-            className="overflow-auto max-h-[60vh] rounded-xl shadow-lg"
-            style={{ transform: 'scale(0.55)', transformOrigin: 'top center' }}
+            className="rounded-xl shadow-lg"
+            style={{
+              width: isWeekly ? 297 : variant === 'square' ? 297 : 297,
+              height: isWeekly
+                ? 'auto'
+                : variant === 'story'
+                  ? 528
+                  : variant === 'long'
+                    ? 'auto'
+                    : 297,
+              overflow: 'hidden',
+            }}
           >
-            {isWeekly ? (
-              <WeeklyShareCardPreview
-                ref={cardRef}
-                data={weeklyCardData}
-                showUsername={showUsername}
-              />
-            ) : (
-              <ShareCardPreview
-                ref={cardRef}
-                data={shareCardData}
-                variant={variant}
-                showUsername={showUsername}
-                showNotes={showNotes}
-              />
-            )}
+            <div
+              style={{
+                transform: 'scale(0.55)',
+                transformOrigin: 'top left',
+              }}
+            >
+              {isWeekly ? (
+                <WeeklyShareCardPreview
+                  ref={cardRef}
+                  data={weeklyCardData}
+                  showUsername={showUsername}
+                />
+              ) : (
+                <ShareCardPreview
+                  ref={cardRef}
+                  data={shareCardData}
+                  variant={variant}
+                  showUsername={showUsername}
+                  showNotes={showNotes}
+                />
+              )}
+            </div>
           </div>
         </div>
 

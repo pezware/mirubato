@@ -8,14 +8,6 @@ interface WeeklyShareCardPreviewProps {
   className?: string
 }
 
-// Stats card colors (matching Morandi palette)
-const statColors = {
-  time: { bg: '#fef3e2', text: '#b45309' }, // amber
-  sessions: { bg: '#e0f2fe', text: '#0369a1' }, // blue
-  pieces: { bg: '#dcfce7', text: '#15803d' }, // green
-  consistency: { bg: '#fef9c3', text: '#a16207' }, // yellow
-}
-
 function formatDurationCompact(minutes: number): string {
   const hours = Math.floor(minutes / 60)
   const mins = Math.round(minutes % 60)
@@ -32,7 +24,6 @@ export const WeeklyShareCardPreview = forwardRef<
   const { t } = useTranslation(['common', 'share'])
 
   const cardWidth = 540
-  // Height is auto based on content
   const topPieces = data.pieces.slice(0, 5)
 
   return (
@@ -41,7 +32,7 @@ export const WeeklyShareCardPreview = forwardRef<
       className={className}
       style={{
         width: cardWidth,
-        minHeight: 700,
+        minHeight: 680,
         background: 'linear-gradient(180deg, #f5f3f0 0%, #e8e5e0 100%)',
         borderRadius: 24,
         padding: 28,
@@ -56,211 +47,88 @@ export const WeeklyShareCardPreview = forwardRef<
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 20,
+          gap: 12,
+          marginBottom: 24,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img
-            src="/logo-48x48.png"
-            alt=""
-            style={{ width: 32, height: 32, borderRadius: 6 }}
-          />
-          <div>
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 600,
-                color: '#3d3d3d',
-                fontFamily: 'Lexend, Inter, sans-serif',
-              }}
-            >
-              {t('share:weeklyReport', 'Weekly Report')}
-            </div>
-            <div style={{ fontSize: 12, color: '#7a7a7a' }}>
-              {data.dateRangeFormatted}
-            </div>
+        <img
+          src="/logo-48x48.png"
+          alt=""
+          style={{ width: 32, height: 32, borderRadius: 6 }}
+        />
+        <div>
+          <div
+            style={{
+              fontSize: 16,
+              fontWeight: 600,
+              color: '#3d3d3d',
+              fontFamily: 'Lexend, Inter, sans-serif',
+            }}
+          >
+            {t('share:weeklyReport', 'Weekly Report')}
           </div>
-        </div>
-        <div
-          style={{
-            fontSize: 11,
-            color: '#9a9a9a',
-          }}
-        >
-          mirubato.com
+          <div style={{ fontSize: 11, color: '#7a7a7a' }}>
+            {data.dateRangeFormatted}
+          </div>
         </div>
       </div>
 
-      {/* Practice Summary Grid */}
+      {/* Main Stats - Large Display */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 8,
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          borderRadius: 16,
+          padding: 20,
           marginBottom: 16,
-        }}
-      >
-        {/* Total Time */}
-        <div
-          style={{
-            backgroundColor: statColors.time.bg,
-            borderRadius: 12,
-            padding: '12px 8px',
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: statColors.time.text,
-              fontFamily: 'Lexend, Inter, sans-serif',
-            }}
-          >
-            {data.totalFormatted}
-          </div>
-          <div style={{ fontSize: 10, color: '#7a7a7a', marginTop: 2 }}>
-            {t('share:totalTime', 'Total Time')}
-          </div>
-        </div>
-
-        {/* Sessions */}
-        <div
-          style={{
-            backgroundColor: statColors.sessions.bg,
-            borderRadius: 12,
-            padding: '12px 8px',
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: statColors.sessions.text,
-              fontFamily: 'Lexend, Inter, sans-serif',
-            }}
-          >
-            {data.sessionCount}
-          </div>
-          <div style={{ fontSize: 10, color: '#7a7a7a', marginTop: 2 }}>
-            {t('share:sessions', 'Sessions')}
-          </div>
-        </div>
-
-        {/* Pieces */}
-        <div
-          style={{
-            backgroundColor: statColors.pieces.bg,
-            borderRadius: 12,
-            padding: '12px 8px',
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: statColors.pieces.text,
-              fontFamily: 'Lexend, Inter, sans-serif',
-            }}
-          >
-            {data.pieceCount}
-          </div>
-          <div style={{ fontSize: 10, color: '#7a7a7a', marginTop: 2 }}>
-            {t('share:pieces', 'Pieces')}
-          </div>
-        </div>
-
-        {/* Consistency */}
-        <div
-          style={{
-            backgroundColor: statColors.consistency.bg,
-            borderRadius: 12,
-            padding: '12px 8px',
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: statColors.consistency.text,
-              fontFamily: 'Lexend, Inter, sans-serif',
-            }}
-          >
-            {data.consistencyPercent}%
-          </div>
-          <div style={{ fontSize: 10, color: '#7a7a7a', marginTop: 2 }}>
-            {t('share:consistency', 'Consistency')}
-          </div>
-        </div>
-      </div>
-
-      {/* Average Stats Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 8,
-          marginBottom: 20,
+          textAlign: 'center',
         }}
       >
         <div
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.6)',
-            borderRadius: 12,
-            padding: 12,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
+            fontSize: 12,
+            fontWeight: 500,
+            color: '#7a7a7a',
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+            marginBottom: 8,
           }}
         >
-          <div style={{ fontSize: 16 }}>&#9201;</div>
-          <div>
-            <div style={{ fontSize: 10, color: '#7a7a7a' }}>
-              {t('share:avgSession', 'Avg Session')}
-            </div>
-            <div
-              style={{
-                fontSize: 16,
-                fontWeight: 600,
-                color: '#3d3d3d',
-                fontFamily: 'Lexend, Inter, sans-serif',
-              }}
-            >
-              {data.avgSessionFormatted}
-            </div>
-          </div>
+          {t('share:totalTime', 'Total Time')}
         </div>
-
         <div
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.6)',
-            borderRadius: 12,
-            padding: 12,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
+            fontSize: 42,
+            fontWeight: 300,
+            color: '#3d3d3d',
+            fontFamily: 'Lexend, Inter, sans-serif',
           }}
         >
-          <div style={{ fontSize: 16 }}>&#128197;</div>
-          <div>
-            <div style={{ fontSize: 10, color: '#7a7a7a' }}>
-              {t('share:dailyAvg', 'Daily Avg')}
-            </div>
-            <div
-              style={{
-                fontSize: 16,
-                fontWeight: 600,
-                color: '#3d3d3d',
-                fontFamily: 'Lexend, Inter, sans-serif',
-              }}
-            >
-              {data.dailyAvgFormatted}
-            </div>
-          </div>
+          {data.totalFormatted}
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 24,
+            marginTop: 12,
+            fontSize: 13,
+            color: '#666',
+          }}
+        >
+          <span>
+            <strong style={{ color: '#3d3d3d' }}>{data.sessionCount}</strong>{' '}
+            {t('share:sessions', 'sessions')}
+          </span>
+          <span>
+            <strong style={{ color: '#3d3d3d' }}>{data.pieceCount}</strong>{' '}
+            {t('share:pieces', 'pieces')}
+          </span>
+          <span>
+            <strong style={{ color: '#6b8f6b' }}>
+              {data.consistencyPercent}%
+            </strong>{' '}
+            {t('share:consistency', 'consistency')}
+          </span>
         </div>
       </div>
 
@@ -270,7 +138,7 @@ export const WeeklyShareCardPreview = forwardRef<
           backgroundColor: 'rgba(255, 255, 255, 0.5)',
           borderRadius: 16,
           padding: 16,
-          marginBottom: 20,
+          marginBottom: 16,
         }}
       >
         <div
@@ -292,8 +160,8 @@ export const WeeklyShareCardPreview = forwardRef<
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'space-between',
-            height: 80,
-            gap: 8,
+            height: 72,
+            gap: 6,
           }}
         >
           {data.dailyData.map((day, index) => {
@@ -314,7 +182,6 @@ export const WeeklyShareCardPreview = forwardRef<
                   gap: 4,
                 }}
               >
-                {/* Time label (only if has data) */}
                 {hasData && (
                   <div
                     style={{
@@ -326,18 +193,15 @@ export const WeeklyShareCardPreview = forwardRef<
                     {formatDurationCompact(day.minutes)}
                   </div>
                 )}
-                {/* Bar */}
                 <div
                   style={{
                     width: '100%',
-                    maxWidth: 40,
-                    height: hasData ? `${Math.max(heightPercent, 8)}%` : 4,
-                    backgroundColor: hasData ? '#8ba98b' : '#e0e0e0',
-                    borderRadius: 4,
-                    transition: 'height 0.3s ease',
+                    maxWidth: 36,
+                    height: hasData ? `${Math.max(heightPercent, 10)}%` : 3,
+                    backgroundColor: hasData ? '#8ba98b' : '#ddd',
+                    borderRadius: 3,
                   }}
                 />
-                {/* Day label */}
                 <div
                   style={{
                     fontSize: 10,
@@ -450,36 +314,47 @@ export const WeeklyShareCardPreview = forwardRef<
       )}
 
       {/* Footer */}
-      {showUsername && (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: 16,
+        }}
+      >
+        {showUsername && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: '50%',
+                backgroundColor: '#6b8f6b',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontWeight: 600,
+              }}
+            >
+              {data.displayName[0]?.toUpperCase() || '?'}
+            </div>
+            <span style={{ fontSize: 12, color: '#3d3d3d', fontWeight: 500 }}>
+              @{data.displayName.toLowerCase().replace(/\s+/g, '')}
+            </span>
+          </div>
+        )}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            marginTop: 16,
+            fontSize: 11,
+            color: '#7a7a7a',
+            marginLeft: showUsername ? 0 : 'auto',
           }}
         >
-          <div
-            style={{
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              backgroundColor: '#6b8f6b',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 11,
-              fontWeight: 600,
-            }}
-          >
-            {data.displayName[0]?.toUpperCase() || '?'}
-          </div>
-          <span style={{ fontSize: 12, color: '#3d3d3d', fontWeight: 500 }}>
-            @{data.displayName.toLowerCase().replace(/\s+/g, '')}
-          </span>
+          mirubato.com
         </div>
-      )}
+      </div>
     </div>
   )
 })
