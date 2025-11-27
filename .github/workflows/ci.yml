@@ -10,9 +10,42 @@ permissions:
   contents: read
 
 jobs:
+  # Detect which workspaces have changes
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontendv2: ${{ steps.filter.outputs.frontendv2 }}
+      api: ${{ steps.filter.outputs.api }}
+      scores: ${{ steps.filter.outputs.scores }}
+      dictionary: ${{ steps.filter.outputs.dictionary }}
+      shared: ${{ steps.filter.outputs.shared }}
+      any_workspace: ${{ steps.filter.outputs.frontendv2 == 'true' || steps.filter.outputs.api == 'true' || steps.filter.outputs.scores == 'true' || steps.filter.outputs.dictionary == 'true' || steps.filter.outputs.shared == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontendv2:
+              - 'frontendv2/**'
+            api:
+              - 'api/**'
+            scores:
+              - 'scores/**'
+            dictionary:
+              - 'dictionary/**'
+            shared:
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'tsconfig*.json'
+              - '.github/workflows/ci.yml'
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.any_workspace == 'true' || github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -39,6 +72,8 @@ jobs:
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.any_workspace == 'true' || github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -59,12 +94,12 @@ jobs:
       - name: Run TypeScript type check
         run: pnpm run type-check
 
-  test:
-    name: Test
+  # Test individual workspaces only when they have changes
+  test-frontendv2:
+    name: Test frontendv2
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        workspace: [frontendv2, api, scores, dictionary]
+    needs: changes
+    if: needs.changes.outputs.frontendv2 == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -82,24 +117,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests for ${{ matrix.workspace }}
-        run: pnpm --filter @mirubato/${{ matrix.workspace }} run test:unit
+      - name: Run tests for frontendv2
+        run: pnpm --filter @mirubato/frontendv2 run test:unit
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
-        if: matrix.workspace == 'frontendv2' || matrix.workspace == 'api'
         with:
-          directory: ./${{ matrix.workspace }}/coverage
-          flags: ${{ matrix.workspace }}
-          name: ${{ matrix.workspace }}-coverage
+          directory: ./frontendv2/coverage
+          flags: frontendv2
+          name: frontendv2-coverage
 
-  build:
-    name: Build
+  test-api:
+    name: Test api
     runs-on: ubuntu-latest
-    needs: [lint, type-check, test]
-    strategy:
-      matrix:
-        workspace: [frontendv2, api, scores, dictionary]
+    needs: changes
+    if: needs.changes.outputs.api == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -117,13 +149,196 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build ${{ matrix.workspace }}
-        run: pnpm --filter @mirubato/${{ matrix.workspace }} run build
+      - name: Run tests for api
+        run: pnpm --filter @mirubato/api run test:unit
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./api/coverage
+          flags: api
+          name: api-coverage
+
+  test-scores:
+    name: Test scores
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.scores == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests for scores
+        run: pnpm --filter @mirubato/scores run test:unit
+
+  test-dictionary:
+    name: Test dictionary
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.dictionary == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests for dictionary
+        run: pnpm --filter @mirubato/dictionary run test:unit
+
+  # Build individual workspaces only when they have changes
+  build-frontendv2:
+    name: Build frontendv2
+    runs-on: ubuntu-latest
+    needs: [changes, lint, type-check, test-frontendv2]
+    if: |
+      always() &&
+      (needs.changes.outputs.frontendv2 == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
+      (needs.test-frontendv2.result == 'success' || needs.test-frontendv2.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontendv2
+        run: pnpm --filter @mirubato/frontendv2 run build
+
+  build-api:
+    name: Build api
+    runs-on: ubuntu-latest
+    needs: [changes, lint, type-check, test-api]
+    if: |
+      always() &&
+      (needs.changes.outputs.api == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
+      (needs.test-api.result == 'success' || needs.test-api.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build api
+        run: pnpm --filter @mirubato/api run build
+
+  build-scores:
+    name: Build scores
+    runs-on: ubuntu-latest
+    needs: [changes, lint, type-check, test-scores]
+    if: |
+      always() &&
+      (needs.changes.outputs.scores == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
+      (needs.test-scores.result == 'success' || needs.test-scores.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build scores
+        run: pnpm --filter @mirubato/scores run build
+
+  build-dictionary:
+    name: Build dictionary
+    runs-on: ubuntu-latest
+    needs: [changes, lint, type-check, test-dictionary]
+    if: |
+      always() &&
+      (needs.changes.outputs.dictionary == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
+      (needs.test-dictionary.result == 'success' || needs.test-dictionary.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build dictionary
+        run: pnpm --filter @mirubato/dictionary run build
 
   e2e-tests:
     name: E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
-    needs: build
+    needs: [changes, build-frontendv2]
+    # Only run E2E tests when frontend changes or on main branch
+    if: |
+      always() &&
+      (needs.changes.outputs.frontendv2 == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main') &&
+      needs.build-frontendv2.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -184,7 +399,12 @@ jobs:
   smoke-tests:
     name: Quick Smoke Tests
     runs-on: ubuntu-latest
-    needs: build
+    needs: [changes, build-frontendv2]
+    # Only run smoke tests when frontend changes or on main branch
+    if: |
+      always() &&
+      (needs.changes.outputs.frontendv2 == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main') &&
+      needs.build-frontendv2.result == 'success'
     steps:
       - uses: actions/checkout@v4
 
@@ -222,8 +442,12 @@ jobs:
   merge-e2e-reports:
     name: Merge E2E Test Reports
     runs-on: ubuntu-latest
-    needs: e2e-tests
-    if: always()
+    needs: [changes, e2e-tests]
+    # Only merge reports if E2E tests actually ran
+    if: |
+      always() &&
+      (needs.changes.outputs.frontendv2 == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main') &&
+      (needs.e2e-tests.result == 'success' || needs.e2e-tests.result == 'failure')
     steps:
       - name: Download all reports
         uses: actions/download-artifact@v4
@@ -238,3 +462,66 @@ jobs:
           path: |
             ./
           retention-days: 30
+
+  # Summary job for branch protection - this single check can be used as a required status
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs:
+      [
+        changes,
+        lint,
+        type-check,
+        test-frontendv2,
+        test-api,
+        test-scores,
+        test-dictionary,
+        build-frontendv2,
+        build-api,
+        build-scores,
+        build-dictionary,
+        e2e-tests,
+        smoke-tests,
+      ]
+    if: always()
+    steps:
+      - name: Check all job results
+        run: |
+          echo "Checking CI job results..."
+
+          # Helper to check if job passed or was correctly skipped
+          check_job() {
+            local job_name=$1
+            local result=$2
+            if [[ "$result" == "success" || "$result" == "skipped" ]]; then
+              echo "✅ $job_name: $result"
+              return 0
+            else
+              echo "❌ $job_name: $result"
+              return 1
+            fi
+          }
+
+          failed=0
+
+          check_job "lint" "${{ needs.lint.result }}" || failed=1
+          check_job "type-check" "${{ needs.type-check.result }}" || failed=1
+          check_job "test-frontendv2" "${{ needs.test-frontendv2.result }}" || failed=1
+          check_job "test-api" "${{ needs.test-api.result }}" || failed=1
+          check_job "test-scores" "${{ needs.test-scores.result }}" || failed=1
+          check_job "test-dictionary" "${{ needs.test-dictionary.result }}" || failed=1
+          check_job "build-frontendv2" "${{ needs.build-frontendv2.result }}" || failed=1
+          check_job "build-api" "${{ needs.build-api.result }}" || failed=1
+          check_job "build-scores" "${{ needs.build-scores.result }}" || failed=1
+          check_job "build-dictionary" "${{ needs.build-dictionary.result }}" || failed=1
+          check_job "e2e-tests" "${{ needs.e2e-tests.result }}" || failed=1
+          check_job "smoke-tests" "${{ needs.smoke-tests.result }}" || failed=1
+
+          if [[ $failed -eq 1 ]]; then
+            echo ""
+            echo "❌ CI failed - one or more jobs did not succeed"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All CI checks passed!"
