@@ -32,10 +32,9 @@ export const WeeklyShareCardPreview = forwardRef<
       className={className}
       style={{
         width: cardWidth,
-        minHeight: 680,
         background: 'linear-gradient(180deg, #f5f3f0 0%, #e8e5e0 100%)',
         borderRadius: 24,
-        padding: 28,
+        padding: 24,
         display: 'flex',
         flexDirection: 'column',
         fontFamily: 'Inter, system-ui, sans-serif',
@@ -48,7 +47,7 @@ export const WeeklyShareCardPreview = forwardRef<
           display: 'flex',
           alignItems: 'center',
           gap: 12,
-          marginBottom: 24,
+          marginBottom: 16,
         }}
       >
         <img
@@ -77,27 +76,27 @@ export const WeeklyShareCardPreview = forwardRef<
       <div
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.7)',
-          borderRadius: 16,
-          padding: 20,
-          marginBottom: 16,
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 12,
           textAlign: 'center',
         }}
       >
         <div
           style={{
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 500,
             color: '#7a7a7a',
             textTransform: 'uppercase',
             letterSpacing: 1,
-            marginBottom: 8,
+            marginBottom: 4,
           }}
         >
           {t('share:totalTime', 'Total Time')}
         </div>
         <div
           style={{
-            fontSize: 42,
+            fontSize: 36,
             fontWeight: 300,
             color: '#3d3d3d',
             fontFamily: 'Lexend, Inter, sans-serif',
@@ -109,9 +108,9 @@ export const WeeklyShareCardPreview = forwardRef<
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: 24,
-            marginTop: 12,
-            fontSize: 13,
+            gap: 20,
+            marginTop: 8,
+            fontSize: 12,
             color: '#666',
           }}
         >
@@ -136,19 +135,19 @@ export const WeeklyShareCardPreview = forwardRef<
       <div
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.5)',
-          borderRadius: 16,
-          padding: 16,
-          marginBottom: 16,
+          borderRadius: 12,
+          padding: 12,
+          marginBottom: 12,
         }}
       >
         <div
           style={{
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: 500,
             color: '#7a7a7a',
             textTransform: 'uppercase',
             letterSpacing: 1,
-            marginBottom: 12,
+            marginBottom: 8,
           }}
         >
           {t('share:dailyPractice', 'Daily Practice')}
@@ -160,8 +159,8 @@ export const WeeklyShareCardPreview = forwardRef<
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'space-between',
-            height: 72,
-            gap: 6,
+            height: 60,
+            gap: 4,
           }}
         >
           {data.dailyData.map((day, index) => {
@@ -222,25 +221,24 @@ export const WeeklyShareCardPreview = forwardRef<
         <div
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            borderRadius: 16,
-            padding: 16,
-            flex: 1,
+            borderRadius: 12,
+            padding: 12,
           }}
         >
           <div
             style={{
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: 500,
               color: '#7a7a7a',
               textTransform: 'uppercase',
               letterSpacing: 1,
-              marginBottom: 12,
+              marginBottom: 8,
             }}
           >
             {t('share:topPieces', 'Top Pieces')}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {topPieces.map((piece, index) => (
               <div
                 key={index}
@@ -254,7 +252,7 @@ export const WeeklyShareCardPreview = forwardRef<
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: 500,
                       color: '#3d3d3d',
                       fontFamily: '"Noto Serif", Georgia, serif',
@@ -268,7 +266,7 @@ export const WeeklyShareCardPreview = forwardRef<
                   {piece.composer && (
                     <div
                       style={{
-                        fontSize: 12,
+                        fontSize: 11,
                         color: '#666',
                         fontFamily: '"Noto Serif", Georgia, serif',
                       }}
@@ -280,14 +278,14 @@ export const WeeklyShareCardPreview = forwardRef<
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div
                     style={{
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: 600,
                       color: '#6b8f6b',
                     }}
                   >
                     {formatDurationCompact(piece.totalMinutes)}
                   </div>
-                  <div style={{ fontSize: 11, color: '#999' }}>
+                  <div style={{ fontSize: 10, color: '#999' }}>
                     {piece.sessionCount}{' '}
                     {piece.sessionCount === 1
                       ? t('share:session', 'session')
@@ -319,7 +317,7 @@ export const WeeklyShareCardPreview = forwardRef<
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginTop: 16,
+          marginTop: 12,
         }}
       >
         {showUsername && (

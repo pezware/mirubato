@@ -239,27 +239,22 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
       size="xl"
       isMobileOptimized
     >
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-4">
         {/* Preview Panel */}
-        <div className="flex-1 flex flex-col items-center overflow-hidden">
+        <div className="flex-1 flex justify-center">
           <div
-            className="rounded-xl shadow-lg"
+            className="rounded-xl shadow-lg overflow-hidden"
             style={{
-              width: isWeekly ? 297 : variant === 'square' ? 297 : 297,
-              height: isWeekly
-                ? 'auto'
-                : variant === 'story'
-                  ? 528
-                  : variant === 'long'
-                    ? 'auto'
-                    : 297,
+              width: 270,
+              maxHeight: 480,
               overflow: 'hidden',
             }}
           >
             <div
               style={{
-                transform: 'scale(0.55)',
+                transform: 'scale(0.5)',
                 transformOrigin: 'top left',
+                width: 540,
               }}
             >
               {isWeekly ? (
@@ -282,7 +277,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
         </div>
 
         {/* Options Panel */}
-        <div className="lg:w-64 space-y-4">
+        <div className="lg:w-56 space-y-3">
           {/* Card Type (Daily/Weekly) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
