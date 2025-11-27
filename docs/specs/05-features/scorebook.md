@@ -3,8 +3,8 @@ Spec-ID: SPEC-FEAT-002
 Title: Scorebook - Sheet Music Management
 Status: 🚧 Experimental
 Owner: @pezware
-Last-Reviewed: 2025-09-11
-Version: 1.7.6
+Last-Reviewed: 2025-11-27
+Version: 1.8.0
 ---
 
 # Scorebook Feature Specification
@@ -30,6 +30,24 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - Integrate with practice logging
 - Enable IMSLP import for public domain scores
 
+## Recent Changes (v1.8.0)
+
+### New Features
+
+1. **Search & Sort** - Full-text search with debounced queries, 9 sort options
+2. **View Mode Toggle** - List and grid views with persistent preferences
+3. **Enhanced Import Flow** - 4-step wizard with AI processing feedback
+4. **Metadata Preview** - Review/edit AI-extracted metadata before save
+5. **Confidence Indicators** - Visual feedback on AI extraction reliability
+6. **Grid View Component** - Thumbnail-based card layout for scores
+
+### UI/UX Improvements
+
+- Better empty states with contextual CTAs
+- Results count and search feedback
+- Responsive filter/sort/view controls
+- Improved mobile layout
+
 ## User Stories
 
 ### As a Musician, I want to:
@@ -39,6 +57,9 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - Import scores from IMSLP and other sources
 - View and annotate PDFs during practice
 - Share collections with other musicians
+- **Search my library by title, composer, or opus** ✅ (v1.8.0)
+- **Sort scores by date, title, composer, difficulty, or popularity** ✅ (v1.8.0)
+- **Preview AI-extracted metadata before saving** ✅ (v1.8.0)
 
 ### As a Teacher, I want to:
 
@@ -49,25 +70,75 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 ## Core Features
 
-### 1. Score Upload & Import
+### 1. Score Browser (Enhanced v1.8.0)
+
+#### Search Functionality
+
+- **Full-text search**: Title, composer, opus matching
+- **Debounced queries**: 300ms delay to reduce API calls
+- **Clear button**: Quick search reset
+- **Results count**: Shows total matches
+
+**Code**: `frontendv2/src/pages/ScoreBrowser.tsx`
+
+#### Sort Options
+
+- **Recently Added** (default): Sort by creation date descending
+- **Oldest First**: Sort by creation date ascending
+- **Title (A-Z/Z-A)**: Alphabetical by title
+- **Composer (A-Z/Z-A)**: Alphabetical by composer
+- **Difficulty**: Easy to hard or hard to easy
+- **Most Popular**: By view/download count
+
+**Persistence**: User preferences stored in localStorage
+
+#### View Modes
+
+- **List View**: Detailed rows with metadata, collections, quick actions
+- **Grid View**: Thumbnail cards with difficulty badges and page counts
+
+**Components**:
+
+- `frontendv2/src/components/score/ScoreListItem.tsx` - List view item
+- `frontendv2/src/components/score/ScoreGridItem.tsx` - Grid view card (NEW v1.8.0)
+
+### 2. Score Upload & Import (Enhanced v1.8.0)
+
+#### Import Wizard
+
+4-step wizard flow for better UX:
+
+1. **Upload Step**: Choose import method (PDF, images, URL)
+2. **Processing Step**: Visual progress with status messages
+3. **Review Step**: Preview AI-extracted metadata, edit if needed
+4. **Organize Step**: Select collections for the score
+
+**Code**: `frontendv2/src/components/score/ImportScoreModal.tsx` (rewritten v1.8.0)
 
 #### File Upload
 
 - **Supported formats**: PDF, JPG, PNG, JPEG
 - **Max file size**: 50MB
 - **Max pages**: 100 per PDF
-- **Upload methods**: Direct upload, URL import, IMSLP integration, mobile scan (planned)
+- **Upload methods**: Direct upload, URL import, IMSLP integration, multi-image composition
 
 **Upload Workflow**:
 
-1. Validate file format and size
-2. Generate unique score ID
-3. Upload to R2 storage
-4. Extract metadata via AI
-5. Generate thumbnail preview
-6. Save metadata to database
+1. Select import method and file(s)
+2. Show processing progress (uploading → analyzing → complete)
+3. Display AI-extracted metadata with confidence indicators
+4. Allow metadata editing before final save
+5. Select target collections
+6. Save and add to collections
 
 **Code**: `scores/src/api/handlers/upload.ts`, `scores/src/services/uploadService.ts`
+
+#### AI Metadata Preview (NEW v1.8.0)
+
+- **Confidence indicators**: High (green), Medium (amber), Low (red)
+- **Editable fields**: Title, composer, opus, instrument, difficulty
+- **Additional metadata**: Key signature, time signature, style period
+- **Thumbnail preview**: First page rendered as preview image
 
 #### IMSLP Integration
 
@@ -78,7 +149,7 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 **Code**: `scores/src/api/handlers/import.ts`, `scores/src/services/imslpScraper.ts`
 
-### 2. AI Metadata Extraction
+### 3. AI Metadata Extraction
 
 #### Hybrid AI Approach
 
@@ -94,10 +165,11 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 3. Extract structured metadata
 4. Normalize composer names
 5. Assign confidence scores
+6. Return to frontend for preview/edit (NEW v1.8.0)
 
 **Code**: `scores/src/services/hybridAiExtractor.ts`, `scores/src/services/ai/cloudflareAi.ts`
 
-### 3. Collections & Organization
+### 4. Collections & Organization
 
 #### System Collections
 
@@ -112,12 +184,13 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 - **Personal libraries**: User-created collections
 - **Visibility levels**: Private, public, shared
+- **Default collection**: Auto-created "General" collection
 - **Sharing**: Generate shareable links
-- **Collaboration**: Future support for shared editing
+- **Auto-selection**: Default collection pre-selected in import flow (NEW v1.8.0)
 
 **Code**: `scores/src/api/handlers/user-collections.ts`
 
-### 4. Score Viewer
+### 5. Score Viewer
 
 #### PDF Rendering
 
@@ -137,7 +210,7 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 **Code**: `frontendv2/src/components/score/ImageScoreViewer.tsx`
 
-### 5. Practice Integration
+### 6. Practice Integration
 
 #### Score-Based Practice Logging
 
@@ -155,7 +228,7 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **Annotation overlay**: Mark problem spots
 - **Session recording**: Audio/video capture
 
-### 6. Repertoire Management
+### 7. Repertoire Management
 
 #### Status Tracking
 
@@ -180,6 +253,7 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **R2 Buckets**: PDF files and generated images
 - **D1 Database**: Metadata, collections, user data
 - **KV Cache**: Rendered pages, search results
+- **localStorage**: User preferences (view mode, sort) (NEW v1.8.0)
 
 ### Processing
 
@@ -191,10 +265,13 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 ### Frontend Components
 
+- Score browser: `frontendv2/src/pages/ScoreBrowser.tsx` (enhanced v1.8.0)
 - Score viewing: `frontendv2/src/components/score/ScoreViewer.tsx`
 - PDF rendering: `frontendv2/src/components/score/PdfViewer.tsx`
 - Mobile viewer: `frontendv2/src/components/score/ImageScoreViewer.tsx`
-- Import modal: `frontendv2/src/components/score/ImportScoreModal.tsx`
+- Import modal: `frontendv2/src/components/score/ImportScoreModal.tsx` (rewritten v1.8.0)
+- List item: `frontendv2/src/components/score/ScoreListItem.tsx`
+- Grid item: `frontendv2/src/components/score/ScoreGridItem.tsx` (NEW v1.8.0)
 - Collections: `frontendv2/src/components/score/CollectionsManager.tsx`
 
 ### Backend Services
@@ -204,6 +281,11 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - AI extraction: `scores/src/services/hybridAiExtractor.ts`
 - IMSLP scraper: `scores/src/services/imslpScraper.ts`
 - R2 storage: `scores/src/api/handlers/serveR2.ts`
+
+### Service Layer
+
+- Score service: `frontendv2/src/services/scoreService.ts` (enhanced v1.8.0)
+  - Added `sortBy` and `sortOrder` parameters to search
 
 ### Database
 
@@ -219,15 +301,17 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **Collection size**: 1000 scores per collection
 - **Render timeout**: 30 seconds for PDF processing
 - **AI extraction**: 10 seconds timeout
+- **Search debounce**: 300ms delay (NEW v1.8.0)
 
 ## Failure Modes
 
 - **Upload failures**: Network interruption → Retry with resume
-- **AI extraction fails**: Low confidence → Fallback to filename parsing
+- **AI extraction fails**: Low confidence → Show warning, allow manual edit (IMPROVED v1.8.0)
 - **IMSLP unavailable**: Scraping fails → Manual metadata entry
 - **R2 unavailable**: Storage errors → Queue for retry
 - **PDF corrupt**: Rendering fails → Show error, allow re-upload
 - **Rate limit hit**: Too many imports → Show cooldown timer
+- **Search fails**: API error → Show error message, allow retry
 
 ## Performance Optimization
 
@@ -236,6 +320,13 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **KV cache**: Rendered pages cached for 7 days
 - **Browser cache**: Static assets with long TTL
 - **IndexedDB**: Offline score storage
+- **localStorage**: User preferences for instant load (NEW v1.8.0)
+
+### Search Optimization
+
+- **Debounced queries**: 300ms delay reduces API calls
+- **Persistent sort**: Remembered between sessions
+- **Lazy rendering**: Grid thumbnails load on scroll
 
 ### Rendering Optimization
 
@@ -250,6 +341,8 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **Image rendering for mobile** (2024-07): Better performance than PDF.js
 - **Queue-based processing** (2024-08): Prevents timeout on large files
 - **Composer canonicalization** (2024-09): Consistent naming across system
+- **Step wizard for import** (2024-11): Better UX than single-form approach (NEW v1.8.0)
+- **localStorage for preferences** (2024-11): Instant load without API call (NEW v1.8.0)
 
 ## Non-Goals
 
@@ -259,6 +352,30 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - Optical music recognition (OMR)
 - Real-time collaboration on scores
 
+## TODO / Roadmap
+
+### High Priority
+
+- [ ] **Pagination**: Add infinite scroll or pagination for large libraries
+- [ ] **Thumbnail optimization**: Pre-generate thumbnails for faster grid view
+- [ ] **Metadata update API**: Allow updating score metadata after import
+- [ ] **Batch operations**: Multi-select for bulk add to collection/delete
+
+### Medium Priority
+
+- [ ] **Advanced search**: Filter by key, time signature, style period
+- [ ] **Recent scores**: Quick access section for recently viewed
+- [ ] **Favorites**: Star/favorite scores for quick access
+- [ ] **Practice history**: Show practice sessions for each score
+- [ ] **Score recommendations**: Suggest similar pieces
+
+### Low Priority
+
+- [ ] **Keyboard shortcuts**: Navigate grid/list with arrow keys
+- [ ] **Drag-and-drop**: Reorder scores in collections
+- [ ] **Export**: Download scores as ZIP with metadata
+- [ ] **Annotation persistence**: Save markings to database
+
 ## Open Questions
 
 - Should we support ABC notation or LilyPond formats?
@@ -266,6 +383,7 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - When to implement annotation persistence?
 - Should we add score recommendation engine?
 - How to monetize premium features?
+- Should thumbnails be pre-generated or rendered on-demand?
 
 ## Security & Privacy Considerations
 
@@ -285,4 +403,4 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 ---
 
-Last updated: 2025-09-11 | Version 1.7.6
+Last updated: 2025-11-27 | Version 1.8.0
