@@ -643,6 +643,113 @@ userCollectionsHandler.delete('/:id/scores/:scoreId', async c => {
   }
 })
 
+// Batch add scores to collection
+userCollectionsHandler.post('/:id/scores/batch', async c => {
+  try {
+    const collectionId = c.req.param('id')
+    const body = await c.req.json()
+
+    // Validate input
+    const { scoreIds } = z
+      .object({
+        scoreIds: z.array(z.string()).min(1).max(100),
+      })
+      .parse(body)
+
+    // Get authenticated user
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
+    if (!user) {
+      throw new HTTPException(401, { message: 'Authentication required' })
+    }
+
+    // Check if collection exists and belongs to user
+    const collection = await c.env.DB.prepare(
+      'SELECT * FROM user_collections WHERE id = ? AND user_id = ?'
+    )
+      .bind(collectionId, user.id)
+      .first()
+
+    if (!collection) {
+      throw new HTTPException(404, { message: 'Collection not found' })
+    }
+
+    // Verify all scores exist and user has access
+    const placeholders = scoreIds.map(() => '?').join(',')
+    const scores = await c.env.DB.prepare(
+      `SELECT id FROM scores WHERE id IN (${placeholders}) AND (user_id = ? OR visibility = ?)`
+    )
+      .bind(...scoreIds, user.id, 'public')
+      .all()
+
+    const accessibleScoreIds = new Set(scores.results.map(s => s.id as string))
+    const inaccessibleScores = scoreIds.filter(
+      id => !accessibleScoreIds.has(id)
+    )
+
+    if (inaccessibleScores.length > 0) {
+      throw new HTTPException(404, {
+        message: `Some scores not found or access denied: ${inaccessibleScores.slice(0, 5).join(', ')}${inaccessibleScores.length > 5 ? '...' : ''}`,
+      })
+    }
+
+    // Get existing score IDs in collection
+    const existingScoreIds = new Set(
+      JSON.parse((collection.score_ids as string) || '[]') as string[]
+    )
+
+    // Filter out scores already in collection
+    const newScoreIds = scoreIds.filter(id => !existingScoreIds.has(id))
+
+    if (newScoreIds.length === 0) {
+      return c.json({
+        success: true,
+        message: 'All scores already in collection',
+        addedCount: 0,
+        skippedCount: scoreIds.length,
+      })
+    }
+
+    // Add to collection_members (batch insert)
+    for (const scoreId of newScoreIds) {
+      await c.env.DB.prepare(
+        'INSERT OR IGNORE INTO collection_members (id, collection_id, score_id) VALUES (?, ?, ?)'
+      )
+        .bind(generateId(), collectionId, scoreId)
+        .run()
+    }
+
+    // Update score_ids JSON
+    const updatedScoreIds = [...existingScoreIds, ...newScoreIds]
+    await c.env.DB.prepare(
+      'UPDATE user_collections SET score_ids = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    )
+      .bind(JSON.stringify(updatedScoreIds), collectionId)
+      .run()
+
+    return c.json({
+      success: true,
+      message: `Added ${newScoreIds.length} scores to collection`,
+      addedCount: newScoreIds.length,
+      skippedCount: scoreIds.length - newScoreIds.length,
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new HTTPException(400, {
+        message: 'Invalid request data',
+      })
+    }
+    if (error instanceof HTTPException) throw error
+    console.error('Error batch adding scores to collection:', error)
+    throw new HTTPException(500, {
+      message: 'Failed to add scores to collection',
+    })
+  }
+})
+
 // Get collections containing a specific score
 userCollectionsHandler.get('/score/:scoreId', async c => {
   try {

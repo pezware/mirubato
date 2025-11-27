@@ -6,7 +6,7 @@ import type { Collection } from '../../types/collections'
 import CollectionBadges from './CollectionBadges'
 import { MusicTitle, MusicComposer } from '../ui'
 import { cn } from '../../utils/cn'
-import { Star } from 'lucide-react'
+import { Star, CheckSquare, Square } from 'lucide-react'
 
 interface ScoreListItemProps {
   score: Score
@@ -17,6 +17,10 @@ interface ScoreListItemProps {
   showCollections?: boolean
   showTagsInCollapsed?: boolean
   className?: string
+  // Selection mode props
+  selectionMode?: boolean
+  isSelected?: boolean
+  onToggleSelection?: (scoreId: string) => void
 }
 
 export default function ScoreListItem({
@@ -28,6 +32,9 @@ export default function ScoreListItem({
   showCollections = false,
   showTagsInCollapsed = false,
   className,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelection,
 }: ScoreListItemProps) {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
@@ -51,21 +58,58 @@ export default function ScoreListItem({
   }
 
   const toggleExpansion = () => {
-    setIsExpanded(!isExpanded)
+    if (!selectionMode) {
+      setIsExpanded(!isExpanded)
+    }
+  }
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onToggleSelection) {
+      onToggleSelection(score.id)
+    }
+  }
+
+  const handleRowClick = () => {
+    if (selectionMode && onToggleSelection) {
+      onToggleSelection(score.id)
+    } else {
+      toggleExpansion()
+    }
   }
 
   return (
     <div
       className={cn(
         'border-b border-morandi-stone-200 last:border-b-0',
+        isSelected && 'bg-morandi-sage-50',
         className
       )}
     >
       <div
-        className="p-4 hover:bg-morandi-stone-50 cursor-pointer group"
-        onClick={toggleExpansion}
+        className={cn(
+          'p-4 cursor-pointer group',
+          selectionMode
+            ? 'hover:bg-morandi-sage-100'
+            : 'hover:bg-morandi-stone-50'
+        )}
+        onClick={handleRowClick}
       >
         <div className="flex items-start justify-between">
+          {/* Selection Checkbox */}
+          {selectionMode && (
+            <button
+              onClick={handleCheckboxClick}
+              className="mr-3 mt-0.5 flex-shrink-0 text-morandi-sage-600 hover:text-morandi-sage-800 transition-colors"
+            >
+              {isSelected ? (
+                <CheckSquare className="w-5 h-5" />
+              ) : (
+                <Square className="w-5 h-5" />
+              )}
+            </button>
+          )}
+
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <MusicTitle as="h3" className="text-morandi-stone-800">

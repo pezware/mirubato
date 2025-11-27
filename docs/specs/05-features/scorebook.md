@@ -50,12 +50,24 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
    - Admin endpoint for bulk thumbnail generation: `POST /api/admin/generate-thumbnails`
    - New API endpoint: `GET /api/pdf/v2/thumbnail/:scoreId`
 
+2. **Batch Operations** - Multi-select for bulk add to collection/delete
+   - Selection mode toggle in toolbar
+   - Select all / deselect all functionality
+   - Checkbox on each score in list and grid view
+   - Batch add selected scores to a collection
+   - Batch delete selected scores with confirmation
+   - New API endpoints:
+     - `POST /api/scores/batch/delete` - Delete multiple scores (max 100)
+     - `POST /api/user/collections/:id/scores/batch` - Add multiple scores to collection (max 100)
+
 ### Technical Improvements
 
 - Dedicated thumbnail storage path separate from full-resolution pages
 - Aggressive caching with 1-year immutable headers
 - On-demand fallback with async storage for cache misses
 - Lower resolution (400px vs 1200px) reduces bandwidth by ~70%
+- Batch operations clean up R2 files (PDFs, rendered pages, thumbnails)
+- Batch operations automatically update user collections
 
 ## Recent Changes (v1.8.2)
 
@@ -445,7 +457,7 @@ POST   /api/user/favorites/batch/check - Batch check multiple scores
 - [x] **Pagination**: Add infinite scroll or pagination for large libraries (v1.8.2)
 - [x] **Thumbnail optimization**: Pre-generate thumbnails for faster grid view (v1.8.3)
 - [x] **Metadata update API**: Allow updating score metadata after import (backend existed, v1.7.x)
-- [ ] **Batch operations**: Multi-select for bulk add to collection/delete
+- [x] **Batch operations**: Multi-select for bulk add to collection/delete (v1.8.3)
 
 ### Medium Priority
 

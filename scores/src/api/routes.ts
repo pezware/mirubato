@@ -35,6 +35,8 @@ api.get('/', c => {
         'POST /api/scores': 'Create a new score entry',
         'PUT /api/scores/:id': 'Update a score',
         'DELETE /api/scores/:id': 'Delete a score',
+        'POST /api/scores/batch/delete':
+          'Batch delete multiple scores (max 100)',
       },
       search: {
         'GET /api/search': 'Search scores with advanced filtering',
@@ -71,6 +73,8 @@ api.get('/', c => {
         'PUT /api/user/collections/:id': 'Update user collection',
         'DELETE /api/user/collections/:id': 'Delete user collection',
         'POST /api/user/collections/:id/scores': 'Add score to collection',
+        'POST /api/user/collections/:id/scores/batch':
+          'Batch add multiple scores to collection (max 100)',
         'DELETE /api/user/collections/:id/scores/:scoreId':
           'Remove score from collection',
         'GET /api/user/collections/score/:scoreId':
