@@ -1,6 +1,13 @@
-import { useState, useRef, useCallback } from 'react'
+import { useRef, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Download, Copy, Check, Share2 } from 'lucide-react'
+import {
+  Download,
+  Copy,
+  Check,
+  Share2,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { Modal, ModalFooter } from '../ui/Modal'
 import Button from '../ui/Button'
 import { SegmentedControl } from '../ui/SegmentedControl'
@@ -28,7 +35,6 @@ async function generateImage(
   element: HTMLElement,
   scale: number = 2
 ): Promise<Blob | null> {
-  // Create a canvas with the scaled dimensions
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
@@ -38,7 +44,6 @@ async function generateImage(
   canvas.height = rect.height * scale
   ctx.scale(scale, scale)
 
-  // Use foreignObject to render HTML to canvas
   const data = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}">
       <foreignObject width="100%" height="100%">
@@ -79,11 +84,16 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
   const [copied, setCopied] = useState(false)
 
   // Check if user has notes to share
-  const hasNotes = shareCardData.todayNotes.length > 0
+  const hasNotes = shareCardData.periodNotes.length > 0
+
+  const viewModeOptions = [
+    { value: 'day', label: t('share:daily', 'Daily') },
+    { value: 'week', label: t('share:weekly', 'Weekly') },
+  ]
 
   const variantOptions = [
-    { value: 'story', label: t('share:story', 'Story (9:16)') },
-    { value: 'square', label: t('share:square', 'Square (1:1)') },
+    { value: 'story', label: t('share:story', 'Story') },
+    { value: 'square', label: t('share:square', 'Square') },
   ]
 
   const handleDownload = useCallback(async () => {
@@ -91,35 +101,30 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
 
     setIsGenerating(true)
     try {
-      // Try to use html-to-image if available, otherwise use native approach
       let blob: Blob | null = null
 
       try {
-        // Dynamic import for html-to-image
         const { toPng } = await import('html-to-image')
         const dataUrl = await toPng(cardRef.current, {
           quality: 1,
           pixelRatio: 2,
           backgroundColor: '#f5f3f0',
-          // Skip font embedding to avoid CSP issues with Google Fonts
           skipFonts: true,
-          // Ensure we capture the element properly
           cacheBust: true,
         })
 
         blob = dataUrlToBlob(dataUrl)
       } catch (err) {
         console.error('html-to-image failed:', err)
-        // Fallback: try generateImage
         blob = await generateImage(cardRef.current)
       }
 
       if (blob) {
-        // Create download link
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
-        link.download = `mirubato-practice-${variant}-${new Date().toISOString().split('T')[0]}.png`
+        const modeLabel = shareCardData.viewMode === 'week' ? 'weekly' : 'daily'
+        link.download = `mirubato-${modeLabel}-${variant}-${new Date().toISOString().split('T')[0]}.png`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -130,7 +135,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
     } finally {
       setIsGenerating(false)
     }
-  }, [variant])
+  }, [variant, shareCardData.viewMode])
 
   const handleCopyToClipboard = useCallback(async () => {
     if (!cardRef.current) return
@@ -197,8 +202,13 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
           { type: 'image/png' }
         )
 
+        const shareTitle =
+          shareCardData.viewMode === 'week'
+            ? t('share:shareWeeklyTitle', "This Week's Practice")
+            : t('share:shareTitle', "Today's Practice")
+
         await navigator.share({
-          title: t('share:shareTitle', "Today's Practice"),
+          title: shareTitle,
           text: t(
             'share:shareText',
             'Check out my practice session on Mirubato!'
@@ -207,16 +217,18 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
         })
       }
     } catch (error) {
-      // User cancelled or share failed
       if ((error as Error).name !== 'AbortError') {
         console.error('Failed to share:', error)
       }
     } finally {
       setIsGenerating(false)
     }
-  }, [t])
+  }, [t, shareCardData.viewMode])
 
   const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share
+
+  // Calculate preview scale based on viewport
+  const previewScale = variant === 'story' ? 0.45 : 0.55
 
   return (
     <Modal
@@ -226,91 +238,139 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
       size="xl"
       isMobileOptimized
     >
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Preview Panel */}
-        <div className="flex-1 flex flex-col items-center">
-          <div
-            className="overflow-auto max-h-[60vh] rounded-xl shadow-lg"
-            style={{ transform: 'scale(0.6)', transformOrigin: 'top center' }}
-          >
-            <ShareCardPreview
-              ref={cardRef}
-              data={shareCardData}
-              variant={variant}
-              showUsername={showUsername}
-              showNotes={showNotes}
-            />
+      <div className="flex flex-col gap-4 max-h-[calc(85vh-140px)] overflow-hidden">
+        {/* Navigation and View Mode Controls */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0 pb-2 border-b border-gray-100">
+          {/* Period Navigation */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={shareCardData.goBack}
+              disabled={!shareCardData.canGoBack}
+              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label={t('share:previous', 'Previous')}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <span className="text-sm font-medium text-gray-700 min-w-[160px] text-center">
+              {shareCardData.periodLabel.replace(/ \(.*\)$/, '')}
+            </span>
+            <button
+              onClick={shareCardData.goForward}
+              disabled={!shareCardData.canGoForward}
+              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label={t('share:next', 'Next')}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
+
+          {/* View Mode Toggle */}
+          <SegmentedControl
+            options={viewModeOptions}
+            value={shareCardData.viewMode}
+            onChange={value =>
+              shareCardData.setViewMode(value as 'day' | 'week')
+            }
+            size="sm"
+          />
         </div>
 
-        {/* Options Panel */}
-        <div className="lg:w-64 space-y-4">
-          {/* Card Size */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('share:cardSize', 'Card Size')}
-            </label>
-            <SegmentedControl
-              options={variantOptions}
-              value={variant}
-              onChange={value => setVariant(value as CardVariant)}
-              size="sm"
-            />
-          </div>
-
-          {/* Show Username Toggle */}
-          <div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showUsername}
-                onChange={e => setShowUsername(e.target.checked)}
-                className="rounded border-gray-300 text-morandi-sage-500 focus:ring-morandi-sage-500"
+        {/* Main Content */}
+        <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-hidden">
+          {/* Preview Panel */}
+          <div className="flex-1 flex flex-col items-center justify-start overflow-hidden">
+            <div
+              className="rounded-xl shadow-lg overflow-hidden"
+              style={{
+                transform: `scale(${previewScale})`,
+                transformOrigin: 'top center',
+                marginBottom: variant === 'story' ? '-200px' : '-80px',
+              }}
+            >
+              <ShareCardPreview
+                ref={cardRef}
+                data={shareCardData}
+                variant={variant}
+                showUsername={showUsername}
+                showNotes={showNotes}
               />
-              <span className="text-sm text-gray-700">
-                {t('share:showUsername', 'Show username')}
-              </span>
-            </label>
+            </div>
           </div>
 
-          {/* Show Notes Toggle */}
-          {hasNotes && (
+          {/* Options Panel */}
+          <div className="lg:w-56 space-y-4 flex-shrink-0 overflow-y-auto">
+            {/* Card Size */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('share:cardSize', 'Card Size')}
+              </label>
+              <SegmentedControl
+                options={variantOptions}
+                value={variant}
+                onChange={value => setVariant(value as CardVariant)}
+                size="sm"
+              />
+            </div>
+
+            {/* Show Username Toggle */}
             <div>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={showNotes}
-                  onChange={e => setShowNotes(e.target.checked)}
+                  checked={showUsername}
+                  onChange={e => setShowUsername(e.target.checked)}
                   className="rounded border-gray-300 text-morandi-sage-500 focus:ring-morandi-sage-500"
                 />
                 <span className="text-sm text-gray-700">
-                  {t('share:showNotes', 'Include practice notes')}
+                  {t('share:showUsername', 'Show username')}
                 </span>
               </label>
-              <p className="text-xs text-gray-500 mt-1 ml-6">
-                {t(
-                  'share:notesHint',
-                  "Share your thoughts from today's practice"
-                )}
-              </p>
             </div>
-          )}
 
-          {/* No Data Notice */}
-          {!shareCardData.hasData && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-800">
-                {t(
-                  'share:noDataNotice',
-                  'No practice data for today. Add an entry to share your progress!'
-                )}
-              </p>
-            </div>
-          )}
+            {/* Show Notes Toggle */}
+            {hasNotes && (
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showNotes}
+                    onChange={e => setShowNotes(e.target.checked)}
+                    className="rounded border-gray-300 text-morandi-sage-500 focus:ring-morandi-sage-500"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {t('share:showNotes', 'Include practice notes')}
+                  </span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1 ml-6">
+                  {t(
+                    'share:notesHint',
+                    "Share your thoughts from today's practice"
+                  )}
+                </p>
+              </div>
+            )}
+
+            {/* No Data Notice */}
+            {!shareCardData.hasData && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800">
+                  {shareCardData.viewMode === 'week'
+                    ? t(
+                        'share:noWeeklyDataNotice',
+                        'No practice data for this week.'
+                      )
+                    : t(
+                        'share:noDataNotice',
+                        'No practice data for today. Add an entry to share your progress!'
+                      )}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <ModalFooter>
+      <ModalFooter className="flex-shrink-0 border-t border-gray-100 pt-4 mt-2">
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {canNativeShare && (
             <Button
