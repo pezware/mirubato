@@ -215,4 +215,139 @@ adminHandler.get('/score-status/:id', async c => {
   }
 })
 
+// Admin endpoint to generate thumbnails for scores that don't have them
+adminHandler.post('/generate-thumbnails', async c => {
+  try {
+    const authHeader = c.req.header('Authorization')
+    const adminToken = c.env.ADMIN_TOKEN
+
+    if (!adminToken || authHeader !== `Bearer ${adminToken}`) {
+      throw new HTTPException(401, { message: 'Unauthorized' })
+    }
+
+    const { dryRun = true, limit = 50 } = await c.req.json<{
+      dryRun?: boolean
+      limit?: number
+    }>()
+
+    // Find scores that are completed
+    const scores = await c.env.DB.prepare(
+      `SELECT id, title, pdf_url
+       FROM scores
+       WHERE processing_status = 'completed'
+       AND pdf_url IS NOT NULL
+       ORDER BY created_at DESC
+       LIMIT ?`
+    )
+      .bind(limit)
+      .all()
+
+    const scoresMissingThumbnails = []
+
+    // Check each score for thumbnail
+    for (const score of scores.results || []) {
+      const thumbnailKey = `thumbnails/${score.id}/thumb.webp`
+
+      try {
+        const thumbnail = await c.env.SCORES_BUCKET.head(thumbnailKey)
+
+        if (!thumbnail) {
+          scoresMissingThumbnails.push({
+            id: score.id as string,
+            title: score.title as string,
+            pdf_url: score.pdf_url as string,
+          })
+        }
+      } catch {
+        // If we can't check, assume it needs a thumbnail
+        scoresMissingThumbnails.push({
+          id: score.id as string,
+          title: score.title as string,
+          pdf_url: score.pdf_url as string,
+        })
+      }
+    }
+
+    if (dryRun) {
+      return c.json({
+        success: true,
+        dryRun: true,
+        message: `Found ${scoresMissingThumbnails.length} scores missing thumbnails`,
+        scores: scoresMissingThumbnails,
+      })
+    }
+
+    // For non-dry-run, queue thumbnail-only generation (more efficient than full reprocessing)
+    const results = {
+      queued: 0,
+      failed: 0,
+      errors: [] as Array<{ scoreId: string; error: string }>,
+    }
+
+    for (const score of scoresMissingThumbnails) {
+      try {
+        const pdfUrl = score.pdf_url as string
+
+        // Validate pdf_url format before extracting R2 key
+        if (!pdfUrl || !pdfUrl.startsWith('/files/')) {
+          results.failed++
+          results.errors.push({
+            scoreId: score.id,
+            error: `Invalid pdf_url format: ${pdfUrl?.substring(0, 50) || 'empty'}`,
+          })
+          continue
+        }
+
+        // Extract R2 key from pdf_url (remove '/files/' prefix)
+        const r2Key = pdfUrl.slice('/files/'.length)
+
+        if (!r2Key || r2Key.length === 0) {
+          results.failed++
+          results.errors.push({
+            scoreId: score.id,
+            error: 'Empty R2 key extracted from pdf_url',
+          })
+          continue
+        }
+
+        // Queue thumbnail-only generation (not full reprocessing)
+        if (c.env.PDF_QUEUE) {
+          await c.env.PDF_QUEUE.send({
+            type: 'generate-thumbnail',
+            scoreId: score.id,
+            r2Key: r2Key,
+          })
+          results.queued++
+        } else {
+          results.failed++
+          results.errors.push({
+            scoreId: score.id,
+            error: 'PDF_QUEUE not available',
+          })
+        }
+      } catch (error) {
+        results.failed++
+        results.errors.push({
+          scoreId: score.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
+    }
+
+    return c.json({
+      success: true,
+      dryRun: false,
+      message: `Queued ${results.queued} scores for thumbnail generation`,
+      results,
+    })
+  } catch (error) {
+    if (error instanceof HTTPException) throw error
+
+    console.error('Admin generate-thumbnails error:', error)
+    throw new HTTPException(500, {
+      message: 'Failed to generate thumbnails',
+    })
+  }
+})
+
 export { adminHandler }

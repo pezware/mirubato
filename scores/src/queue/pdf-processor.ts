@@ -4,12 +4,46 @@ import { PdfCacheManager } from '../utils/pdfCache'
 import { generatePdfHtmlTemplate } from '../utils/pdfHtmlTemplate'
 import { CloudflareAiExtractor } from '../services/cloudflareAiExtractor'
 import { ImageAnalysisRequest } from '../types/ai'
+import { THUMBNAIL_CONFIG, THUMBNAIL_HEIGHT } from '../config/thumbnail'
 
 interface ProcessPdfMessage {
   type: 'process-new-score'
   scoreId: string
   r2Key: string
   uploadedAt: string
+}
+
+interface GenerateThumbnailMessage {
+  type: 'generate-thumbnail'
+  scoreId: string
+  r2Key: string
+}
+
+export type QueueMessage = ProcessPdfMessage | GenerateThumbnailMessage
+
+// Handler for thumbnail-only generation (more efficient than full reprocessing)
+export async function generateThumbnailOnly(
+  message: GenerateThumbnailMessage,
+  env: Env
+): Promise<{ success: boolean; error?: string }> {
+  const { scoreId, r2Key } = message
+
+  try {
+    // Generate presigned URL for the PDF
+    const presigner = new R2Presigner(env)
+    const pdfUrl = await presigner.generatePresignedUrl(r2Key)
+
+    // Generate and store thumbnail
+    await renderAndStoreThumbnail(env, scoreId, pdfUrl)
+
+    return { success: true }
+  } catch (error) {
+    console.error(`Thumbnail generation failed for ${scoreId}:`, error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
 }
 
 export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
@@ -45,6 +79,17 @@ export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
 
     // Create score version entry
     await createScoreVersion(env, scoreId, r2Key, pageCount)
+
+    // Generate thumbnail first (optimized for grid view)
+    try {
+      await renderAndStoreThumbnail(env, scoreId, pdfUrl)
+    } catch (thumbnailError) {
+      // Log but don't fail the whole process if thumbnail generation fails
+      console.error(
+        `Thumbnail generation failed for ${scoreId}:`,
+        thumbnailError
+      )
+    }
 
     // Process pages in batches to avoid timeout
     const batchSize = 5
@@ -147,6 +192,98 @@ async function analyzePdf(
     }
 
     return { pageCount: result.info?.pageCount || 0 }
+  } finally {
+    await browser.close()
+  }
+}
+
+async function renderAndStoreThumbnail(
+  env: Env,
+  scoreId: string,
+  pdfUrl: string
+): Promise<void> {
+  const browser = await launch(env.BROWSER, { keep_alive: 60000 }) // 1 minute
+
+  try {
+    const page = await browser.newPage()
+
+    // Set viewport for thumbnail (smaller size)
+    await page.setViewport({
+      width: THUMBNAIL_CONFIG.WIDTH,
+      height: THUMBNAIL_HEIGHT,
+      deviceScaleFactor: 1, // Lower DPI for thumbnails
+    })
+
+    // Render first page with shared template
+    const html = generatePdfHtmlTemplate({
+      pdfUrl,
+      pageNumber: 1,
+      scale: THUMBNAIL_CONFIG.WIDTH / 612, // Scale to thumbnail width (612 is standard PDF width in points)
+      quality: 'simple',
+    })
+
+    await page.setContent(html, { waitUntil: 'domcontentloaded' })
+
+    // Wait for render with timeout
+    try {
+      await page.waitForFunction(
+        'window.renderComplete === true || window.renderError !== undefined',
+        { timeout: 10000 }
+      )
+
+      // Check for errors
+      const error = await page.evaluate(() => {
+        const global = globalThis as {
+          renderError?: string
+        }
+        return global.renderError
+      })
+      if (error) {
+        throw new Error(`Thumbnail render error: ${error}`)
+      }
+    } catch (timeoutError) {
+      // If timeout, check if canvas has content before proceeding
+      console.warn(
+        'Thumbnail render timeout, checking canvas content...',
+        timeoutError
+      )
+    }
+
+    // Take screenshot of the canvas
+    const canvas = await page.$('#pdf-canvas')
+    if (!canvas) {
+      throw new Error('Canvas element not found for thumbnail')
+    }
+
+    // Verify canvas has actual content (not blank)
+    const canvasBox = await canvas.boundingBox()
+    if (!canvasBox || canvasBox.width === 0 || canvasBox.height === 0) {
+      throw new Error('Canvas is empty or has no dimensions')
+    }
+
+    const screenshot = await canvas.screenshot({
+      type: 'webp',
+      quality: THUMBNAIL_CONFIG.QUALITY,
+    })
+
+    // Verify screenshot is not empty (minimum reasonable size for a thumbnail)
+    // screenshot can be string | Buffer, handle both cases
+    const screenshotSize =
+      screenshot instanceof Buffer ? screenshot.byteLength : screenshot.length
+    if (!screenshot || screenshotSize < 1000) {
+      throw new Error(
+        `Thumbnail screenshot appears empty or corrupt (${screenshotSize || 0} bytes)`
+      )
+    }
+
+    // Store thumbnail in R2
+    const key = THUMBNAIL_CONFIG.getStoragePath(scoreId)
+    await env.SCORES_BUCKET.put(key, screenshot, {
+      httpMetadata: {
+        contentType: 'image/webp',
+        cacheControl: THUMBNAIL_CONFIG.CACHE_CONTROL,
+      },
+    })
   } finally {
     await browser.close()
   }

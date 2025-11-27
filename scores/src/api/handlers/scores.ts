@@ -490,6 +490,138 @@ scoresHandler.delete('/:id', authMiddleware, async c => {
   }
 })
 
+// Batch delete scores
+scoresHandler.post('/batch/delete', authMiddleware, async c => {
+  try {
+    const userId = c.get('userId')
+    const body = await c.req.json()
+
+    // Validate input
+    const { scoreIds } = z
+      .object({
+        scoreIds: z.array(z.string()).min(1).max(100),
+      })
+      .parse(body)
+
+    // Verify all scores belong to the user
+    const placeholders = scoreIds.map(() => '?').join(',')
+    const scores = await c.env.DB.prepare(
+      `SELECT id, user_id, pdf_url FROM scores WHERE id IN (${placeholders})`
+    )
+      .bind(...scoreIds)
+      .all()
+
+    // Check ownership
+    const userScoreIds = new Set<string>()
+    const scorePdfUrls = new Map<string, string>()
+    for (const score of scores.results) {
+      if (score.user_id !== userId) {
+        throw new HTTPException(403, {
+          message: `You don't have permission to delete score ${score.id}`,
+        })
+      }
+      userScoreIds.add(score.id as string)
+      if (score.pdf_url) {
+        scorePdfUrls.set(score.id as string, score.pdf_url as string)
+      }
+    }
+
+    // Check for any missing scores
+    const missingScores = scoreIds.filter(id => !userScoreIds.has(id))
+    if (missingScores.length > 0) {
+      throw new HTTPException(404, {
+        message: `Scores not found: ${missingScores.join(', ')}`,
+      })
+    }
+
+    // Delete R2 files for each score
+    const deletePromises: Promise<void>[] = []
+
+    for (const scoreId of scoreIds) {
+      // Delete PDF file
+      const pdfUrl = scorePdfUrls.get(scoreId)
+      if (pdfUrl) {
+        const r2Key = pdfUrl.replace('/files/', '')
+        deletePromises.push(
+          c.env.SCORES_BUCKET.delete(r2Key).catch(err =>
+            console.error(`Failed to delete PDF for ${scoreId}:`, err)
+          )
+        )
+      }
+
+      // Delete rendered pages
+      deletePromises.push(
+        (async () => {
+          // List and delete all rendered pages
+          const pagePrefix = `rendered/${scoreId}/`
+          const pageList = await c.env.SCORES_BUCKET.list({
+            prefix: pagePrefix,
+          })
+          for (const obj of pageList.objects) {
+            await c.env.SCORES_BUCKET.delete(obj.key).catch(err =>
+              console.error(`Failed to delete ${obj.key}:`, err)
+            )
+          }
+        })()
+      )
+
+      // Delete thumbnail
+      deletePromises.push(
+        c.env.SCORES_BUCKET.delete(`thumbnails/${scoreId}/thumb.webp`).catch(
+          err =>
+            console.error(`Failed to delete thumbnail for ${scoreId}:`, err)
+        )
+      )
+    }
+
+    // Wait for all R2 deletions
+    await Promise.allSettled(deletePromises)
+
+    // Delete from database (batch delete)
+    await c.env.DB.prepare(`DELETE FROM scores WHERE id IN (${placeholders})`)
+      .bind(...scoreIds)
+      .run()
+
+    // Also remove from user collections
+    const collections = await c.env.DB.prepare(
+      'SELECT id, score_ids FROM user_collections WHERE user_id = ?'
+    )
+      .bind(userId)
+      .all()
+
+    const scoreIdSet = new Set(scoreIds)
+    for (const col of collections.results) {
+      const currentScoreIds = JSON.parse((col.score_ids as string) || '[]')
+      const filteredIds = currentScoreIds.filter(
+        (id: string) => !scoreIdSet.has(id)
+      )
+      if (filteredIds.length !== currentScoreIds.length) {
+        await c.env.DB.prepare(
+          'UPDATE user_collections SET score_ids = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+        )
+          .bind(JSON.stringify(filteredIds), col.id)
+          .run()
+      }
+    }
+
+    return c.json({
+      success: true,
+      message: `Successfully deleted ${scoreIds.length} scores`,
+      deletedCount: scoreIds.length,
+    })
+  } catch (error) {
+    if (error instanceof HTTPException) throw error
+    if (error instanceof z.ZodError) {
+      throw new HTTPException(400, {
+        message: 'Invalid input',
+        cause: error.errors,
+      })
+    }
+    console.error('Error batch deleting scores:', error)
+    throw new HTTPException(500, { message: 'Failed to delete scores' })
+  }
+})
+
 // Serve image pages for multi-image scores
 scoresHandler.get('/:id/pages/:pageNumber', async c => {
   try {

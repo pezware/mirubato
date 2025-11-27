@@ -9,6 +9,7 @@ import {
   checkRenderError,
   checkCanvasHasContent,
 } from '../../browser/pdf-page-evaluations'
+import { THUMBNAIL_CONFIG } from '../../config/thumbnail'
 
 export const pdfRendererV2Handler = new Hono<{ Bindings: Env }>()
 
@@ -245,3 +246,98 @@ function generatePlaceholder(scoreId: string, pageNumber: number): Response {
     },
   })
 }
+
+// Generate placeholder thumbnail for development
+function generateThumbnailPlaceholder(scoreId: string): Response {
+  const svg = `
+    <svg width="400" height="566" xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="566" fill="#f5f5f5" stroke="#ddd" stroke-width="1"/>
+      <text x="200" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#888">
+        ${scoreId.substring(0, 12)}...
+      </text>
+      <text x="200" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#aaa">
+        (Thumbnail)
+      </text>
+    </svg>
+  `
+
+  return new Response(svg.trim(), {
+    headers: {
+      'Content-Type': 'image/svg+xml',
+      'Cache-Control': 'no-cache',
+    },
+  })
+}
+
+// Thumbnail endpoint - optimized for grid view
+// Uses shared THUMBNAIL_CONFIG from config/thumbnail.ts
+pdfRendererV2Handler.get('/thumbnail/:scoreId', async c => {
+  try {
+    const scoreId = c.req.param('scoreId')
+
+    // Validate score ID
+    if (!/^[a-zA-Z0-9_-]+$/.test(scoreId)) {
+      throw new HTTPException(400, { message: 'Invalid score ID format' })
+    }
+
+    // Check for pre-generated thumbnail in R2
+    const thumbnailKey = THUMBNAIL_CONFIG.getStoragePath(scoreId)
+    const cached = await c.env.SCORES_BUCKET.get(thumbnailKey)
+
+    if (cached) {
+      // Return pre-generated thumbnail
+      return new Response(cached.body, {
+        headers: {
+          'Content-Type': 'image/webp',
+          'Cache-Control': THUMBNAIL_CONFIG.CACHE_CONTROL,
+          'X-Cache-Status': 'HIT',
+        },
+      })
+    }
+
+    // If no pre-generated thumbnail, check if Browser Rendering is available
+    if (!c.env.BROWSER) {
+      // Development fallback
+      return generateThumbnailPlaceholder(scoreId)
+    }
+
+    // Generate thumbnail on-demand (fallback for older scores)
+    const pdfUrl = await getPdfUrl(scoreId, c.env)
+
+    const params = {
+      scoreId,
+      pageNumber: 1,
+      width: THUMBNAIL_CONFIG.WIDTH,
+      format: 'webp' as const,
+      quality: THUMBNAIL_CONFIG.QUALITY,
+    }
+
+    const image = await renderPage(c.env.BROWSER, pdfUrl, params)
+
+    // Store for next time (async, don't wait)
+    c.executionCtx.waitUntil(
+      c.env.SCORES_BUCKET.put(thumbnailKey, image, {
+        httpMetadata: {
+          contentType: 'image/webp',
+          cacheControl: THUMBNAIL_CONFIG.CACHE_CONTROL,
+        },
+      })
+    )
+
+    return new Response(image, {
+      headers: {
+        'Content-Type': 'image/webp',
+        'Cache-Control': 'public, max-age=3600', // Shorter cache for on-demand generated
+        'X-Cache-Status': 'MISS',
+      },
+    })
+  } catch (error) {
+    console.error('Thumbnail error:', error)
+
+    if (error instanceof HTTPException) throw error
+
+    throw new HTTPException(500, {
+      message: `Failed to get thumbnail: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    })
+  }
+})

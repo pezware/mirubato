@@ -6,7 +6,7 @@ import type { Collection } from '../../types/collections'
 import { MusicTitle, MusicComposer } from '../ui'
 import { cn } from '../../utils/cn'
 import { scoreService } from '../../services/scoreService'
-import { FolderPlus, Music, Star } from 'lucide-react'
+import { FolderPlus, Music, Star, CheckSquare, Square } from 'lucide-react'
 
 interface ScoreGridItemProps {
   score: Score
@@ -14,6 +14,10 @@ interface ScoreGridItemProps {
   onToggleFavorite?: (e: React.MouseEvent, score: Score) => void
   collections?: Collection[]
   isFavorited?: boolean
+  // Selection mode props
+  selectionMode?: boolean
+  isSelected?: boolean
+  onToggleSelection?: (scoreId: string) => void
 }
 
 export default function ScoreGridItem({
@@ -22,6 +26,9 @@ export default function ScoreGridItem({
   onToggleFavorite,
   collections = [],
   isFavorited = false,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelection,
 }: ScoreGridItemProps) {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
@@ -38,11 +45,22 @@ export default function ScoreGridItem({
         : [],
   }
 
-  // Get thumbnail URL (first page of score)
-  const thumbnailUrl = scoreService.getScorePageUrl(score.id, 1)
+  // Get optimized thumbnail URL (pre-generated, smaller size)
+  const thumbnailUrl = scoreService.getThumbnailUrl(score.id)
 
   const handleClick = () => {
-    navigate(`/scorebook/${score.id}`)
+    if (selectionMode && onToggleSelection) {
+      onToggleSelection(score.id)
+    } else {
+      navigate(`/scorebook/${score.id}`)
+    }
+  }
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onToggleSelection) {
+      onToggleSelection(score.id)
+    }
   }
 
   const handleAddToCollection = (e: React.MouseEvent) => {
@@ -62,14 +80,36 @@ export default function ScoreGridItem({
   return (
     <div
       className={cn(
-        'bg-white rounded-lg border border-morandi-stone-200 overflow-hidden cursor-pointer',
-        'transition-all duration-200 hover:shadow-md hover:border-morandi-sage-300',
-        'group relative'
+        'bg-white rounded-lg border overflow-hidden cursor-pointer',
+        'transition-all duration-200 hover:shadow-md',
+        'group relative',
+        isSelected
+          ? 'border-morandi-sage-500 ring-2 ring-morandi-sage-300'
+          : 'border-morandi-stone-200 hover:border-morandi-sage-300'
       )}
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Selection Checkbox */}
+      {selectionMode && (
+        <button
+          onClick={handleCheckboxClick}
+          className={cn(
+            'absolute top-2 left-2 z-10 p-1 rounded transition-colors',
+            isSelected
+              ? 'bg-morandi-sage-500 text-white'
+              : 'bg-white/90 text-morandi-stone-600 hover:bg-white'
+          )}
+        >
+          {isSelected ? (
+            <CheckSquare className="w-5 h-5" />
+          ) : (
+            <Square className="w-5 h-5" />
+          )}
+        </button>
+      )}
+
       {/* Thumbnail */}
       <div className="aspect-[3/4] bg-morandi-stone-100 relative overflow-hidden">
         {!thumbnailError ? (
@@ -86,47 +126,52 @@ export default function ScoreGridItem({
           </div>
         )}
 
-        {/* Hover overlay */}
-        <div
-          className={cn(
-            'absolute inset-0 bg-black/40 flex items-center justify-center gap-2',
-            'opacity-0 group-hover:opacity-100 transition-opacity duration-200'
-          )}
-        >
-          {onToggleFavorite && (
-            <button
-              onClick={handleToggleFavorite}
-              className={cn(
-                'p-2 rounded-full transition-colors',
-                isFavorited
-                  ? 'bg-amber-500 text-white hover:bg-amber-600'
-                  : 'bg-white/90 text-morandi-stone-700 hover:bg-white'
-              )}
-              title={
-                isFavorited
-                  ? t('scorebook:removeFromFavorites', 'Remove from favorites')
-                  : t('scorebook:addToFavorites', 'Add to favorites')
-              }
-            >
-              <Star
-                className="w-5 h-5"
-                fill={isFavorited ? 'currentColor' : 'none'}
-              />
-            </button>
-          )}
-          {onAddToCollection && (
-            <button
-              onClick={handleAddToCollection}
-              className="p-2 bg-white/90 rounded-full text-morandi-stone-700 hover:bg-white transition-colors"
-              title={t('scorebook:addToCollection', 'Add to collection')}
-            >
-              <FolderPlus className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+        {/* Hover overlay - hide in selection mode */}
+        {!selectionMode && (
+          <div
+            className={cn(
+              'absolute inset-0 bg-black/40 flex items-center justify-center gap-2',
+              'opacity-0 group-hover:opacity-100 transition-opacity duration-200'
+            )}
+          >
+            {onToggleFavorite && (
+              <button
+                onClick={handleToggleFavorite}
+                className={cn(
+                  'p-2 rounded-full transition-colors',
+                  isFavorited
+                    ? 'bg-amber-500 text-white hover:bg-amber-600'
+                    : 'bg-white/90 text-morandi-stone-700 hover:bg-white'
+                )}
+                title={
+                  isFavorited
+                    ? t(
+                        'scorebook:removeFromFavorites',
+                        'Remove from favorites'
+                      )
+                    : t('scorebook:addToFavorites', 'Add to favorites')
+                }
+              >
+                <Star
+                  className="w-5 h-5"
+                  fill={isFavorited ? 'currentColor' : 'none'}
+                />
+              </button>
+            )}
+            {onAddToCollection && (
+              <button
+                onClick={handleAddToCollection}
+                className="p-2 bg-white/90 rounded-full text-morandi-stone-700 hover:bg-white transition-colors"
+                title={t('scorebook:addToCollection', 'Add to collection')}
+              >
+                <FolderPlus className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        )}
 
-        {/* Persistent favorite indicator */}
-        {isFavorited && (
+        {/* Persistent favorite indicator - hide in selection mode */}
+        {isFavorited && !selectionMode && (
           <div className="absolute top-2 left-2">
             <Star
               className="w-5 h-5 text-amber-500 drop-shadow-md"

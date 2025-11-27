@@ -243,6 +243,11 @@ class ScoreService {
     return `${this.scoresApiUrl}/api/pdf/v2/render/${scoreId}/page/${page}`
   }
 
+  // Get the URL for a pre-generated thumbnail (optimized for grid view)
+  getThumbnailUrl(scoreId: string): string {
+    return `${this.scoresApiUrl}/api/pdf/v2/thumbnail/${scoreId}`
+  }
+
   // Get the URL for an image-based score page
   getImagePageUrl(scoreId: string, pageNumber: number): string {
     return `${this.scoresApiUrl}/api/scores/${scoreId}/pages/${pageNumber}`
@@ -433,6 +438,66 @@ class ScoreService {
         }
         throw new Error(
           `Failed to remove score from collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Batch add scores to collection
+  async batchAddScoresToCollection(
+    collectionId: string,
+    scoreIds: string[]
+  ): Promise<{ addedCount: number; skippedCount: number }> {
+    try {
+      const response = await scoresApiClient.post(
+        `/api/user/collections/${collectionId}/scores/batch`,
+        { scoreIds }
+      )
+      return {
+        addedCount: response.data.addedCount || 0,
+        skippedCount: response.data.skippedCount || 0,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        if (error.response?.status === 404) {
+          throw new Error('Collection not found or some scores not accessible')
+        }
+        throw new Error(
+          `Failed to add scores to collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Batch delete scores
+  async batchDeleteScores(
+    scoreIds: string[]
+  ): Promise<{ deletedCount: number }> {
+    try {
+      const response = await scoresApiClient.post('/api/scores/batch/delete', {
+        scoreIds,
+      })
+      return {
+        deletedCount: response.data.deletedCount || 0,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        if (error.response?.status === 403) {
+          throw new Error('You do not have permission to delete some scores')
+        }
+        if (error.response?.status === 404) {
+          throw new Error('Some scores not found')
+        }
+        throw new Error(
+          `Failed to delete scores: ${error.response?.statusText || error.message}`
         )
       }
       throw error

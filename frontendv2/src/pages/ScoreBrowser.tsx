@@ -13,11 +13,12 @@ import ImportScoreModal from '../components/score/ImportScoreModal'
 import CollectionsManager from '../components/score/CollectionsManager'
 import ScoreListItem from '../components/score/ScoreListItem'
 import ScoreGridItem from '../components/score/ScoreGridItem'
+import SelectionToolbar from '../components/score/SelectionToolbar'
 import TimerEntry from '../components/TimerEntry'
 import { useAuthStore } from '../stores/authStore'
 import { useModals } from '../hooks/useModal'
 import Button from '../components/ui/Button'
-import { Tabs, Select } from '../components/ui'
+import { Tabs, Select, Modal } from '../components/ui'
 import { Input } from '../components/ui/Input'
 import {
   Plus,
@@ -28,6 +29,7 @@ import {
   LayoutGrid,
   List,
   X,
+  CheckSquare,
 } from 'lucide-react'
 
 type TabView = 'scores' | 'publicCollections' | 'myCollections'
@@ -130,6 +132,15 @@ export default function ScoreBrowserPage() {
   const [hasMore, setHasMore] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const PAGE_SIZE = 20
+
+  // Selection mode state
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedScoreIds, setSelectedScoreIds] = useState<Set<string>>(
+    new Set()
+  )
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isAddingToCollection, setIsAddingToCollection] = useState(false)
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false)
 
   // Debounce search query to avoid excessive API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
@@ -584,6 +595,95 @@ export default function ScoreBrowserPage() {
     navigate(`/scorebook/${score.id}`)
   }
 
+  // Selection mode handlers
+  const toggleSelectionMode = () => {
+    if (selectionMode) {
+      // Exiting selection mode - clear selections
+      setSelectedScoreIds(new Set())
+    }
+    setSelectionMode(!selectionMode)
+  }
+
+  const handleToggleSelection = (scoreId: string) => {
+    setSelectedScoreIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(scoreId)) {
+        newSet.delete(scoreId)
+      } else {
+        newSet.add(scoreId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    setSelectedScoreIds(new Set(scores.map(s => s.id)))
+  }
+
+  const handleDeselectAll = () => {
+    setSelectedScoreIds(new Set())
+  }
+
+  const handleBatchAddToCollection = async (collectionId: string) => {
+    if (selectedScoreIds.size === 0) return
+
+    setIsAddingToCollection(true)
+    try {
+      const result = await scoreService.batchAddScoresToCollection(
+        collectionId,
+        Array.from(selectedScoreIds)
+      )
+
+      // Show success message (could use toast notification)
+      console.log(
+        `Added ${result.addedCount} scores to collection (${result.skippedCount} already in collection)`
+      )
+
+      // Clear selection and exit selection mode
+      setSelectedScoreIds(new Set())
+      setSelectionMode(false)
+
+      // Refresh collections data
+      await loadData()
+    } catch (error) {
+      console.error('Failed to add scores to collection:', error)
+      // Could show error toast here
+    } finally {
+      setIsAddingToCollection(false)
+    }
+  }
+
+  const handleBatchDelete = () => {
+    if (selectedScoreIds.size === 0) return
+    setShowDeleteConfirmModal(true)
+  }
+
+  const confirmBatchDelete = async () => {
+    setShowDeleteConfirmModal(false)
+    setIsDeleting(true)
+
+    try {
+      const result = await scoreService.batchDeleteScores(
+        Array.from(selectedScoreIds)
+      )
+
+      // Show success message
+      console.log(`Deleted ${result.deletedCount} scores`)
+
+      // Clear selection and exit selection mode
+      setSelectedScoreIds(new Set())
+      setSelectionMode(false)
+
+      // Refresh scores
+      await loadData()
+    } catch (error) {
+      console.error('Failed to delete scores:', error)
+      // Could show error toast here
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   const renderCollectionRow = (collection: Collection) => {
     const isExpanded = expandedCollections.has(collection.id)
 
@@ -902,8 +1002,29 @@ export default function ScoreBrowserPage() {
                     </button>
                   </div>
 
+                  {/* Select Mode Toggle */}
+                  {isAuthenticated && scores.length > 0 && (
+                    <Button
+                      onClick={toggleSelectionMode}
+                      size="sm"
+                      variant={selectionMode ? 'primary' : 'ghost'}
+                      className="flex items-center gap-1"
+                      title={t(
+                        'scorebook:selectMode',
+                        'Select multiple scores'
+                      )}
+                    >
+                      <CheckSquare className="w-4 h-4" />
+                      <span className="hidden sm:inline">
+                        {selectionMode
+                          ? t('scorebook:cancelSelect', 'Cancel')
+                          : t('scorebook:select', 'Select')}
+                      </span>
+                    </Button>
+                  )}
+
                   {/* Import Button */}
-                  {isAuthenticated && (
+                  {isAuthenticated && !selectionMode && (
                     <Button
                       onClick={() => modals.open('import')}
                       size="sm"
@@ -920,7 +1041,7 @@ export default function ScoreBrowserPage() {
               </div>
 
               {/* Results count */}
-              {!isLoading && (
+              {!isLoading && !selectionMode && (
                 <div className="text-xs text-morandi-stone-500">
                   {debouncedSearchQuery ? (
                     <>
@@ -939,6 +1060,21 @@ export default function ScoreBrowserPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Selection Toolbar */}
+          {selectionMode && tabView === 'scores' && (
+            <SelectionToolbar
+              selectedCount={selectedScoreIds.size}
+              totalCount={scores.length}
+              onSelectAll={handleSelectAll}
+              onDeselectAll={handleDeselectAll}
+              onDelete={handleBatchDelete}
+              onAddToCollection={handleBatchAddToCollection}
+              collections={userCollections}
+              isDeleting={isDeleting}
+              isAddingToCollection={isAddingToCollection}
+            />
           )}
 
           {/* Content */}
@@ -1009,14 +1145,23 @@ export default function ScoreBrowserPage() {
                           <ScoreListItem
                             key={score.id}
                             score={score}
-                            onAddToCollection={handleAddToCollection}
+                            onAddToCollection={
+                              selectionMode ? undefined : handleAddToCollection
+                            }
                             onToggleFavorite={
-                              isAuthenticated ? handleToggleFavorite : undefined
+                              selectionMode
+                                ? undefined
+                                : isAuthenticated
+                                  ? handleToggleFavorite
+                                  : undefined
                             }
                             collections={scoreCollections[score.id]}
                             isFavorited={scoreFavorites[score.id] || false}
-                            showCollections={true}
-                            showTagsInCollapsed={true}
+                            showCollections={!selectionMode}
+                            showTagsInCollapsed={!selectionMode}
+                            selectionMode={selectionMode}
+                            isSelected={selectedScoreIds.has(score.id)}
+                            onToggleSelection={handleToggleSelection}
                           />
                         ))}
                       </div>
@@ -1026,12 +1171,21 @@ export default function ScoreBrowserPage() {
                           <ScoreGridItem
                             key={score.id}
                             score={score}
-                            onAddToCollection={handleAddToCollection}
+                            onAddToCollection={
+                              selectionMode ? undefined : handleAddToCollection
+                            }
                             onToggleFavorite={
-                              isAuthenticated ? handleToggleFavorite : undefined
+                              selectionMode
+                                ? undefined
+                                : isAuthenticated
+                                  ? handleToggleFavorite
+                                  : undefined
                             }
                             collections={scoreCollections[score.id]}
                             isFavorited={scoreFavorites[score.id] || false}
+                            selectionMode={selectionMode}
+                            isSelected={selectedScoreIds.has(score.id)}
+                            onToggleSelection={handleToggleSelection}
                           />
                         ))}
                       </div>
@@ -1176,6 +1330,40 @@ export default function ScoreBrowserPage() {
             </div>
           </div>
         )}
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={showDeleteConfirmModal}
+          onClose={() => setShowDeleteConfirmModal(false)}
+          title={t('scorebook:confirmDelete', 'Confirm Delete')}
+        >
+          <div className="p-4">
+            <p className="text-morandi-stone-700 mb-4">
+              {t(
+                'scorebook:deleteConfirmMessage',
+                'Are you sure you want to delete {{count}} scores? This action cannot be undone.',
+                { count: selectedScoreIds.size }
+              )}
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => setShowDeleteConfirmModal(false)}
+              >
+                {t('common:cancel', 'Cancel')}
+              </Button>
+              <Button
+                variant="danger"
+                onClick={confirmBatchDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting
+                  ? t('common:deleting', 'Deleting...')
+                  : t('common:delete', 'Delete')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
 
       {/* Timer Modal */}
