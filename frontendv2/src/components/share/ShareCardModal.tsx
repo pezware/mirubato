@@ -12,6 +12,17 @@ interface ShareCardModalProps {
   onClose: () => void
 }
 
+// Convert base64 data URL to Blob (CSP-safe, doesn't use fetch)
+function dataUrlToBlob(dataUrl: string): Blob {
+  const base64Data = dataUrl.split(',')[1]
+  const binaryString = atob(base64Data)
+  const bytes = new Uint8Array(binaryString.length)
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  return new Blob([bytes], { type: 'image/png' })
+}
+
 // Generate image from HTML element using canvas
 async function generateImage(
   element: HTMLElement,
@@ -86,12 +97,15 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
           quality: 1,
           pixelRatio: 2,
           backgroundColor: '#f5f3f0',
+          // Skip font embedding to avoid CSP issues with Google Fonts
+          skipFonts: true,
+          // Ensure we capture the element properly
+          cacheBust: true,
         })
 
-        // Convert data URL to blob
-        const response = await fetch(dataUrl)
-        blob = await response.blob()
-      } catch {
+        blob = dataUrlToBlob(dataUrl)
+      } catch (err) {
+        console.error('html-to-image failed:', err)
         // Fallback: try generateImage
         blob = await generateImage(cardRef.current)
       }
@@ -127,10 +141,12 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
           quality: 1,
           pixelRatio: 2,
           backgroundColor: '#f5f3f0',
+          skipFonts: true,
+          cacheBust: true,
         })
-        const response = await fetch(dataUrl)
-        blob = await response.blob()
-      } catch {
+        blob = dataUrlToBlob(dataUrl)
+      } catch (err) {
+        console.error('html-to-image failed:', err)
         blob = await generateImage(cardRef.current)
       }
 
@@ -161,10 +177,12 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
           quality: 1,
           pixelRatio: 2,
           backgroundColor: '#f5f3f0',
+          skipFonts: true,
+          cacheBust: true,
         })
-        const response = await fetch(dataUrl)
-        blob = await response.blob()
-      } catch {
+        blob = dataUrlToBlob(dataUrl)
+      } catch (err) {
+        console.error('html-to-image failed:', err)
         blob = await generateImage(cardRef.current)
       }
 
