@@ -93,7 +93,7 @@ export default function SelectionToolbar({
           <div className="flex items-center gap-2">
             <Select
               value={selectedCollectionId}
-              onChange={setSelectedCollectionId}
+              onChange={value => setSelectedCollectionId(String(value))}
               options={collectionOptions}
               className="min-w-[180px]"
             />

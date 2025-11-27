@@ -13,6 +13,16 @@ interface ProcessPdfMessage {
   data?: any
 }
 
+// Dedicated message for thumbnail-only generation (more efficient than full reprocessing)
+interface GenerateThumbnailMessage {
+  type: 'generate-thumbnail'
+  scoreId: string
+  r2Key: string
+}
+
+// Union type for all queue messages
+type QueueMessage = ProcessPdfMessage | GenerateThumbnailMessage
+
 interface Env {
   // Environment variables
   ENVIRONMENT: 'local' | 'development' | 'staging' | 'production'
@@ -42,7 +52,7 @@ interface Env {
   GEMINI_API_KEY?: string // Vertex AI/Gemini API key
 
   // Queue bindings
-  PDF_QUEUE?: Queue<ProcessPdfMessage> // Queue producer for PDF processing
+  PDF_QUEUE?: Queue<QueueMessage> // Queue producer for PDF processing
 
   // Rate limiting
   RATE_LIMITER?: any // Rate limiting API

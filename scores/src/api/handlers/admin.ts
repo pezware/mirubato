@@ -277,8 +277,7 @@ adminHandler.post('/generate-thumbnails', async c => {
       })
     }
 
-    // For non-dry-run, we need to generate thumbnails
-    // This will trigger on-demand thumbnail generation by queuing reprocessing
+    // For non-dry-run, queue thumbnail-only generation (more efficient than full reprocessing)
     const results = {
       queued: 0,
       failed: 0,
@@ -287,16 +286,36 @@ adminHandler.post('/generate-thumbnails', async c => {
 
     for (const score of scoresMissingThumbnails) {
       try {
-        // Extract R2 key from pdf_url
-        const r2Key = (score.pdf_url as string).replace('/files/', '')
+        const pdfUrl = score.pdf_url as string
 
-        // Queue for processing (which now includes thumbnail generation)
+        // Validate pdf_url format before extracting R2 key
+        if (!pdfUrl || !pdfUrl.startsWith('/files/')) {
+          results.failed++
+          results.errors.push({
+            scoreId: score.id,
+            error: `Invalid pdf_url format: ${pdfUrl?.substring(0, 50) || 'empty'}`,
+          })
+          continue
+        }
+
+        // Extract R2 key from pdf_url (remove '/files/' prefix)
+        const r2Key = pdfUrl.slice('/files/'.length)
+
+        if (!r2Key || r2Key.length === 0) {
+          results.failed++
+          results.errors.push({
+            scoreId: score.id,
+            error: 'Empty R2 key extracted from pdf_url',
+          })
+          continue
+        }
+
+        // Queue thumbnail-only generation (not full reprocessing)
         if (c.env.PDF_QUEUE) {
           await c.env.PDF_QUEUE.send({
-            type: 'process-new-score',
+            type: 'generate-thumbnail',
             scoreId: score.id,
             r2Key: r2Key,
-            uploadedAt: new Date().toISOString(),
           })
           results.queued++
         } else {

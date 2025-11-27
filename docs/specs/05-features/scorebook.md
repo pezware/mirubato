@@ -43,12 +43,12 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 ### New Features
 
 1. **Thumbnail Optimization** - Pre-generated thumbnails for faster grid view
-   - Thumbnails are generated during PDF import (400px width, webp format)
+   - Thumbnails are generated during PDF import (400px width, webp format, 75% quality)
    - Stored separately in R2 at `thumbnails/{scoreId}/thumb.webp`
-   - Falls back to on-demand generation for existing scores
-   - 75% quality for smaller file sizes and faster loading
+   - Falls back to on-demand generation for existing scores (cached with immutable headers)
    - Admin endpoint for bulk thumbnail generation: `POST /api/admin/generate-thumbnails`
    - New API endpoint: `GET /api/pdf/v2/thumbnail/:scoreId`
+   - Shared configuration in `scores/src/config/thumbnail.ts`
 
 2. **Batch Operations** - Multi-select for bulk add to collection/delete
    - Selection mode toggle in toolbar
@@ -63,9 +63,12 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 ### Technical Improvements
 
 - Dedicated thumbnail storage path separate from full-resolution pages
+- Shared thumbnail configuration (`scores/src/config/thumbnail.ts`) ensures consistency
 - Aggressive caching with 1-year immutable headers
 - On-demand fallback with async storage for cache misses
-- Lower resolution (400px vs 1200px) reduces bandwidth by ~70%
+- Lower resolution (400px vs 1200px) reduces bandwidth significantly (approx. 70% based on typical sheet music content - actual savings depend on content complexity and WebP compression efficiency)
+- Canvas content validation prevents storing empty/corrupt thumbnails
+- Dedicated thumbnail-only queue message for efficient bulk generation
 - Batch operations clean up R2 files (PDFs, rendered pages, thumbnails)
 - Batch operations automatically update user collections
 

@@ -4,12 +4,46 @@ import { PdfCacheManager } from '../utils/pdfCache'
 import { generatePdfHtmlTemplate } from '../utils/pdfHtmlTemplate'
 import { CloudflareAiExtractor } from '../services/cloudflareAiExtractor'
 import { ImageAnalysisRequest } from '../types/ai'
+import { THUMBNAIL_CONFIG, THUMBNAIL_HEIGHT } from '../config/thumbnail'
 
 interface ProcessPdfMessage {
   type: 'process-new-score'
   scoreId: string
   r2Key: string
   uploadedAt: string
+}
+
+interface GenerateThumbnailMessage {
+  type: 'generate-thumbnail'
+  scoreId: string
+  r2Key: string
+}
+
+export type QueueMessage = ProcessPdfMessage | GenerateThumbnailMessage
+
+// Handler for thumbnail-only generation (more efficient than full reprocessing)
+export async function generateThumbnailOnly(
+  message: GenerateThumbnailMessage,
+  env: Env
+): Promise<{ success: boolean; error?: string }> {
+  const { scoreId, r2Key } = message
+
+  try {
+    // Generate presigned URL for the PDF
+    const presigner = new R2Presigner(env)
+    const pdfUrl = await presigner.generatePresignedUrl(r2Key)
+
+    // Generate and store thumbnail
+    await renderAndStoreThumbnail(env, scoreId, pdfUrl)
+
+    return { success: true }
+  } catch (error) {
+    console.error(`Thumbnail generation failed for ${scoreId}:`, error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
 }
 
 export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
@@ -163,10 +197,6 @@ async function analyzePdf(
   }
 }
 
-// Thumbnail configuration
-const THUMBNAIL_WIDTH = 400
-const THUMBNAIL_HEIGHT = Math.floor(THUMBNAIL_WIDTH * 1.414) // A4 ratio
-
 async function renderAndStoreThumbnail(
   env: Env,
   scoreId: string,
@@ -179,7 +209,7 @@ async function renderAndStoreThumbnail(
 
     // Set viewport for thumbnail (smaller size)
     await page.setViewport({
-      width: THUMBNAIL_WIDTH,
+      width: THUMBNAIL_CONFIG.WIDTH,
       height: THUMBNAIL_HEIGHT,
       deviceScaleFactor: 1, // Lower DPI for thumbnails
     })
@@ -188,7 +218,7 @@ async function renderAndStoreThumbnail(
     const html = generatePdfHtmlTemplate({
       pdfUrl,
       pageNumber: 1,
-      scale: THUMBNAIL_WIDTH / 612, // Scale to thumbnail width (612 is standard PDF width in points)
+      scale: THUMBNAIL_CONFIG.WIDTH / 612, // Scale to thumbnail width (612 is standard PDF width in points)
       quality: 'simple',
     })
 
@@ -211,10 +241,11 @@ async function renderAndStoreThumbnail(
       if (error) {
         throw new Error(`Thumbnail render error: ${error}`)
       }
-    } catch {
-      // If timeout, continue if canvas has any content
+    } catch (timeoutError) {
+      // If timeout, check if canvas has content before proceeding
       console.warn(
-        'Thumbnail render timeout, proceeding with available content'
+        'Thumbnail render timeout, checking canvas content...',
+        timeoutError
       )
     }
 
@@ -224,17 +255,33 @@ async function renderAndStoreThumbnail(
       throw new Error('Canvas element not found for thumbnail')
     }
 
+    // Verify canvas has actual content (not blank)
+    const canvasBox = await canvas.boundingBox()
+    if (!canvasBox || canvasBox.width === 0 || canvasBox.height === 0) {
+      throw new Error('Canvas is empty or has no dimensions')
+    }
+
     const screenshot = await canvas.screenshot({
       type: 'webp',
-      quality: 75, // Lower quality for thumbnails (faster load)
+      quality: THUMBNAIL_CONFIG.QUALITY,
     })
 
+    // Verify screenshot is not empty (minimum reasonable size for a thumbnail)
+    // screenshot can be string | Buffer, handle both cases
+    const screenshotSize =
+      screenshot instanceof Buffer ? screenshot.byteLength : screenshot.length
+    if (!screenshot || screenshotSize < 1000) {
+      throw new Error(
+        `Thumbnail screenshot appears empty or corrupt (${screenshotSize || 0} bytes)`
+      )
+    }
+
     // Store thumbnail in R2
-    const key = `thumbnails/${scoreId}/thumb.webp`
+    const key = THUMBNAIL_CONFIG.getStoragePath(scoreId)
     await env.SCORES_BUCKET.put(key, screenshot, {
       httpMetadata: {
         contentType: 'image/webp',
-        cacheControl: 'public, max-age=31536000, immutable',
+        cacheControl: THUMBNAIL_CONFIG.CACHE_CONTROL,
       },
     })
   } finally {

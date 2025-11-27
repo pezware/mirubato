@@ -9,6 +9,7 @@ import {
   checkRenderError,
   checkCanvasHasContent,
 } from '../../browser/pdf-page-evaluations'
+import { THUMBNAIL_CONFIG } from '../../config/thumbnail'
 
 export const pdfRendererV2Handler = new Hono<{ Bindings: Env }>()
 
@@ -268,10 +269,8 @@ function generateThumbnailPlaceholder(scoreId: string): Response {
   })
 }
 
-// Thumbnail configuration (must match pdf-processor.ts)
-const THUMBNAIL_WIDTH = 400
-
 // Thumbnail endpoint - optimized for grid view
+// Uses shared THUMBNAIL_CONFIG from config/thumbnail.ts
 pdfRendererV2Handler.get('/thumbnail/:scoreId', async c => {
   try {
     const scoreId = c.req.param('scoreId')
@@ -282,7 +281,7 @@ pdfRendererV2Handler.get('/thumbnail/:scoreId', async c => {
     }
 
     // Check for pre-generated thumbnail in R2
-    const thumbnailKey = `thumbnails/${scoreId}/thumb.webp`
+    const thumbnailKey = THUMBNAIL_CONFIG.getStoragePath(scoreId)
     const cached = await c.env.SCORES_BUCKET.get(thumbnailKey)
 
     if (cached) {
@@ -290,7 +289,7 @@ pdfRendererV2Handler.get('/thumbnail/:scoreId', async c => {
       return new Response(cached.body, {
         headers: {
           'Content-Type': 'image/webp',
-          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Cache-Control': THUMBNAIL_CONFIG.CACHE_CONTROL,
           'X-Cache-Status': 'HIT',
         },
       })
@@ -308,9 +307,9 @@ pdfRendererV2Handler.get('/thumbnail/:scoreId', async c => {
     const params = {
       scoreId,
       pageNumber: 1,
-      width: THUMBNAIL_WIDTH,
+      width: THUMBNAIL_CONFIG.WIDTH,
       format: 'webp' as const,
-      quality: 75,
+      quality: THUMBNAIL_CONFIG.QUALITY,
     }
 
     const image = await renderPage(c.env.BROWSER, pdfUrl, params)
@@ -320,7 +319,7 @@ pdfRendererV2Handler.get('/thumbnail/:scoreId', async c => {
       c.env.SCORES_BUCKET.put(thumbnailKey, image, {
         httpMetadata: {
           contentType: 'image/webp',
-          cacheControl: 'public, max-age=31536000, immutable',
+          cacheControl: THUMBNAIL_CONFIG.CACHE_CONTROL,
         },
       })
     )
