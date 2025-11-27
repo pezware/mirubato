@@ -44,6 +44,8 @@ export interface ScoreSearchParams {
   tags?: string[]
   limit?: number
   offset?: number
+  sortBy?: 'title' | 'composer' | 'difficulty' | 'createdAt' | 'popularity'
+  sortOrder?: 'asc' | 'desc'
 }
 
 export interface ScoreListResponse {
