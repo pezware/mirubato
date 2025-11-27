@@ -10,7 +10,7 @@ import {
 } from 'date-fns'
 import { type ShareCardData } from '../../hooks/useShareCard'
 
-export type CardVariant = 'story' | 'square'
+export type CardVariant = 'story' | 'square' | 'long'
 
 interface ShareCardPreviewProps {
   data: ShareCardData
@@ -129,17 +129,28 @@ export const ShareCardPreview = forwardRef<
     const { t } = useTranslation(['common', 'share'])
 
     const isStory = variant === 'story'
-    const cardWidth = isStory ? 540 : 540
-    const cardHeight = isStory ? 960 : 540
+    const isLong = variant === 'long'
+    const cardWidth = 540
+    // Long variant auto-calculates height based on content, but has a minimum
+    const cardHeight = isLong ? 'auto' : isStory ? 960 : 540
+    const minHeight = isLong ? 800 : undefined
 
-    // Limit pieces to show (fewer if notes are shown)
+    // Limit pieces to show (fewer if notes are shown, more in long variant)
     const hasNotes = showNotes && data.todayNotes.length > 0
-    const maxPieces = hasNotes ? (isStory ? 2 : 1) : isStory ? 4 : 2
+    const maxPieces = isLong
+      ? 10
+      : hasNotes
+        ? isStory
+          ? 2
+          : 1
+        : isStory
+          ? 4
+          : 2
     const piecesToShow = data.todayPieces.slice(0, maxPieces)
 
-    // Combine notes into a single display string (truncate if too long)
+    // Combine notes into a single display string (no truncation for long variant)
     const combinedNotes = data.todayNotes.join(' • ')
-    const maxNotesLength = isStory ? 200 : 100
+    const maxNotesLength = isLong ? Infinity : isStory ? 200 : 100
     const displayNotes =
       combinedNotes.length > maxNotesLength
         ? combinedNotes.slice(0, maxNotesLength).trim() + '...'
@@ -152,9 +163,10 @@ export const ShareCardPreview = forwardRef<
         style={{
           width: cardWidth,
           height: cardHeight,
+          minHeight: minHeight,
           background: 'linear-gradient(180deg, #f5f3f0 0%, #e8e5e0 100%)',
           borderRadius: 24,
-          padding: isStory ? 32 : 24,
+          padding: isStory || isLong ? 32 : 24,
           display: 'flex',
           flexDirection: 'column',
           fontFamily: 'Inter, system-ui, sans-serif',
@@ -168,7 +180,7 @@ export const ShareCardPreview = forwardRef<
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            marginBottom: isStory ? 24 : 16,
+            marginBottom: isStory || isLong ? 24 : 16,
           }}
         >
           <img
@@ -198,8 +210,8 @@ export const ShareCardPreview = forwardRef<
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
             borderRadius: 16,
-            padding: isStory ? 24 : 16,
-            marginBottom: isStory ? 20 : 12,
+            padding: isStory || isLong ? 24 : 16,
+            marginBottom: isStory || isLong ? 20 : 12,
             textAlign: 'center',
           }}
         >
@@ -217,7 +229,7 @@ export const ShareCardPreview = forwardRef<
           </div>
           <div
             style={{
-              fontSize: isStory ? 48 : 36,
+              fontSize: isStory || isLong ? 48 : 36,
               fontWeight: 300,
               color: '#3d3d3d',
               fontFamily: 'Lexend, Inter, sans-serif',
@@ -236,9 +248,9 @@ export const ShareCardPreview = forwardRef<
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.5)',
               borderRadius: 16,
-              padding: isStory ? 20 : 14,
-              marginBottom: isStory ? 20 : 12,
-              flex: isStory ? 1 : 'none',
+              padding: isStory || isLong ? 20 : 14,
+              marginBottom: isStory || isLong ? 20 : 12,
+              flex: isStory && !isLong ? 1 : 'none',
             }}
           >
             <div
@@ -263,7 +275,7 @@ export const ShareCardPreview = forwardRef<
                   <div style={{ flex: 1 }}>
                     <div
                       style={{
-                        fontSize: isStory ? 16 : 14,
+                        fontSize: isStory || isLong ? 16 : 14,
                         fontWeight: 500,
                         color: '#3d3d3d',
                         fontFamily: '"Noto Serif", Georgia, serif',
@@ -275,7 +287,7 @@ export const ShareCardPreview = forwardRef<
                     {piece.composer && (
                       <div
                         style={{
-                          fontSize: isStory ? 13 : 12,
+                          fontSize: isStory || isLong ? 13 : 12,
                           color: '#666',
                           fontFamily: '"Noto Serif", Georgia, serif',
                         }}
@@ -308,8 +320,8 @@ export const ShareCardPreview = forwardRef<
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.5)',
               borderRadius: 16,
-              padding: isStory ? 20 : 14,
-              marginBottom: isStory ? 20 : 12,
+              padding: isStory || isLong ? 20 : 14,
+              marginBottom: isStory || isLong ? 20 : 12,
             }}
           >
             <div
@@ -324,16 +336,37 @@ export const ShareCardPreview = forwardRef<
             >
               {t('share:practiceNotes', 'Practice Notes')}
             </div>
-            <div
-              style={{
-                fontSize: isStory ? 15 : 13,
-                color: '#4a4a4a',
-                lineHeight: 1.5,
-                fontStyle: 'italic',
-              }}
-            >
-              "{displayNotes}"
-            </div>
+            {isLong ? (
+              // Long variant: show each note separately
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {data.todayNotes.map((note, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      fontSize: 14,
+                      color: '#4a4a4a',
+                      lineHeight: 1.6,
+                      fontStyle: 'italic',
+                      paddingLeft: 12,
+                      borderLeft: '3px solid #a8bfa8',
+                    }}
+                  >
+                    "{note}"
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                style={{
+                  fontSize: isStory ? 15 : 13,
+                  color: '#4a4a4a',
+                  lineHeight: 1.5,
+                  fontStyle: 'italic',
+                }}
+              >
+                "{displayNotes}"
+              </div>
+            )}
           </div>
         )}
 
@@ -342,8 +375,8 @@ export const ShareCardPreview = forwardRef<
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.5)',
             borderRadius: 16,
-            padding: isStory ? 20 : 14,
-            marginBottom: isStory ? 20 : 12,
+            padding: isStory || isLong ? 20 : 14,
+            marginBottom: isStory || isLong ? 20 : 12,
           }}
         >
           <div
@@ -369,7 +402,10 @@ export const ShareCardPreview = forwardRef<
               {t('share:totalTime', 'Total')}: {data.totalFormatted}
             </div>
           </div>
-          <MiniHeatmap data={data.heatmapData} months={isStory ? 4 : 3} />
+          <MiniHeatmap
+            data={data.heatmapData}
+            months={isLong ? 6 : isStory ? 4 : 3}
+          />
         </div>
 
         {/* Footer */}

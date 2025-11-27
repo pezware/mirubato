@@ -5,7 +5,11 @@ import { Modal, ModalFooter } from '../ui/Modal'
 import Button from '../ui/Button'
 import { SegmentedControl } from '../ui/SegmentedControl'
 import { ShareCardPreview, type CardVariant } from './ShareCardPreview'
+import { WeeklyShareCardPreview } from './WeeklyShareCardPreview'
 import { useShareCard } from '../../hooks/useShareCard'
+import { useWeeklyShareCard } from '../../hooks/useWeeklyShareCard'
+
+type CardType = 'daily' | 'weekly'
 
 interface ShareCardModalProps {
   isOpen: boolean
@@ -71,7 +75,9 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
   const { t } = useTranslation(['common', 'share'])
   const cardRef = useRef<HTMLDivElement>(null)
   const shareCardData = useShareCard()
+  const weeklyCardData = useWeeklyShareCard()
 
+  const [cardType, setCardType] = useState<CardType>('daily')
   const [variant, setVariant] = useState<CardVariant>('story')
   const [showUsername, setShowUsername] = useState(true)
   const [showNotes, setShowNotes] = useState(false)
@@ -80,10 +86,17 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
 
   // Check if user has notes to share
   const hasNotes = shareCardData.todayNotes.length > 0
+  const isWeekly = cardType === 'weekly'
+
+  const cardTypeOptions = [
+    { value: 'daily', label: t('share:daily', 'Daily') },
+    { value: 'weekly', label: t('share:weekly', 'Weekly') },
+  ]
 
   const variantOptions = [
     { value: 'story', label: t('share:story', 'Story (9:16)') },
     { value: 'square', label: t('share:square', 'Square (1:1)') },
+    { value: 'long', label: t('share:long', 'Long (Full Notes)') },
   ]
 
   const handleDownload = useCallback(async () => {
@@ -119,7 +132,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
-        link.download = `mirubato-practice-${variant}-${new Date().toISOString().split('T')[0]}.png`
+        link.download = `mirubato-${isWeekly ? 'weekly' : variant}-${new Date().toISOString().split('T')[0]}.png`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -130,7 +143,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
     } finally {
       setIsGenerating(false)
     }
-  }, [variant])
+  }, [variant, isWeekly])
 
   const handleCopyToClipboard = useCallback(async () => {
     if (!cardRef.current) return
@@ -231,32 +244,62 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
         <div className="flex-1 flex flex-col items-center">
           <div
             className="overflow-auto max-h-[60vh] rounded-xl shadow-lg"
-            style={{ transform: 'scale(0.6)', transformOrigin: 'top center' }}
+            style={{ transform: 'scale(0.55)', transformOrigin: 'top center' }}
           >
-            <ShareCardPreview
-              ref={cardRef}
-              data={shareCardData}
-              variant={variant}
-              showUsername={showUsername}
-              showNotes={showNotes}
-            />
+            {isWeekly ? (
+              <WeeklyShareCardPreview
+                ref={cardRef}
+                data={weeklyCardData}
+                showUsername={showUsername}
+              />
+            ) : (
+              <ShareCardPreview
+                ref={cardRef}
+                data={shareCardData}
+                variant={variant}
+                showUsername={showUsername}
+                showNotes={showNotes}
+              />
+            )}
           </div>
         </div>
 
         {/* Options Panel */}
         <div className="lg:w-64 space-y-4">
-          {/* Card Size */}
+          {/* Card Type (Daily/Weekly) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('share:cardSize', 'Card Size')}
+              {t('share:cardType', 'Card Type')}
             </label>
             <SegmentedControl
-              options={variantOptions}
-              value={variant}
-              onChange={value => setVariant(value as CardVariant)}
+              options={cardTypeOptions}
+              value={cardType}
+              onChange={value => setCardType(value as CardType)}
               size="sm"
             />
           </div>
+
+          {/* Card Size - only for daily */}
+          {!isWeekly && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('share:cardSize', 'Card Size')}
+              </label>
+              <SegmentedControl
+                options={variantOptions}
+                value={variant}
+                onChange={value => {
+                  const newVariant = value as CardVariant
+                  setVariant(newVariant)
+                  // Auto-enable notes for long variant
+                  if (newVariant === 'long' && hasNotes) {
+                    setShowNotes(true)
+                  }
+                }}
+                size="sm"
+              />
+            </div>
+          )}
 
           {/* Show Username Toggle */}
           <div>
@@ -273,8 +316,8 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
             </label>
           </div>
 
-          {/* Show Notes Toggle */}
-          {hasNotes && (
+          {/* Show Notes Toggle - only for daily */}
+          {!isWeekly && hasNotes && (
             <div>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -297,13 +340,18 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
           )}
 
           {/* No Data Notice */}
-          {!shareCardData.hasData && (
+          {(isWeekly ? !weeklyCardData.hasData : !shareCardData.hasData) && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-sm text-amber-800">
-                {t(
-                  'share:noDataNotice',
-                  'No practice data for today. Add an entry to share your progress!'
-                )}
+                {isWeekly
+                  ? t(
+                      'share:noWeeklyDataNotice',
+                      'No practice data this week. Add some entries to share your weekly progress!'
+                    )
+                  : t(
+                      'share:noDataNotice',
+                      'No practice data for today. Add an entry to share your progress!'
+                    )}
               </p>
             </div>
           )}
