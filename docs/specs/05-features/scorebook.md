@@ -4,12 +4,20 @@ Title: Scorebook - Sheet Music Management
 Status: 🚧 Experimental
 Owner: @pezware
 Last-Reviewed: 2025-11-27
-Version: 1.8.1
+Version: 1.8.2
 ---
 
 # Scorebook Feature Specification
 
 Status: 🚧 Experimental
+
+> **Beta Feature**: Scorebook is currently behind a feature flag. To enable:
+>
+> - Add `?beta=on` to any URL (e.g., `https://mirubato.com/?beta=on`)
+> - The setting persists in sessionStorage until browser/tab is closed
+> - To disable: `?beta=off`
+>
+> Implementation: `frontendv2/src/hooks/useBetaFeatures.ts`
 
 ## What
 
@@ -29,6 +37,30 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - Organize into collections and repertoire
 - Integrate with practice logging
 - Enable IMSLP import for public domain scores
+
+## Recent Changes (v1.8.2)
+
+### New Features
+
+1. **Pagination UI** - Load More button for large score libraries
+   - Uses existing backend pagination (limit/offset)
+   - Shows remaining count in button
+   - Graceful loading state with spinner
+   - Loads 20 scores per page
+
+2. **Favorites System** - Star/favorite scores for quick access
+   - New database table: `user_score_favorites`
+   - Full API with batch support: `/api/user/favorites/*`
+   - Star button in both list and grid views
+   - Persistent favorite indicator on grid cards
+   - Batch API eliminates N+1 queries when loading favorites
+   - Graceful degradation when scores service is offline
+
+### Technical Improvements
+
+- All favorites service methods return safe defaults (empty arrays/objects) on error
+- Favorites status loaded alongside score collections for efficiency
+- Toggle favorite is optimistic and atomic
 
 ## Recent Changes (v1.8.1)
 
@@ -70,6 +102,8 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **Search my library by title, composer, or opus** ✅ (v1.8.0)
 - **Sort scores by date, title, composer, difficulty, or popularity** ✅ (v1.8.0)
 - **Preview AI-extracted metadata before saving** ✅ (v1.8.0)
+- **Star/favorite scores for quick access** ✅ (v1.8.2)
+- **Load more scores on demand with pagination** ✅ (v1.8.2)
 
 ### As a Teacher, I want to:
 
@@ -198,7 +232,30 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **Sharing**: Generate shareable links
 - **Auto-selection**: Default collection pre-selected in import flow (NEW v1.8.0)
 
-**Code**: `scores/src/api/handlers/user-collections.ts`
+**Code**: `scores/src/api/handlers/userCollections.ts`
+
+#### Favorites (NEW v1.8.2)
+
+- **Quick access**: Star/unstar scores for quick access
+- **Persistent indicator**: Favorited scores show star badge
+- **Batch API**: Efficient loading with batch endpoint
+- **Graceful degradation**: Works offline with cached state
+
+**Endpoints**:
+
+```
+GET    /api/user/favorites          - List user's favorites with score details
+GET    /api/user/favorites/ids      - Get favorite score IDs only (lightweight)
+GET    /api/user/favorites/check/:id - Check if score is favorited
+POST   /api/user/favorites/:id      - Add to favorites
+DELETE /api/user/favorites/:id      - Remove from favorites
+POST   /api/user/favorites/:id/toggle - Toggle favorite status
+POST   /api/user/favorites/batch/check - Batch check multiple scores
+```
+
+**Database**: `user_score_favorites` table with `(user_id, score_id)` unique constraint
+
+**Code**: `scores/src/api/handlers/favorites.ts`
 
 ### 5. Score Viewer
 
@@ -366,16 +423,16 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 ### High Priority
 
-- [ ] **Pagination**: Add infinite scroll or pagination for large libraries
+- [x] **Pagination**: Add infinite scroll or pagination for large libraries (v1.8.2)
 - [ ] **Thumbnail optimization**: Pre-generate thumbnails for faster grid view
-- [ ] **Metadata update API**: Allow updating score metadata after import
+- [x] **Metadata update API**: Allow updating score metadata after import (backend existed, v1.7.x)
 - [ ] **Batch operations**: Multi-select for bulk add to collection/delete
 
 ### Medium Priority
 
 - [ ] **Advanced search**: Filter by key, time signature, style period
 - [ ] **Recent scores**: Quick access section for recently viewed
-- [ ] **Favorites**: Star/favorite scores for quick access
+- [x] **Favorites**: Star/favorite scores for quick access (v1.8.2)
 - [ ] **Practice history**: Show practice sessions for each score
 - [ ] **Score recommendations**: Suggest similar pieces
 
@@ -413,4 +470,4 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 ---
 
-Last updated: 2025-11-27 | Version 1.8.0
+Last updated: 2025-11-27 | Version 1.8.2

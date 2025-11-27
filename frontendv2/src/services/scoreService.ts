@@ -647,6 +647,133 @@ class ScoreService {
       throw error
     }
   }
+
+  // ============ Favorites Methods ============
+
+  // Get user's favorite score IDs (lightweight, for checking favorite status)
+  async getFavoriteIds(): Promise<string[]> {
+    try {
+      const response = await scoresApiClient.get('/api/user/favorites/ids')
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          // User not authenticated, return empty array (graceful degradation)
+          return []
+        }
+        console.error('Failed to fetch favorite IDs:', error.message)
+      }
+      // Return empty array on error (graceful degradation)
+      return []
+    }
+  }
+
+  // Check if a score is favorited
+  async isFavorited(scoreId: string): Promise<boolean> {
+    try {
+      const response = await scoresApiClient.get(
+        `/api/user/favorites/check/${scoreId}`
+      )
+      return response.data.data.isFavorited
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          return false // Not authenticated, so not favorited
+        }
+        console.error('Failed to check favorite status:', error.message)
+      }
+      return false // Default to not favorited on error
+    }
+  }
+
+  // Toggle favorite status (add or remove)
+  async toggleFavorite(scoreId: string): Promise<boolean> {
+    try {
+      const response = await scoresApiClient.post(
+        `/api/user/favorites/${scoreId}/toggle`
+      )
+      return response.data.data.isFavorited
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to toggle favorite: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Add score to favorites
+  async addFavorite(scoreId: string): Promise<void> {
+    try {
+      await scoresApiClient.post(`/api/user/favorites/${scoreId}`)
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to add favorite: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Remove score from favorites
+  async removeFavorite(scoreId: string): Promise<void> {
+    try {
+      await scoresApiClient.delete(`/api/user/favorites/${scoreId}`)
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to remove favorite: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Batch check favorite status for multiple scores (eliminates N+1 queries)
+  async getBatchFavoriteStatus(
+    scoreIds: string[]
+  ): Promise<Record<string, boolean>> {
+    if (scoreIds.length === 0) {
+      return {}
+    }
+
+    try {
+      const response = await scoresApiClient.post(
+        '/api/user/favorites/batch/check',
+        { scoreIds }
+      )
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          // User not authenticated, return all as not favorited (graceful degradation)
+          const result: Record<string, boolean> = {}
+          for (const id of scoreIds) {
+            result[id] = false
+          }
+          return result
+        }
+        console.error('Failed to batch check favorites:', error.message)
+      }
+      // Return all as not favorited on error (graceful degradation)
+      const result: Record<string, boolean> = {}
+      for (const id of scoreIds) {
+        result[id] = false
+      }
+      return result
+    }
+  }
 }
 
 // Export a singleton instance

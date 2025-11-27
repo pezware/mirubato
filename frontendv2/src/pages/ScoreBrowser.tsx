@@ -108,6 +108,9 @@ export default function ScoreBrowserPage() {
   const [scoreCollections, setScoreCollections] = useState<
     Record<string, Collection[]>
   >({})
+  const [scoreFavorites, setScoreFavorites] = useState<Record<string, boolean>>(
+    {}
+  )
   const [showTimer, setShowTimer] = useState(false)
   const [defaultCollectionScores, setDefaultCollectionScores] = useState<
     Score[]
@@ -122,6 +125,11 @@ export default function ScoreBrowserPage() {
   const [sortBy, setSortBy] = useState<SortBy>(storedPrefs.sortBy)
   const [sortOrder, setSortOrder] = useState<SortOrder>(storedPrefs.sortOrder)
   const [totalScores, setTotalScores] = useState(0)
+
+  // Pagination state
+  const [hasMore, setHasMore] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const PAGE_SIZE = 20
 
   // Debounce search query to avoid excessive API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
@@ -249,6 +257,8 @@ export default function ScoreBrowserPage() {
           sortBy,
           sortOrder,
           query: debouncedSearchQuery || undefined,
+          limit: PAGE_SIZE,
+          offset: 0,
         })
         // Normalize scores to ensure tags property exists
         loadedScores = collectionScores.items.map(score => ({
@@ -257,11 +267,14 @@ export default function ScoreBrowserPage() {
         }))
         setScores(loadedScores)
         setTotalScores(collectionScores.total)
+        setHasMore(collectionScores.hasMore)
       } else {
         // Load all scores with filters, search, and sort
         const params: ScoreSearchParams = {
           sortBy,
           sortOrder,
+          limit: PAGE_SIZE,
+          offset: 0,
         }
         if (selectedInstrument) params.instrument = selectedInstrument
         if (selectedDifficulty) params.difficulty = selectedDifficulty
@@ -275,6 +288,7 @@ export default function ScoreBrowserPage() {
         }))
         setScores(loadedScores)
         setTotalScores(scoresData.total)
+        setHasMore(scoresData.hasMore)
       }
 
       // Load collections for each score
@@ -285,11 +299,68 @@ export default function ScoreBrowserPage() {
           ...collectionsData.filter(col => col.visibility === 'public'),
         ]
         await loadScoreCollections(loadedScores, allCollections)
+
+        // Load favorites status (graceful degradation - won't break if this fails)
+        await loadScoreFavorites(loadedScores)
       }
     } catch (error) {
       console.error('Failed to load data:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // Load more scores for pagination
+  const loadMoreScores = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const currentOffset = scores.length
+
+      const params: ScoreSearchParams = {
+        sortBy,
+        sortOrder,
+        limit: PAGE_SIZE,
+        offset: currentOffset,
+      }
+      if (selectedInstrument) params.instrument = selectedInstrument
+      if (selectedDifficulty) params.difficulty = selectedDifficulty
+      if (debouncedSearchQuery) params.query = debouncedSearchQuery
+      if (slug) {
+        // For collection view
+        const collection = await scoreService.getCollection(slug)
+        params.tags = [collection.slug]
+      }
+
+      const scoresData = await scoreService.getScores(params)
+
+      // Normalize and append new scores
+      const newScores = scoresData.items.map(score => ({
+        ...score,
+        tags: score.tags || [],
+      }))
+
+      setScores(prev => [...prev, ...newScores])
+      setHasMore(scoresData.hasMore)
+
+      // Load collections for new scores
+      if (newScores.length > 0 && isAuthenticated) {
+        const allCollections = [
+          ...userCollections,
+          ...collections.filter(col => col.visibility === 'public'),
+        ]
+        await loadScoreCollections(newScores, allCollections)
+      }
+
+      // Load favorites for new scores (graceful degradation)
+      if (newScores.length > 0) {
+        await loadScoreFavorites(newScores)
+      }
+    } catch (error) {
+      console.error('Failed to load more scores:', error)
+    } finally {
+      setIsLoadingMore(false)
     }
   }
 
@@ -356,6 +427,27 @@ export default function ScoreBrowserPage() {
     }
 
     setScoreCollections(collectionMap)
+  }
+
+  // Load favorites status for scores (uses batch API to avoid N+1)
+  const loadScoreFavorites = async (scoresToLoad: Score[]) => {
+    if (!isAuthenticated || scoresToLoad.length === 0) {
+      return
+    }
+
+    try {
+      const scoreIds = scoresToLoad.map(s => s.id)
+      const favoriteStatus = await scoreService.getBatchFavoriteStatus(scoreIds)
+
+      // Merge with existing favorites (for pagination)
+      setScoreFavorites(prev => ({
+        ...prev,
+        ...favoriteStatus,
+      }))
+    } catch (error) {
+      // Graceful degradation - don't break the app if favorites fail
+      console.error('Failed to load favorites status:', error)
+    }
   }
 
   const loadDefaultCollectionScores = async (collectionId: string) => {
@@ -429,6 +521,25 @@ export default function ScoreBrowserPage() {
     }
     setSelectedScoreForCollection(score)
     modals.open('collection')
+  }
+
+  const handleToggleFavorite = async (e: React.MouseEvent, score: Score) => {
+    e.stopPropagation()
+    if (!isAuthenticated) {
+      // The AppLayout will handle showing sign in modal
+      return
+    }
+
+    try {
+      const newFavoriteStatus = await scoreService.toggleFavorite(score.id)
+      setScoreFavorites(prev => ({
+        ...prev,
+        [score.id]: newFavoriteStatus,
+      }))
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error)
+      // Could show a toast notification here
+    }
   }
 
   const handleCollectionModalClose = () => {
@@ -899,7 +1010,11 @@ export default function ScoreBrowserPage() {
                             key={score.id}
                             score={score}
                             onAddToCollection={handleAddToCollection}
+                            onToggleFavorite={
+                              isAuthenticated ? handleToggleFavorite : undefined
+                            }
                             collections={scoreCollections[score.id]}
+                            isFavorited={scoreFavorites[score.id] || false}
                             showCollections={true}
                             showTagsInCollapsed={true}
                           />
@@ -912,9 +1027,40 @@ export default function ScoreBrowserPage() {
                             key={score.id}
                             score={score}
                             onAddToCollection={handleAddToCollection}
+                            onToggleFavorite={
+                              isAuthenticated ? handleToggleFavorite : undefined
+                            }
                             collections={scoreCollections[score.id]}
+                            isFavorited={scoreFavorites[score.id] || false}
                           />
                         ))}
+                      </div>
+                    )}
+
+                    {/* Load More Button */}
+                    {hasMore && scores.length > 0 && (
+                      <div className="mt-6 text-center">
+                        <Button
+                          onClick={loadMoreScores}
+                          variant="secondary"
+                          disabled={isLoadingMore}
+                          className="min-w-[200px]"
+                        >
+                          {isLoadingMore ? (
+                            <span className="flex items-center gap-2">
+                              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></span>
+                              {t('common:loading', 'Loading...')}
+                            </span>
+                          ) : (
+                            t(
+                              'scorebook:loadMore',
+                              'Load More ({{remaining}} remaining)',
+                              {
+                                remaining: totalScores - scores.length,
+                              }
+                            )
+                          )}
+                        </Button>
                       </div>
                     )}
                   </>

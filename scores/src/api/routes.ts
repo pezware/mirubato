@@ -7,6 +7,7 @@ import { importImagesHandler } from './handlers/importImages'
 import { enhancedImportHandler } from './handlers/import-enhanced'
 import { collectionsHandler } from './handlers/collections'
 import { userCollectionsHandler } from './handlers/userCollections'
+import { favoritesHandler } from './handlers/favorites'
 import { featuredCollectionsHandler } from './handlers/featuredCollections'
 import { sharedCollectionsHandler } from './handlers/sharedCollections'
 import { pdfRendererHandler } from './handlers/pdf-renderer'
@@ -73,6 +74,17 @@ api.get('/', c => {
         'POST /api/user/collections/batch/score-collections':
           'Batch get collections for multiple scores (eliminates N+1 queries)',
       },
+      favorites: {
+        'GET /api/user/favorites': "List user's favorite scores",
+        'GET /api/user/favorites/ids': 'Get favorite score IDs only',
+        'GET /api/user/favorites/check/:scoreId':
+          'Check if a score is favorited',
+        'POST /api/user/favorites/:scoreId': 'Add score to favorites',
+        'DELETE /api/user/favorites/:scoreId': 'Remove score from favorites',
+        'POST /api/user/favorites/:scoreId/toggle': 'Toggle favorite status',
+        'POST /api/user/favorites/batch/check':
+          'Batch check favorite status for multiple scores',
+      },
       featuredCollections: {
         'GET /api/collections/featured': 'List featured collections (public)',
         'POST /api/collections/featured/feature':
@@ -124,6 +136,9 @@ api.route('/collections', collectionsHandler)
 
 // User collections routes
 api.route('/user/collections', userCollectionsHandler)
+
+// User favorites routes
+api.route('/user/favorites', favoritesHandler)
 
 // Featured collections routes (public access)
 api.route('/collections/featured', featuredCollectionsHandler)
