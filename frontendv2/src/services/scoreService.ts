@@ -243,6 +243,11 @@ class ScoreService {
     return `${this.scoresApiUrl}/api/pdf/v2/render/${scoreId}/page/${page}`
   }
 
+  // Get the URL for a pre-generated thumbnail (optimized for grid view)
+  getThumbnailUrl(scoreId: string): string {
+    return `${this.scoresApiUrl}/api/pdf/v2/thumbnail/${scoreId}`
+  }
+
   // Get the URL for an image-based score page
   getImagePageUrl(scoreId: string, pageNumber: number): string {
     return `${this.scoresApiUrl}/api/scores/${scoreId}/pages/${pageNumber}`

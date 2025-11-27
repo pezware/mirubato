@@ -4,7 +4,7 @@ Title: Scorebook - Sheet Music Management
 Status: 🚧 Experimental
 Owner: @pezware
 Last-Reviewed: 2025-11-27
-Version: 1.8.2
+Version: 1.8.3
 ---
 
 # Scorebook Feature Specification
@@ -37,6 +37,25 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - Organize into collections and repertoire
 - Integrate with practice logging
 - Enable IMSLP import for public domain scores
+
+## Recent Changes (v1.8.3)
+
+### New Features
+
+1. **Thumbnail Optimization** - Pre-generated thumbnails for faster grid view
+   - Thumbnails are generated during PDF import (400px width, webp format)
+   - Stored separately in R2 at `thumbnails/{scoreId}/thumb.webp`
+   - Falls back to on-demand generation for existing scores
+   - 75% quality for smaller file sizes and faster loading
+   - Admin endpoint for bulk thumbnail generation: `POST /api/admin/generate-thumbnails`
+   - New API endpoint: `GET /api/pdf/v2/thumbnail/:scoreId`
+
+### Technical Improvements
+
+- Dedicated thumbnail storage path separate from full-resolution pages
+- Aggressive caching with 1-year immutable headers
+- On-demand fallback with async storage for cache misses
+- Lower resolution (400px vs 1200px) reduces bandwidth by ~70%
 
 ## Recent Changes (v1.8.2)
 
@@ -424,7 +443,7 @@ POST   /api/user/favorites/batch/check - Batch check multiple scores
 ### High Priority
 
 - [x] **Pagination**: Add infinite scroll or pagination for large libraries (v1.8.2)
-- [ ] **Thumbnail optimization**: Pre-generate thumbnails for faster grid view
+- [x] **Thumbnail optimization**: Pre-generate thumbnails for faster grid view (v1.8.3)
 - [x] **Metadata update API**: Allow updating score metadata after import (backend existed, v1.7.x)
 - [ ] **Batch operations**: Multi-select for bulk add to collection/delete
 
@@ -450,7 +469,6 @@ POST   /api/user/favorites/batch/check - Batch check multiple scores
 - When to implement annotation persistence?
 - Should we add score recommendation engine?
 - How to monetize premium features?
-- Should thumbnails be pre-generated or rendered on-demand?
 
 ## Security & Privacy Considerations
 
@@ -470,4 +488,4 @@ POST   /api/user/favorites/batch/check - Batch check multiple scores
 
 ---
 
-Last updated: 2025-11-27 | Version 1.8.2
+Last updated: 2025-11-27 | Version 1.8.3

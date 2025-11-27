@@ -45,6 +45,10 @@ api.get('/', c => {
         'GET /api/scores/:id/render': 'Render a score in various formats',
         'GET /api/scores/:id/download/:format':
           'Download score in specific format',
+        'GET /api/pdf/v2/thumbnail/:scoreId':
+          'Get optimized thumbnail for grid view (pre-generated)',
+        'GET /api/pdf/v2/render/:scoreId/page/:pageNumber':
+          'Get pre-rendered page image',
       },
       import: {
         'POST /api/import': 'Import score from URL or file upload',

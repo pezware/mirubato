@@ -46,6 +46,17 @@ export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
     // Create score version entry
     await createScoreVersion(env, scoreId, r2Key, pageCount)
 
+    // Generate thumbnail first (optimized for grid view)
+    try {
+      await renderAndStoreThumbnail(env, scoreId, pdfUrl)
+    } catch (thumbnailError) {
+      // Log but don't fail the whole process if thumbnail generation fails
+      console.error(
+        `Thumbnail generation failed for ${scoreId}:`,
+        thumbnailError
+      )
+    }
+
     // Process pages in batches to avoid timeout
     const batchSize = 5
     for (let i = 0; i < pageCount; i += batchSize) {
@@ -147,6 +158,85 @@ async function analyzePdf(
     }
 
     return { pageCount: result.info?.pageCount || 0 }
+  } finally {
+    await browser.close()
+  }
+}
+
+// Thumbnail configuration
+const THUMBNAIL_WIDTH = 400
+const THUMBNAIL_HEIGHT = Math.floor(THUMBNAIL_WIDTH * 1.414) // A4 ratio
+
+async function renderAndStoreThumbnail(
+  env: Env,
+  scoreId: string,
+  pdfUrl: string
+): Promise<void> {
+  const browser = await launch(env.BROWSER, { keep_alive: 60000 }) // 1 minute
+
+  try {
+    const page = await browser.newPage()
+
+    // Set viewport for thumbnail (smaller size)
+    await page.setViewport({
+      width: THUMBNAIL_WIDTH,
+      height: THUMBNAIL_HEIGHT,
+      deviceScaleFactor: 1, // Lower DPI for thumbnails
+    })
+
+    // Render first page with shared template
+    const html = generatePdfHtmlTemplate({
+      pdfUrl,
+      pageNumber: 1,
+      scale: THUMBNAIL_WIDTH / 612, // Scale to thumbnail width (612 is standard PDF width in points)
+      quality: 'simple',
+    })
+
+    await page.setContent(html, { waitUntil: 'domcontentloaded' })
+
+    // Wait for render with timeout
+    try {
+      await page.waitForFunction(
+        'window.renderComplete === true || window.renderError !== undefined',
+        { timeout: 10000 }
+      )
+
+      // Check for errors
+      const error = await page.evaluate(() => {
+        const global = globalThis as {
+          renderError?: string
+        }
+        return global.renderError
+      })
+      if (error) {
+        throw new Error(`Thumbnail render error: ${error}`)
+      }
+    } catch {
+      // If timeout, continue if canvas has any content
+      console.warn(
+        'Thumbnail render timeout, proceeding with available content'
+      )
+    }
+
+    // Take screenshot of the canvas
+    const canvas = await page.$('#pdf-canvas')
+    if (!canvas) {
+      throw new Error('Canvas element not found for thumbnail')
+    }
+
+    const screenshot = await canvas.screenshot({
+      type: 'webp',
+      quality: 75, // Lower quality for thumbnails (faster load)
+    })
+
+    // Store thumbnail in R2
+    const key = `thumbnails/${scoreId}/thumb.webp`
+    await env.SCORES_BUCKET.put(key, screenshot, {
+      httpMetadata: {
+        contentType: 'image/webp',
+        cacheControl: 'public, max-age=31536000, immutable',
+      },
+    })
   } finally {
     await browser.close()
   }

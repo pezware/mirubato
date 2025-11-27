@@ -38,8 +38,8 @@ export default function ScoreGridItem({
         : [],
   }
 
-  // Get thumbnail URL (first page of score)
-  const thumbnailUrl = scoreService.getScorePageUrl(score.id, 1)
+  // Get optimized thumbnail URL (pre-generated, smaller size)
+  const thumbnailUrl = scoreService.getThumbnailUrl(score.id)
 
   const handleClick = () => {
     navigate(`/scorebook/${score.id}`)
