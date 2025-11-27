@@ -15,6 +15,7 @@ import enUI from '../locales/en/ui.json'
 import enAbout from '../locales/en/about.json'
 import enPrivacy from '../locales/en/privacy.json'
 import enValidation from '../locales/en/validation.json'
+import enShare from '../locales/en/share.json'
 
 import esCommon from '../locales/es/common.json'
 import esAuth from '../locales/es/auth.json'
@@ -28,6 +29,7 @@ import esUI from '../locales/es/ui.json'
 import esAbout from '../locales/es/about.json'
 import esPrivacy from '../locales/es/privacy.json'
 import esValidation from '../locales/es/validation.json'
+import esShare from '../locales/es/share.json'
 
 import frCommon from '../locales/fr/common.json'
 import frAuth from '../locales/fr/auth.json'
@@ -41,6 +43,7 @@ import frUI from '../locales/fr/ui.json'
 import frAbout from '../locales/fr/about.json'
 import frPrivacy from '../locales/fr/privacy.json'
 import frValidation from '../locales/fr/validation.json'
+import frShare from '../locales/fr/share.json'
 
 import zhTWCommon from '../locales/zh-TW/common.json'
 import zhTWAuth from '../locales/zh-TW/auth.json'
@@ -54,6 +57,7 @@ import zhTWUI from '../locales/zh-TW/ui.json'
 import zhTWAbout from '../locales/zh-TW/about.json'
 import zhTWPrivacy from '../locales/zh-TW/privacy.json'
 import zhTWValidation from '../locales/zh-TW/validation.json'
+import zhTWShare from '../locales/zh-TW/share.json'
 
 import deCommon from '../locales/de/common.json'
 import deAuth from '../locales/de/auth.json'
@@ -67,6 +71,7 @@ import deUI from '../locales/de/ui.json'
 import deAbout from '../locales/de/about.json'
 import dePrivacy from '../locales/de/privacy.json'
 import deValidation from '../locales/de/validation.json'
+import deShare from '../locales/de/share.json'
 
 import zhCNCommon from '../locales/zh-CN/common.json'
 import zhCNAuth from '../locales/zh-CN/auth.json'
@@ -80,6 +85,7 @@ import zhCNUI from '../locales/zh-CN/ui.json'
 import zhCNAbout from '../locales/zh-CN/about.json'
 import zhCNPrivacy from '../locales/zh-CN/privacy.json'
 import zhCNValidation from '../locales/zh-CN/validation.json'
+import zhCNShare from '../locales/zh-CN/share.json'
 
 export const defaultNS = 'common'
 export const resources = {
@@ -96,6 +102,7 @@ export const resources = {
     about: enAbout,
     privacy: enPrivacy,
     validation: enValidation,
+    share: enShare,
   },
   es: {
     common: esCommon,
@@ -110,6 +117,7 @@ export const resources = {
     about: esAbout,
     privacy: esPrivacy,
     validation: esValidation,
+    share: esShare,
   },
   fr: {
     common: frCommon,
@@ -124,6 +132,7 @@ export const resources = {
     about: frAbout,
     privacy: frPrivacy,
     validation: frValidation,
+    share: frShare,
   },
   'zh-TW': {
     common: zhTWCommon,
@@ -138,6 +147,7 @@ export const resources = {
     about: zhTWAbout,
     privacy: zhTWPrivacy,
     validation: zhTWValidation,
+    share: zhTWShare,
   },
   de: {
     common: deCommon,
@@ -152,6 +162,7 @@ export const resources = {
     about: deAbout,
     privacy: dePrivacy,
     validation: deValidation,
+    share: deShare,
   },
   'zh-CN': {
     common: zhCNCommon,
@@ -166,6 +177,7 @@ export const resources = {
     about: zhCNAbout,
     privacy: zhCNPrivacy,
     validation: zhCNValidation,
+    share: zhCNShare,
   },
 } as const
 
