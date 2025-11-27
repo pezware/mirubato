@@ -83,8 +83,9 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // Check if user has notes to share
-  const hasNotes = shareCardData.periodNotes.length > 0
+  // Check if user has notes to share (only for day cards)
+  const hasNotes =
+    shareCardData.viewMode === 'day' && shareCardData.periodNotes.length > 0
 
   const viewModeOptions = [
     { value: 'day', label: t('share:daily', 'Daily') },
@@ -227,8 +228,9 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
 
   const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share
 
-  // Calculate preview scale based on viewport
-  const previewScale = variant === 'story' ? 0.45 : 0.55
+  // Calculate preview scale based on card type and view mode
+  const isWeekly = shareCardData.viewMode === 'week'
+  const previewScale = variant === 'story' ? (isWeekly ? 0.4 : 0.45) : 0.55
 
   return (
     <Modal
@@ -284,7 +286,14 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
               style={{
                 transform: `scale(${previewScale})`,
                 transformOrigin: 'top center',
-                marginBottom: variant === 'story' ? '-200px' : '-80px',
+                marginBottom:
+                  variant === 'story'
+                    ? isWeekly
+                      ? '-280px'
+                      : '-200px'
+                    : isWeekly
+                      ? '-100px'
+                      : '-80px',
               }}
             >
               <ShareCardPreview

@@ -239,7 +239,8 @@ export const ShareCardPreview = forwardRef<
     const isStory = variant === 'story'
     const isWeekly = data.viewMode === 'week'
     const cardWidth = isStory ? 540 : 540
-    const cardHeight = isStory ? 960 : 540
+    // Adjust heights: weekly cards need more space for bar chart
+    const cardHeight = isStory ? (isWeekly ? 1080 : 960) : isWeekly ? 620 : 540
 
     // Determine max pieces based on content
     const hasNotes = showNotes && data.periodNotes.length > 0
