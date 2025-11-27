@@ -6,11 +6,14 @@ import type { Collection } from '../../types/collections'
 import CollectionBadges from './CollectionBadges'
 import { MusicTitle, MusicComposer } from '../ui'
 import { cn } from '../../utils/cn'
+import { Star } from 'lucide-react'
 
 interface ScoreListItemProps {
   score: Score
   onAddToCollection?: (e: React.MouseEvent, score: Score) => void
+  onToggleFavorite?: (e: React.MouseEvent, score: Score) => void
   collections?: Collection[]
+  isFavorited?: boolean
   showCollections?: boolean
   showTagsInCollapsed?: boolean
   className?: string
@@ -19,7 +22,9 @@ interface ScoreListItemProps {
 export default function ScoreListItem({
   score: propScore,
   onAddToCollection,
+  onToggleFavorite,
   collections = [],
+  isFavorited = false,
   showCollections = false,
   showTagsInCollapsed = false,
   className,
@@ -118,6 +123,34 @@ export default function ScoreListItem({
           </div>
 
           <div className="flex items-center gap-2 ml-4">
+            {/* Favorite star button */}
+            {onToggleFavorite && (
+              <button
+                onClick={e => {
+                  e.stopPropagation()
+                  onToggleFavorite(e, score)
+                }}
+                className={cn(
+                  'p-2 transition-all',
+                  isFavorited
+                    ? 'text-amber-500 hover:text-amber-600'
+                    : 'text-morandi-stone-400 hover:text-amber-500 opacity-0 group-hover:opacity-100'
+                )}
+                title={
+                  isFavorited
+                    ? t(
+                        'scorebook:removeFromFavorites',
+                        'Remove from favorites'
+                      )
+                    : t('scorebook:addToFavorites', 'Add to favorites')
+                }
+              >
+                <Star
+                  className="w-5 h-5"
+                  fill={isFavorited ? 'currentColor' : 'none'}
+                />
+              </button>
+            )}
             {onAddToCollection && (
               <button
                 onClick={e => {

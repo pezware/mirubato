@@ -4,7 +4,7 @@ Title: Scorebook - Sheet Music Management
 Status: 🚧 Experimental
 Owner: @pezware
 Last-Reviewed: 2025-11-27
-Version: 1.8.1
+Version: 1.8.2
 ---
 
 # Scorebook Feature Specification
@@ -29,6 +29,30 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - Organize into collections and repertoire
 - Integrate with practice logging
 - Enable IMSLP import for public domain scores
+
+## Recent Changes (v1.8.2)
+
+### New Features
+
+1. **Pagination UI** - Load More button for large score libraries
+   - Uses existing backend pagination (limit/offset)
+   - Shows remaining count in button
+   - Graceful loading state with spinner
+   - Loads 20 scores per page
+
+2. **Favorites System** - Star/favorite scores for quick access
+   - New database table: `user_score_favorites`
+   - Full API with batch support: `/api/user/favorites/*`
+   - Star button in both list and grid views
+   - Persistent favorite indicator on grid cards
+   - Batch API eliminates N+1 queries when loading favorites
+   - Graceful degradation when scores service is offline
+
+### Technical Improvements
+
+- All favorites service methods return safe defaults (empty arrays/objects) on error
+- Favorites status loaded alongside score collections for efficiency
+- Toggle favorite is optimistic and atomic
 
 ## Recent Changes (v1.8.1)
 
@@ -366,16 +390,16 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 ### High Priority
 
-- [ ] **Pagination**: Add infinite scroll or pagination for large libraries
+- [x] **Pagination**: Add infinite scroll or pagination for large libraries (v1.8.2)
 - [ ] **Thumbnail optimization**: Pre-generate thumbnails for faster grid view
-- [ ] **Metadata update API**: Allow updating score metadata after import
+- [x] **Metadata update API**: Allow updating score metadata after import (backend existed, v1.7.x)
 - [ ] **Batch operations**: Multi-select for bulk add to collection/delete
 
 ### Medium Priority
 
 - [ ] **Advanced search**: Filter by key, time signature, style period
 - [ ] **Recent scores**: Quick access section for recently viewed
-- [ ] **Favorites**: Star/favorite scores for quick access
+- [x] **Favorites**: Star/favorite scores for quick access (v1.8.2)
 - [ ] **Practice history**: Show practice sessions for each score
 - [ ] **Score recommendations**: Suggest similar pieces
 
@@ -413,4 +437,4 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 
 ---
 
-Last updated: 2025-11-27 | Version 1.8.0
+Last updated: 2025-11-27 | Version 1.8.2

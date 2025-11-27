@@ -6,18 +6,22 @@ import type { Collection } from '../../types/collections'
 import { MusicTitle, MusicComposer } from '../ui'
 import { cn } from '../../utils/cn'
 import { scoreService } from '../../services/scoreService'
-import { FolderPlus, Music } from 'lucide-react'
+import { FolderPlus, Music, Star } from 'lucide-react'
 
 interface ScoreGridItemProps {
   score: Score
   onAddToCollection?: (e: React.MouseEvent, score: Score) => void
+  onToggleFavorite?: (e: React.MouseEvent, score: Score) => void
   collections?: Collection[]
+  isFavorited?: boolean
 }
 
 export default function ScoreGridItem({
   score: propScore,
   onAddToCollection,
+  onToggleFavorite,
   collections = [],
+  isFavorited = false,
 }: ScoreGridItemProps) {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
@@ -45,6 +49,13 @@ export default function ScoreGridItem({
     e.stopPropagation()
     if (onAddToCollection) {
       onAddToCollection(e, score)
+    }
+  }
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onToggleFavorite) {
+      onToggleFavorite(e, score)
     }
   }
 
@@ -82,6 +93,27 @@ export default function ScoreGridItem({
             'opacity-0 group-hover:opacity-100 transition-opacity duration-200'
           )}
         >
+          {onToggleFavorite && (
+            <button
+              onClick={handleToggleFavorite}
+              className={cn(
+                'p-2 rounded-full transition-colors',
+                isFavorited
+                  ? 'bg-amber-500 text-white hover:bg-amber-600'
+                  : 'bg-white/90 text-morandi-stone-700 hover:bg-white'
+              )}
+              title={
+                isFavorited
+                  ? t('scorebook:removeFromFavorites', 'Remove from favorites')
+                  : t('scorebook:addToFavorites', 'Add to favorites')
+              }
+            >
+              <Star
+                className="w-5 h-5"
+                fill={isFavorited ? 'currentColor' : 'none'}
+              />
+            </button>
+          )}
           {onAddToCollection && (
             <button
               onClick={handleAddToCollection}
@@ -92,6 +124,16 @@ export default function ScoreGridItem({
             </button>
           )}
         </div>
+
+        {/* Persistent favorite indicator */}
+        {isFavorited && (
+          <div className="absolute top-2 left-2">
+            <Star
+              className="w-5 h-5 text-amber-500 drop-shadow-md"
+              fill="currentColor"
+            />
+          </div>
+        )}
 
         {/* Difficulty badge */}
         <div className="absolute top-2 right-2">
