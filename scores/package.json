@@ -1,6 +1,6 @@
 {
   "name": "@mirubato/scores",
-  "version": "1.7.6",
+  "version": "1.8.0",
   "description": "Scores service for mirubato - handles sheet music storage, processing, and delivery",
   "main": "dist/index.js",
   "scripts": {

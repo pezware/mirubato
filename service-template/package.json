@@ -1,6 +1,6 @@
 {
   "name": "@mirubato/service-template",
-  "version": "1.7.6",
+  "version": "1.8.0",
   "description": "Template for Mirubato microservices on Cloudflare Workers",
   "main": "src/index.ts",
   "type": "module",

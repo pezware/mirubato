@@ -7,7 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2025-11-27 (Public Preview)
+
 ### Added
+
+- **Practice Planning System** (PR #614-#650)
+  - Create and manage practice plans with customizable schedules
+  - Plan templates with gallery browsing and sharing
+  - Custom recurrence scheduling (daily, weekly, custom intervals)
+  - Plan check-in flow with reflection prompts
+  - Planning analytics dashboard with KPIs and 7-day forecasts
+  - Real-time sync for planning data across devices
+  - Template adoption with customization options
+  - Published badge for shared templates
+  - Prefill manual log entries from practice plans
+
+- **User Profile Page** (PR #657)
+  - Username and display name management
+  - Comprehensive data export/import for device migration
+  - Settings and preferences management
+  - Profile access from mobile navigation
+
+- **Enhanced Piece Statistics** (PR #606, #653)
+  - Practice statistics on piece detail page
+  - Practice timeline with bar chart visualization for individual pieces
+
+- **Period Navigation** (PR #652)
+  - Enhanced period selector with clear navigation
+  - Summary statistics for past time periods
+
+- **Returning User Experience** (PR #655)
+  - Automatic redirect to repertoire tab for returning users
+  - Improved onboarding flow
 
 - **Sync Worker Service** (PR #523)
   - New dedicated Cloudflare Worker for handling synchronization
@@ -105,7 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Internationalization**
   - Complete i18n implementation across all features (PR #418, #421)
-  - Added translations for all new features
+  - Added translations for all new features including Practice Planning
+  - Complete dictionary i18n coverage (PR #656)
   - Multi-language support for Wikipedia URLs
   - Improved privacy statement transparency with multilingual support (PR #422, #425)
 
@@ -117,6 +149,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added sync-worker to pnpm workspace configuration
   - Updated sync-worker compatibility date for Cloudflare Workers
   - Prevented data loss and improved reliability
+  - Implemented sequence-based sync tracking for multi-device sync (PR #611)
+  - Resolved WebSocket sync issues caused by clock skew (PR #605)
+  - Fixed score-id inconsistency issues (PR #601)
+  - Fixed deletion sync gaps (PR #598, #599)
+
+- **Metronome Fixes**
+  - Fixed beat highlight synchronization issue (PR #612)
+  - Fixed broken highlight with non-4/4 time signatures (PR #608)
 
 - **UI Issues**
   - Resolved UI issues #526 and #527
@@ -133,6 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed streak calculation to not reset at day boundaries (PR #384, #406)
 
 - **Security**
+  - Addressed Dependabot security vulnerabilities (#36, #38, #39, #40) (PR #617, #618)
   - Updated @eslint/plugin-kit to patch ReDoS vulnerability (PR #468)
   - Resolved critical security vulnerabilities (PR #360)
   - Removed magic link exposure in production (PR #358)
