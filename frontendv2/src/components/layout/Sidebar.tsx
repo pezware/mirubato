@@ -18,6 +18,7 @@ import { useBetaFeature } from '../../hooks/useBetaFeatures'
 import { TimerWidget } from '../timer/TimerWidget'
 import { useGlobalTimer } from '@/hooks/useGlobalTimer'
 import { useUserPreferences } from '../../hooks/useUserPreferences'
+import { ShareCardButton } from '../share/ShareCardButton'
 
 interface SidebarProps {
   className?: string
@@ -257,6 +258,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Timer Widget - Only show when timer is active */}
         {showTimerWidget && <TimerWidget isCollapsed={isCollapsed} />}
+
+        {/* Divider */}
+        <div className="my-4 border-t border-gray-200" />
+
+        {/* Share Today Button */}
+        <ShareCardButton isCollapsed={isCollapsed} />
 
         {/* About page link */}
         <div className="border-t border-gray-300 pt-4 mt-6">
