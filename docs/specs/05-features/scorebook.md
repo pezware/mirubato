@@ -11,6 +11,14 @@ Version: 1.8.2
 
 Status: 🚧 Experimental
 
+> **Beta Feature**: Scorebook is currently behind a feature flag. To enable:
+>
+> - Add `?beta=on` to any URL (e.g., `https://mirubato.com/?beta=on`)
+> - The setting persists in sessionStorage until browser/tab is closed
+> - To disable: `?beta=off`
+>
+> Implementation: `frontendv2/src/hooks/useBetaFeatures.ts`
+
 ## What
 
 Comprehensive sheet music management system with PDF storage, AI metadata extraction, collection organization, and practice integration.
@@ -94,6 +102,8 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **Search my library by title, composer, or opus** ✅ (v1.8.0)
 - **Sort scores by date, title, composer, difficulty, or popularity** ✅ (v1.8.0)
 - **Preview AI-extracted metadata before saving** ✅ (v1.8.0)
+- **Star/favorite scores for quick access** ✅ (v1.8.2)
+- **Load more scores on demand with pagination** ✅ (v1.8.2)
 
 ### As a Teacher, I want to:
 
@@ -222,7 +232,30 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - **Sharing**: Generate shareable links
 - **Auto-selection**: Default collection pre-selected in import flow (NEW v1.8.0)
 
-**Code**: `scores/src/api/handlers/user-collections.ts`
+**Code**: `scores/src/api/handlers/userCollections.ts`
+
+#### Favorites (NEW v1.8.2)
+
+- **Quick access**: Star/unstar scores for quick access
+- **Persistent indicator**: Favorited scores show star badge
+- **Batch API**: Efficient loading with batch endpoint
+- **Graceful degradation**: Works offline with cached state
+
+**Endpoints**:
+
+```
+GET    /api/user/favorites          - List user's favorites with score details
+GET    /api/user/favorites/ids      - Get favorite score IDs only (lightweight)
+GET    /api/user/favorites/check/:id - Check if score is favorited
+POST   /api/user/favorites/:id      - Add to favorites
+DELETE /api/user/favorites/:id      - Remove from favorites
+POST   /api/user/favorites/:id/toggle - Toggle favorite status
+POST   /api/user/favorites/batch/check - Batch check multiple scores
+```
+
+**Database**: `user_score_favorites` table with `(user_id, score_id)` unique constraint
+
+**Code**: `scores/src/api/handlers/favorites.ts`
 
 ### 5. Score Viewer
 
