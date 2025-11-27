@@ -480,6 +480,34 @@ class ScoreService {
     }
   }
 
+  // Batch: Get collections for multiple scores at once (eliminates N+1 queries)
+  async getBatchScoreCollections(
+    scoreIds: string[]
+  ): Promise<Record<string, Array<{ id: string; name: string }>>> {
+    if (scoreIds.length === 0) {
+      return {}
+    }
+
+    try {
+      const response = await scoresApiClient.post(
+        '/api/user/collections/batch/score-collections',
+        { scoreIds }
+      )
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          // User not authenticated, return empty object
+          return {}
+        }
+        throw new Error(
+          `Failed to batch fetch score collections: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
   // Get score metadata including number of pages
   async getScoreMetadata(scoreId: string): Promise<{ numPages: number }> {
     try {

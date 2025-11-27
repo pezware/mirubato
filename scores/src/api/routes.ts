@@ -68,6 +68,10 @@ api.get('/', c => {
         'POST /api/user/collections/:id/scores': 'Add score to collection',
         'DELETE /api/user/collections/:id/scores/:scoreId':
           'Remove score from collection',
+        'GET /api/user/collections/score/:scoreId':
+          'Get collections containing a score',
+        'POST /api/user/collections/batch/score-collections':
+          'Batch get collections for multiple scores (eliminates N+1 queries)',
       },
       featuredCollections: {
         'GET /api/collections/featured': 'List featured collections (public)',

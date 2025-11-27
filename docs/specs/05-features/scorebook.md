@@ -4,7 +4,7 @@ Title: Scorebook - Sheet Music Management
 Status: 🚧 Experimental
 Owner: @pezware
 Last-Reviewed: 2025-11-27
-Version: 1.8.0
+Version: 1.8.1
 ---
 
 # Scorebook Feature Specification
@@ -29,6 +29,16 @@ Comprehensive sheet music management system with PDF storage, AI metadata extrac
 - Organize into collections and repertoire
 - Integrate with practice logging
 - Enable IMSLP import for public domain scores
+
+## Recent Changes (v1.8.1)
+
+### Performance Improvements
+
+1. **Batch Score Collections API** - New endpoint eliminates N+1 query problem
+   - Reduced API calls from 60+ to 1 when loading score browser
+   - `POST /api/user/collections/batch/score-collections` accepts array of score IDs
+   - Returns collection memberships for all scores in a single response
+2. **Frontend Optimization** - ScoreBrowser now uses batch endpoint instead of individual calls
 
 ## Recent Changes (v1.8.0)
 

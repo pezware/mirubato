@@ -323,42 +323,35 @@ export default function ScoreBrowserPage() {
       }
     })
 
-    // If authenticated, also load user's private collections for scores
+    // If authenticated, load user's private collections for all scores in a single batch request
     if (isAuthenticated) {
-      const userCollectionIds = allCollections
-        .filter(col => col.visibility !== 'public')
-        .map(col => col.id)
+      const collectionById = new Map(allCollections.map(col => [col.id, col]))
 
-      if (userCollectionIds.length > 0) {
-        const collectionById = new Map(allCollections.map(col => [col.id, col]))
+      try {
+        // Use batch endpoint to get collections for all scores at once (eliminates N+1 queries)
+        const scoreIds = scores.map(s => s.id)
+        const batchCollections =
+          await scoreService.getBatchScoreCollections(scoreIds)
 
-        await Promise.all(
-          scores.map(async score => {
-            try {
-              const collectionIds = await scoreService.getScoreCollections(
-                score.id
-              )
-              const userScoreCollections = collectionIds
-                .map(id => collectionById.get(id))
-                .filter(
-                  (col): col is Collection =>
-                    col !== undefined && col.visibility !== 'public'
-                )
+        // Process batch results
+        for (const score of scores) {
+          const collectionsForScore = batchCollections[score.id] || []
+          const userScoreCollections = collectionsForScore
+            .map(c => collectionById.get(c.id))
+            .filter(
+              (col): col is Collection =>
+                col !== undefined && col.visibility !== 'public'
+            )
 
-              if (userScoreCollections.length > 0) {
-                collectionMap[score.id] = [
-                  ...(collectionMap[score.id] || []),
-                  ...userScoreCollections,
-                ]
-              }
-            } catch (error) {
-              console.error(
-                `Failed to load collections for score ${score.id}:`,
-                error
-              )
-            }
-          })
-        )
+          if (userScoreCollections.length > 0) {
+            collectionMap[score.id] = [
+              ...(collectionMap[score.id] || []),
+              ...userScoreCollections,
+            ]
+          }
+        }
+      } catch (error) {
+        console.error('Failed to batch load score collections:', error)
       }
     }
 
