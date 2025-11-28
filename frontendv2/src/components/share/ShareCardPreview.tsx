@@ -799,6 +799,7 @@ export const ShareCardPreview = forwardRef<
                 fontSize: 9,
                 color: colors.text.tertiary,
                 fontWeight: 300,
+                whiteSpace: 'nowrap',
               }}
             >
               {format(new Date(), 'MMM d, yyyy HH:mm')}
