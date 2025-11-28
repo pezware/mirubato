@@ -216,29 +216,6 @@ export class UploadService {
   }
 
   /**
-   * Copies a file from local filesystem (development only)
-   */
-  async uploadFromLocal(
-    _localPath: string,
-    _env: any,
-    _options: {
-      prefix?: string
-      metadata?: Record<string, string>
-      customKey?: string
-    } = {}
-  ): Promise<UploadResult> {
-    // This method would need to be implemented differently
-    // In Cloudflare Workers, we can't access the local filesystem
-    // This is just a placeholder for the structure
-
-    return {
-      success: false,
-      error:
-        'Local file upload not supported in Cloudflare Workers environment',
-    }
-  }
-
-  /**
    * Gets the public URL for a stored file
    */
   private getPublicUrl(key: string, env: any): string {

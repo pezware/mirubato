@@ -88,20 +88,3 @@ export async function verifyMagicLinkToken(
 
   return { email: payload.email as string }
 }
-
-/**
- * Hash password (for future use if needed)
- */
-export async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(password)
-  const hash = await crypto.subtle.digest('SHA-256', data)
-  return btoa(String.fromCharCode(...new Uint8Array(hash)))
-}
-
-/**
- * Generate secure random token
- */
-export function generateSecureToken(): string {
-  return nanoid(32)
-}

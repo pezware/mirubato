@@ -31,8 +31,6 @@ export { default as Autocomplete } from './Autocomplete'
 
 export { default as ProgressiveImage } from './ProgressiveImage'
 
-export { default as SplitButton } from './SplitButton'
-
 export { default as TimelineNav } from './TimelineNav'
 
 export { PeriodSelector } from './PeriodSelector'

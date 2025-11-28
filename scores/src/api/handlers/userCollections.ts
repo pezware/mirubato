@@ -6,7 +6,6 @@ import { getAuthUser } from '../../utils/auth-enhanced'
 import { generateSlug } from '../../utils/database'
 import type { Context } from 'hono'
 import type { D1Database } from '@cloudflare/workers-types'
-// import { VisibilityService } from '../../services/visibilityService' // Not needed - independent visibility
 
 const userCollectionsHandler = new Hono<{ Bindings: Env }>()
 
@@ -59,13 +58,6 @@ userCollectionsHandler.get('/', async c => {
     )
       .bind(user.id)
       .all()
-
-    // Log collection count for debugging
-    // console.log('User collections query result:', {
-    //   userId: user.id,
-    //   count: collections.results.length,
-    //   firstCollection: collections.results[0],
-    // })
 
     // If user has no collections, create a default "General" collection
     if (collections.results.length === 0) {

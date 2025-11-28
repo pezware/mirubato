@@ -24,16 +24,6 @@ import {
 
 export const termsHandler = new Hono<{ Bindings: Env }>()
 
-// Query schema
-// const termQuerySchema = z.object({
-//   term: z.string().min(1).max(200),
-//   type: z
-//     .enum(['instrument', 'genre', 'technique', 'composer', 'theory', 'general'])
-//     .optional(),
-//   enhance: z.enum(['true', 'false']).optional(),
-//   generate_if_missing: z.enum(['true', 'false']).optional(),
-// })
-
 const feedbackSchema = z.object({
   rating: z.number().min(1).max(5).optional(),
   helpful: z.boolean().optional(),

@@ -130,30 +130,6 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   const idempotencyKey = c.req.header('X-Idempotency-Key')
   const deviceId = c.req.header('X-Device-ID')
 
-  // Enhanced debug logging for staging - commented out to avoid console warnings
-  // Uncomment for debugging if needed
-  // if (c.env.ENVIRONMENT === 'staging' || c.env.ENVIRONMENT === 'local') {
-  //   console.log('[Sync Push] Starting sync for user:', userId)
-  //   console.log('[Sync Push] Environment:', c.env.ENVIRONMENT)
-  //   console.log('[Sync Push] Device ID:', deviceId || 'not provided')
-  //   console.log(
-  //     '[Sync Push] Idempotency Key:',
-  //     idempotencyKey || 'not provided'
-  //   )
-  //   console.log('[Sync Push] Received changes:', {
-  //     entriesCount: changes.entries?.length || 0,
-  //     goalsCount: changes.goals?.length || 0,
-  //     practicePlansCount: changes.practicePlans?.length || 0,
-  //     planOccurrencesCount: changes.planOccurrences?.length || 0,
-  //   })
-  //   if (changes.entries && changes.entries.length > 0) {
-  //     console.log(
-  //       '[Sync Push] First entry sample:',
-  //       JSON.stringify(changes.entries[0], null, 2)
-  //     )
-  //   }
-  // }
-
   // Process with idempotency if key provided
   const processSync = async () => {
     // Process changes
@@ -239,12 +215,6 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             )
 
             stats.entriesProcessed++
-            // if (c.env.ENVIRONMENT === 'staging') {
-            //   console.log(
-            //     '[Sync Push] Soft deleted entry:',
-            //     transformedEntry.id
-            //   )
-            // }
           } else {
             // Normalize enum fields to lowercase for database compatibility
             if (
@@ -342,18 +312,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             stats.entriesProcessed++
             if (result.action === 'duplicate_prevented') {
               stats.duplicatesPrevented++
-              // console.log(
-              //   `[Sync Push] Duplicate prevented for entry ${entry.id}, ` +
-              //     `using existing ${result.entity_id}`
-              // )
             }
-
-            // if (c.env.ENVIRONMENT === 'staging') {
-            //   console.log(
-            //     '[Sync Push] Successfully upserted entry:',
-            //     entry.id
-            //   )
-            // }
           }
         } catch (entryError) {
           // Error: Failed to process entry
@@ -868,15 +827,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
         stats.planOccurrencesProcessed > 0 ||
         stats.goalsProcessed > 0)
     ) {
-      // console.log('[Sync Push] Sync completed:', {
-      //   userId,
-      //   deviceId,
-      //   entriesProcessed: stats.entriesProcessed,
-      //   duplicatesPrevented: stats.duplicatesPrevented,
-      //   goalsProcessed: stats.goalsProcessed,
-      //   practicePlansProcessed: stats.practicePlansProcessed,
-      //   planOccurrencesProcessed: stats.planOccurrencesProcessed,
-      // })
+      // Stats logged implicitly through return value
     }
 
     return {
@@ -904,9 +855,6 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
     )
 
     if (wasReplayed) {
-      // console.log(
-      //   `[Sync Push] Returned cached response for idempotency key: ${idempotencyKey}`
-      // )
       return c.json(response, {
         headers: {
           'X-Idempotent-Replay': 'true',

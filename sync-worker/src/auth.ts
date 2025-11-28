@@ -35,28 +35,6 @@ export async function verifyToken(
 }
 
 /**
- * Extract and verify JWT from Authorization header
- */
-export async function verifyAuthHeader(
-  authHeader: string | null,
-  secret: string
-): Promise<TokenPayload | null> {
-  if (!authHeader) {
-    return null
-  }
-
-  // Check for Bearer token format
-  const match = authHeader.match(/^Bearer\s+(.+)$/i)
-  if (!match) {
-    console.error('Invalid Authorization header format')
-    return null
-  }
-
-  const token = match[1]
-  return verifyToken(token, secret)
-}
-
-/**
  * Verify WebSocket connection token
  * Tokens can be passed as query parameters for WebSocket connections
  */
