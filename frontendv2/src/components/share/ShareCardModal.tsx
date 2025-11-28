@@ -110,7 +110,6 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
           quality: 1,
           pixelRatio: 2,
           backgroundColor: '#f5f3f0',
-          skipFonts: true,
           cacheBust: true,
         })
 
@@ -151,7 +150,6 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
           quality: 1,
           pixelRatio: 2,
           backgroundColor: '#f5f3f0',
-          skipFonts: true,
           cacheBust: true,
         })
         blob = dataUrlToBlob(dataUrl)
@@ -187,7 +185,6 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
           quality: 1,
           pixelRatio: 2,
           backgroundColor: '#f5f3f0',
-          skipFonts: true,
           cacheBust: true,
         })
         blob = dataUrlToBlob(dataUrl)
