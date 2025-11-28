@@ -8,57 +8,191 @@ import {
   endOfMonth,
   eachDayOfInterval,
 } from 'date-fns'
-import { type ShareCardData } from '../../hooks/useShareCard'
+import { type UseShareCardReturn } from '../../hooks/useShareCard'
+import { formatDuration } from '../../utils/dateUtils'
 
 export type CardVariant = 'story' | 'square'
 
 interface ShareCardPreviewProps {
-  data: ShareCardData
+  data: UseShareCardReturn
   variant: CardVariant
   showUsername?: boolean
   showNotes?: boolean
   className?: string
 }
 
-// Heatmap intensity colors (matching the app's Morandi palette)
+// Color palette - professional Morandi tones aligned with frontend design
+const colors = {
+  background: {
+    gradient: 'linear-gradient(160deg, #faf9f7 0%, #f5f3f0 100%)',
+    card: 'rgba(255, 255, 255, 0.8)',
+    cardAlt: 'rgba(255, 255, 255, 0.6)',
+  },
+  text: {
+    primary: '#1f2937', // gray-800 - stronger contrast
+    secondary: '#4b5563', // gray-600
+    tertiary: '#6b7280', // gray-500
+    accent: '#6b8f6b', // morandi-sage-500
+  },
+  chart: {
+    bar: '#7ba87b',
+    barLight: '#a8c4a8',
+    barEmpty: '#e8e5e0',
+  },
+  heatmap: {
+    empty: '#e8e5e0',
+    level1: '#d4ddd4',
+    level2: '#a8c4a8',
+    level3: '#7ba87b',
+    level4: '#4d8a4d',
+  },
+  status: {
+    planned: '#9ca3af',
+    learning: '#60a5fa',
+    polished: '#34d399',
+    dropped: '#f87171',
+  },
+}
+
+// Inline SVG icons for html-to-image compatibility
+const MusicIcon = ({
+  size = 14,
+  color = colors.text.accent,
+}: {
+  size?: number
+  color?: string
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 18V5l12-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="18" cy="16" r="3" />
+  </svg>
+)
+
+const PenLineIcon = ({
+  size = 14,
+  color = colors.text.tertiary,
+}: {
+  size?: number
+  color?: string
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 20h9" />
+    <path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z" />
+  </svg>
+)
+
+const CalendarIcon = ({
+  size = 14,
+  color = colors.text.tertiary,
+}: {
+  size?: number
+  color?: string
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect width="18" height="18" x="3" y="4" rx="2" />
+    <path d="M16 2v4" />
+    <path d="M8 2v4" />
+    <path d="M3 10h18" />
+  </svg>
+)
+
+const ActivityIcon = ({
+  size = 14,
+  color = colors.text.tertiary,
+}: {
+  size?: number
+  color?: string
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+  </svg>
+)
+
+// Heatmap intensity colors
 const getIntensityColor = (intensity: number): string => {
   switch (intensity) {
     case 0:
-      return '#e8e5e0' // morandi-stone-100
+      return colors.heatmap.empty
     case 1:
-      return '#c5d1c5' // morandi-sage-200
+      return colors.heatmap.level1
     case 2:
-      return '#a8bfa8' // morandi-sage-300
+      return colors.heatmap.level2
     case 3:
-      return '#8ba98b' // morandi-sage-400
+      return colors.heatmap.level3
     case 4:
-      return '#6b8f6b' // morandi-sage-500
+      return colors.heatmap.level4
     default:
-      return '#e8e5e0'
+      return colors.heatmap.empty
   }
 }
 
+// Status badge colors
+const getStatusColor = (status: string): string => {
+  const statusLower = status.toLowerCase()
+  if (statusLower in colors.status) {
+    return colors.status[statusLower as keyof typeof colors.status]
+  }
+  return colors.text.secondary
+}
+
+// Mini Heatmap Component
 function MiniHeatmap({
   data,
   months = 4,
+  isStory = true,
 }: {
   data: Map<string, number>
   months?: number
+  isStory?: boolean
 }) {
   const now = new Date()
   const startDate = startOfMonth(subMonths(now, months - 1))
   const endDate = endOfMonth(now)
   const days = eachDayOfInterval({ start: startDate, end: endDate })
 
-  // Find max value for intensity calculation
   const maxValue = Math.max(...Array.from(data.values()), 1)
 
-  // Group days by weeks (visual columns)
   const weeks: Array<Array<{ date: Date; value: number; intensity: number }>> =
     []
   let currentWeek: Array<{ date: Date; value: number; intensity: number }> = []
 
-  // Add empty days at the beginning if month doesn't start on Sunday
   const firstDayOfPeriod = getDay(startDate)
   for (let i = 0; i < firstDayOfPeriod; i++) {
     currentWeek.push({ date: new Date(0), value: 0, intensity: 0 })
@@ -81,11 +215,12 @@ function MiniHeatmap({
     weeks.push(currentWeek)
   }
 
-  const cellSize = 8
+  // Larger cells for better visibility
+  const cellSize = isStory ? 9 : 7
   const gap = 2
 
   return (
-    <div style={{ display: 'flex', gap: `${gap}px` }}>
+    <div style={{ display: 'flex', gap: `${gap}px`, flexWrap: 'wrap' }}>
       {weeks.map((week, weekIndex) => (
         <div
           key={weekIndex}
@@ -118,6 +253,96 @@ function MiniHeatmap({
   )
 }
 
+// Weekly Bar Chart Component
+function WeeklyBarChart({
+  data,
+  isStory,
+}: {
+  data: { dayLabel: string; minutes: number }[]
+  isStory: boolean
+}) {
+  const maxMinutes = Math.max(...data.map(d => d.minutes), 1)
+  // Improved proportions - wider bars, better height
+  const barHeight = isStory ? 80 : 50
+  const barWidth = isStory ? 52 : 40
+  const gap = isStory ? 8 : 6
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        gap: `${gap}px`,
+        height: barHeight + 20,
+      }}
+    >
+      {data.map((day, index) => {
+        const height =
+          day.minutes > 0
+            ? Math.max((day.minutes / maxMinutes) * barHeight, 4)
+            : 4
+        const hasData = day.minutes > 0
+
+        return (
+          <div
+            key={index}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 3,
+            }}
+          >
+            <div
+              style={{
+                width: barWidth,
+                height: height,
+                backgroundColor: hasData
+                  ? colors.chart.bar
+                  : colors.chart.barEmpty,
+                borderRadius: 3,
+              }}
+            />
+            <span
+              style={{
+                fontSize: 9,
+                color: hasData ? colors.text.secondary : colors.text.tertiary,
+                fontWeight: hasData ? 500 : 400,
+                fontFamily: 'Inter, system-ui, sans-serif',
+              }}
+            >
+              {day.dayLabel}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// Section card base style helper
+const getSectionStyle = (isStory: boolean) => ({
+  backgroundColor: colors.background.cardAlt,
+  borderRadius: 12,
+  padding: isStory ? 14 : 10,
+  marginBottom: isStory ? 10 : 8,
+  border: '1px solid rgba(0,0,0,0.03)',
+})
+
+// Section header style helper
+const getSectionHeaderStyle = () => ({
+  fontSize: 9,
+  fontWeight: 600 as const,
+  color: colors.text.tertiary,
+  textTransform: 'uppercase' as const,
+  letterSpacing: 1.2,
+  marginBottom: 8,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 5,
+})
+
 export const ShareCardPreview = forwardRef<
   HTMLDivElement,
   ShareCardPreviewProps
@@ -129,17 +354,20 @@ export const ShareCardPreview = forwardRef<
     const { t } = useTranslation(['common', 'share'])
 
     const isStory = variant === 'story'
-    const cardWidth = isStory ? 540 : 540
-    const cardHeight = isStory ? 960 : 540
+    const isWeekly = data.viewMode === 'week'
+    const cardWidth = 540
 
-    // Limit pieces to show (fewer if notes are shown)
-    const hasNotes = showNotes && data.todayNotes.length > 0
-    const maxPieces = hasNotes ? (isStory ? 2 : 1) : isStory ? 4 : 2
-    const piecesToShow = data.todayPieces.slice(0, maxPieces)
+    // Determine content to show
+    const hasNotes = showNotes && data.periodNotes.length > 0
 
-    // Combine notes into a single display string (truncate if too long)
-    const combinedNotes = data.todayNotes.join(' • ')
-    const maxNotesLength = isStory ? 200 : 100
+    // Show ALL pieces - card will expand to fit
+    const piecesToShow = data.periodPieces
+    const eventsToShow = isWeekly ? data.weeklyEvents.slice(0, 4) : []
+
+    // FULL notes display - no truncation when user opts in
+    const combinedNotes = data.periodNotes.join(' • ')
+    // Only truncate at very extreme lengths to prevent card from being too tall
+    const maxNotesLength = isStory ? 600 : 400
     const displayNotes =
       combinedNotes.length > maxNotesLength
         ? combinedNotes.slice(0, maxNotesLength).trim() + '...'
@@ -151,121 +379,211 @@ export const ShareCardPreview = forwardRef<
         className={className}
         style={{
           width: cardWidth,
-          height: cardHeight,
-          background: 'linear-gradient(180deg, #f5f3f0 0%, #e8e5e0 100%)',
-          borderRadius: 24,
-          padding: isStory ? 32 : 24,
+          // AUTO HEIGHT - content determines size
+          height: 'auto',
+          minHeight: isStory ? 600 : 400,
+          background: colors.background.gradient,
+          borderRadius: 16,
+          // Tighter padding for denser layout
+          padding: isStory ? 24 : 18,
           display: 'flex',
           flexDirection: 'column',
-          fontFamily: 'Inter, system-ui, sans-serif',
-          overflow: 'hidden',
+          fontFamily: '"Inter", system-ui, sans-serif',
           boxSizing: 'border-box',
+          boxShadow: '0 2px 16px rgba(0, 0, 0, 0.06)',
         }}
       >
-        {/* Header */}
+        {/* Header - single line for Practice Journal */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 12,
-            marginBottom: isStory ? 24 : 16,
+            gap: 10,
+            marginBottom: isStory ? 16 : 12,
           }}
         >
           <img
             src="/logo-48x48.png"
-            alt=""
-            style={{ width: 32, height: 32, borderRadius: 6 }}
+            alt="Mirubato logo"
+            style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0 }}
           />
-          <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
             <div
               style={{
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: 600,
-                color: '#3d3d3d',
-                fontFamily: 'Lexend, Inter, sans-serif',
+                color: colors.text.primary,
+                fontFamily: '"Lexend", system-ui, sans-serif',
+                whiteSpace: 'nowrap',
               }}
             >
               {t('common:appName')}
             </div>
-            <div style={{ fontSize: 11, color: '#7a7a7a' }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: colors.text.tertiary,
+                whiteSpace: 'nowrap',
+              }}
+            >
               {t('share:practiceJournal', 'Practice Journal')}
             </div>
           </div>
         </div>
 
-        {/* Today's Practice Section */}
+        {/* Main Practice Section */}
         <div
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            borderRadius: 16,
-            padding: isStory ? 24 : 16,
-            marginBottom: isStory ? 20 : 12,
+            backgroundColor: colors.background.card,
+            borderRadius: 12,
+            padding: isStory ? 20 : 14,
+            marginBottom: isStory ? 10 : 8,
             textAlign: 'center',
+            border: '1px solid rgba(0,0,0,0.03)',
           }}
         >
           <div
             style={{
-              fontSize: 12,
-              fontWeight: 500,
-              color: '#7a7a7a',
+              fontSize: 9,
+              fontWeight: 600,
+              color: colors.text.tertiary,
               textTransform: 'uppercase',
-              letterSpacing: 1,
-              marginBottom: 8,
+              letterSpacing: 1.2,
+              marginBottom: 4,
             }}
           >
-            {t('share:todaysPractice', "Today's Practice")}
+            {isWeekly
+              ? t('share:weeklyPractice', 'Weekly Practice')
+              : t('share:todaysPractice', "Today's Practice")}
           </div>
           <div
             style={{
-              fontSize: isStory ? 48 : 36,
-              fontWeight: 300,
-              color: '#3d3d3d',
-              fontFamily: 'Lexend, Inter, sans-serif',
+              // LARGER duration for better visual hierarchy
+              fontSize: isStory ? 56 : 40,
+              fontWeight: 200,
+              color: colors.text.primary,
+              fontFamily: '"Lexend", system-ui, sans-serif',
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
             }}
           >
-            {data.todayTotalFormatted || '0m'}
+            {data.periodTotalFormatted || '0m'}
           </div>
-          <div style={{ fontSize: 14, color: '#7a7a7a', marginTop: 4 }}>
-            {data.todayFormatted}
+          <div
+            style={{ fontSize: 12, color: colors.text.secondary, marginTop: 2 }}
+          >
+            {data.periodLabel.replace(/ \(.*\)$/, '')}
           </div>
-        </div>
 
-        {/* Pieces Section */}
-        {piecesToShow.length > 0 && (
-          <div
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              borderRadius: 16,
-              padding: isStory ? 20 : 14,
-              marginBottom: isStory ? 20 : 12,
-              flex: isStory ? 1 : 'none',
-            }}
-          >
+          {/* Weekly Stats Row */}
+          {isWeekly && (
             <div
               style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: '#7a7a7a',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                marginBottom: 12,
+                display: 'flex',
+                justifyContent: 'center',
+                gap: isStory ? 28 : 20,
+                marginTop: 12,
+                paddingTop: 12,
+                borderTop: `1px solid ${colors.heatmap.empty}`,
               }}
             >
-              {t('share:piecesPracticed', 'Pieces Practiced')}
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 500,
+                    color: colors.text.primary,
+                  }}
+                >
+                  {data.weeklySessionCount}
+                </div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: colors.text.tertiary,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {t('share:sessions', 'Sessions')}
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 500,
+                    color: colors.text.primary,
+                  }}
+                >
+                  {data.periodPieces.length}
+                </div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: colors.text.tertiary,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {t('share:pieces', 'Pieces')}
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 500,
+                    color:
+                      data.weeklyConsistency >= 70
+                        ? colors.text.accent
+                        : colors.text.primary,
+                  }}
+                >
+                  {data.weeklyConsistency}%
+                </div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: colors.text.tertiary,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {t('share:consistency', 'Consistency')}
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          )}
+        </div>
+
+        {/* Weekly Bar Chart - no header, chart is self-explanatory */}
+        {isWeekly && data.weeklyDailyData.length > 0 && (
+          <div style={getSectionStyle(isStory)}>
+            <WeeklyBarChart data={data.weeklyDailyData} isStory={isStory} />
+          </div>
+        )}
+
+        {/* Pieces Section - no header, show all pieces */}
+        {piecesToShow.length > 0 && (
+          <div style={getSectionStyle(isStory)}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {piecesToShow.map((piece, index) => (
                 <div
                   key={index}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 8,
+                  }}
                 >
-                  <span style={{ fontSize: 16, marginTop: 2 }}>&#119070;</span>
-                  <div style={{ flex: 1 }}>
+                  <MusicIcon size={14} color={colors.text.accent} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: isStory ? 16 : 14,
+                        fontSize: isStory ? 14 : 12,
                         fontWeight: 500,
-                        color: '#3d3d3d',
+                        color: colors.text.primary,
                         fontFamily: '"Noto Serif", Georgia, serif',
                         lineHeight: 1.3,
                       }}
@@ -275,8 +593,8 @@ export const ShareCardPreview = forwardRef<
                     {piece.composer && (
                       <div
                         style={{
-                          fontSize: isStory ? 13 : 12,
-                          color: '#666',
+                          fontSize: isStory ? 12 : 10,
+                          color: colors.text.secondary,
                           fontFamily: '"Noto Serif", Georgia, serif',
                         }}
                       >
@@ -284,52 +602,91 @@ export const ShareCardPreview = forwardRef<
                       </div>
                     )}
                   </div>
+                  {isWeekly && (
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: colors.text.tertiary,
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap',
+                        backgroundColor: 'rgba(107, 143, 107, 0.1)',
+                        padding: '2px 6px',
+                        borderRadius: 4,
+                      }}
+                    >
+                      {formatDuration(piece.duration)}
+                    </div>
+                  )}
                 </div>
               ))}
-              {data.todayPieces.length > maxPieces && (
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: '#7a7a7a',
-                    fontStyle: 'italic',
-                  }}
-                >
-                  +{data.todayPieces.length - maxPieces}{' '}
-                  {t('share:morePieces', 'more pieces')}
-                </div>
-              )}
             </div>
           </div>
         )}
 
-        {/* Notes Section */}
+        {/* Events Section (Weekly only) - single line header */}
+        {eventsToShow.length > 0 && (
+          <div style={getSectionStyle(isStory)}>
+            <div style={{ ...getSectionHeaderStyle(), whiteSpace: 'nowrap' }}>
+              <ActivityIcon size={12} color={colors.text.tertiary} />
+              <span>{t('share:keyEvents', 'Key Events')}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {eventsToShow.map((event, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontSize: 11,
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: getStatusColor(event.newStatus),
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ color: colors.text.secondary }}>
+                    <span
+                      style={{ fontWeight: 500, color: colors.text.primary }}
+                    >
+                      {event.pieceTitle}
+                    </span>
+                    {' → '}
+                    <span
+                      style={{
+                        fontWeight: 500,
+                        color: getStatusColor(event.newStatus),
+                      }}
+                    >
+                      {event.newStatus}
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Notes Section - FULL content display */}
         {hasNotes && (
-          <div
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              borderRadius: 16,
-              padding: isStory ? 20 : 14,
-              marginBottom: isStory ? 20 : 12,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: '#7a7a7a',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                marginBottom: 8,
-              }}
-            >
-              {t('share:practiceNotes', 'Practice Notes')}
+          <div style={getSectionStyle(isStory)}>
+            <div style={getSectionHeaderStyle()}>
+              <PenLineIcon size={12} color={colors.text.tertiary} />
+              <span>{t('share:practiceNotes', 'Practice Notes')}</span>
             </div>
             <div
               style={{
-                fontSize: isStory ? 15 : 13,
-                color: '#4a4a4a',
-                lineHeight: 1.5,
+                fontSize: isStory ? 13 : 11,
+                color: colors.text.secondary,
+                lineHeight: 1.6,
                 fontStyle: 'italic',
+                // Removed word-break to let content flow naturally
               }}
             >
               "{displayNotes}"
@@ -337,13 +694,11 @@ export const ShareCardPreview = forwardRef<
           </div>
         )}
 
-        {/* Stats & Heatmap Section */}
+        {/* Stats & Heatmap Section - ensure no cut-off */}
         <div
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            borderRadius: 16,
-            padding: isStory ? 20 : 14,
-            marginBottom: isStory ? 20 : 12,
+            ...getSectionStyle(isStory),
+            marginBottom: 0, // Remove bottom margin before footer
           }}
         >
           <div
@@ -351,67 +706,112 @@ export const ShareCardPreview = forwardRef<
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: 12,
+              marginBottom: 8,
             }}
           >
             <div
               style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: '#7a7a7a',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
+                ...getSectionHeaderStyle(),
+                whiteSpace: 'nowrap',
+                marginBottom: 0,
               }}
             >
-              {t('share:practiceJourney', 'Practice Journey')}
+              <CalendarIcon size={12} color={colors.text.tertiary} />
+              <span>{t('share:practiceJourney', 'Practice Journey')}</span>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#3d3d3d' }}>
-              {t('share:totalTime', 'Total')}: {data.totalFormatted}
+            <div
+              style={{
+                display: 'flex',
+                gap: 12,
+                fontSize: 10,
+                fontWeight: 500,
+                color: colors.text.primary,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {isWeekly && (
+                <span style={{ color: colors.text.secondary }}>
+                  {data.weeklySessionCount} {t('share:sessions', 'sessions')}
+                </span>
+              )}
+              <span>
+                {t('share:totalTime', 'Total')}: {data.totalFormatted}
+              </span>
             </div>
           </div>
-          <MiniHeatmap data={data.heatmapData} months={isStory ? 4 : 3} />
+          <MiniHeatmap
+            data={data.heatmapData}
+            months={isStory ? 4 : 3}
+            isStory={isStory}
+          />
         </div>
 
-        {/* Footer */}
+        {/* Footer with export timestamp */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginTop: 'auto',
+            marginTop: isStory ? 14 : 10,
+            paddingTop: isStory ? 12 : 8,
+            borderTop: '1px solid rgba(0,0,0,0.04)',
           }}
         >
           {showUsername && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div
                 style={{
-                  width: 28,
-                  height: 28,
+                  width: 26,
+                  height: 26,
                   borderRadius: '50%',
-                  backgroundColor: '#6b8f6b',
+                  backgroundColor: colors.text.accent,
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: 600,
                 }}
               >
                 {data.displayName[0]?.toUpperCase() || '?'}
               </div>
-              <span style={{ fontSize: 13, color: '#3d3d3d', fontWeight: 500 }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: colors.text.primary,
+                  fontWeight: 500,
+                }}
+              >
                 @{data.displayName.toLowerCase().replace(/\s+/g, '')}
               </span>
             </div>
           )}
           <div
             style={{
-              fontSize: 11,
-              color: '#7a7a7a',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
               marginLeft: showUsername ? 0 : 'auto',
             }}
           >
-            mirubato.com
+            <span
+              style={{
+                fontSize: 9,
+                color: colors.text.tertiary,
+                fontWeight: 300,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {format(new Date(), 'MMM d, yyyy HH:mm')}
+            </span>
+            <span
+              style={{
+                fontSize: 10,
+                color: colors.text.tertiary,
+              }}
+            >
+              mirubato.com
+            </span>
           </div>
         </div>
       </div>
