@@ -65,16 +65,8 @@ vi.mock('../advanced/PeriodPresets', () => ({
   PeriodPresets: vi.fn(() => null),
 }))
 
-vi.mock('../../LogbookEntryList', () => ({
-  default: vi.fn(() => null),
-}))
-
 vi.mock('../visualizations/charts/PracticeTrendChart', () => ({
   PracticeTrendChart: vi.fn(() => null),
-}))
-
-vi.mock('../visualizations/tables/GroupedDataTable', () => ({
-  GroupedDataTable: vi.fn(() => null),
 }))
 
 vi.mock('../../../hooks/useEnhancedAnalytics', () => ({

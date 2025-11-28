@@ -160,11 +160,6 @@ analyticsHandler.get(
  * GET /api/v1/analytics/content-gaps
  */
 analyticsHandler.get('/content-gaps', async c => {
-  // const db = new DictionaryDatabase(c.env.DB)
-
-  // getContentGaps not implemented in DictionaryDatabase
-  // const gaps = await db.getContentGaps()
-
   // Create a proper ContentGaps object for recommendations
   const contentGaps: ContentGaps = {
     missing_references: [],

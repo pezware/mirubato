@@ -301,7 +301,6 @@ batchHandler.put(
   async c => {
     const { updates } = c.req.valid('json')
     const db = new DictionaryDatabase(c.env.DB)
-    // const userInfo = getUserInfo(c) // TODO: Use for tracking who made updates
 
     try {
       const results = {
