@@ -228,9 +228,8 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
 
   const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share
 
-  // Calculate preview scale based on card type and view mode
-  const isWeekly = shareCardData.viewMode === 'week'
-  const previewScale = variant === 'story' ? (isWeekly ? 0.4 : 0.45) : 0.55
+  // Calculate preview scale - simpler now with flexible card height
+  const previewScale = variant === 'story' ? 0.42 : 0.52
 
   return (
     <Modal
@@ -240,7 +239,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
       size="xl"
       isMobileOptimized
     >
-      <div className="flex flex-col gap-4 max-h-[calc(85vh-140px)] overflow-hidden">
+      <div className="flex flex-col gap-3 max-h-[calc(85vh-140px)] overflow-hidden">
         {/* Navigation and View Mode Controls */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0 pb-2 border-b border-gray-100">
           {/* Period Navigation */}
@@ -279,21 +278,13 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
 
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-hidden">
-          {/* Preview Panel */}
-          <div className="flex-1 flex flex-col items-center justify-start overflow-hidden">
+          {/* Preview Panel - proper scrollable container */}
+          <div className="flex-1 overflow-auto flex items-start justify-center py-2">
             <div
-              className="rounded-xl shadow-lg overflow-hidden"
+              className="rounded-xl shadow-lg"
               style={{
                 transform: `scale(${previewScale})`,
                 transformOrigin: 'top center',
-                marginBottom:
-                  variant === 'story'
-                    ? isWeekly
-                      ? '-280px'
-                      : '-200px'
-                    : isWeekly
-                      ? '-100px'
-                      : '-80px',
               }}
             >
               <ShareCardPreview
