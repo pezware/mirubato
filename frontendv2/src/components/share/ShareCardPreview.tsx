@@ -124,29 +124,6 @@ const CalendarIcon = ({
   </svg>
 )
 
-const BarChartIcon = ({
-  size = 14,
-  color = colors.text.tertiary,
-}: {
-  size?: number
-  color?: string
-}) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke={color}
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="12" x2="12" y1="20" y2="10" />
-    <line x1="18" x2="18" y1="20" y2="4" />
-    <line x1="6" x2="6" y1="20" y2="14" />
-  </svg>
-)
-
 const ActivityIcon = ({
   size = 14,
   color = colors.text.tertiary,
@@ -383,9 +360,8 @@ export const ShareCardPreview = forwardRef<
     // Determine content to show
     const hasNotes = showNotes && data.periodNotes.length > 0
 
-    // Show more pieces - card will expand to fit
-    const maxPieces = isStory ? 6 : 4
-    const piecesToShow = data.periodPieces.slice(0, maxPieces)
+    // Show ALL pieces - card will expand to fit
+    const piecesToShow = data.periodPieces
     const eventsToShow = isWeekly ? data.weeklyEvents.slice(0, 4) : []
 
     // FULL notes display - no truncation when user opts in
@@ -417,7 +393,7 @@ export const ShareCardPreview = forwardRef<
           boxShadow: '0 2px 16px rgba(0, 0, 0, 0.06)',
         }}
       >
-        {/* Header */}
+        {/* Header - single line for Practice Journal */}
         <div
           style={{
             display: 'flex',
@@ -429,20 +405,27 @@ export const ShareCardPreview = forwardRef<
           <img
             src="/logo-48x48.png"
             alt="Mirubato logo"
-            style={{ width: 36, height: 36, borderRadius: 8 }}
+            style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0 }}
           />
-          <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
             <div
               style={{
                 fontSize: 14,
                 fontWeight: 600,
                 color: colors.text.primary,
                 fontFamily: '"Lexend", system-ui, sans-serif',
+                whiteSpace: 'nowrap',
               }}
             >
               {t('common:appName')}
             </div>
-            <div style={{ fontSize: 10, color: colors.text.tertiary }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: colors.text.tertiary,
+                whiteSpace: 'nowrap',
+              }}
+            >
               {t('share:practiceJournal', 'Practice Journal')}
             </div>
           </div>
@@ -574,33 +557,16 @@ export const ShareCardPreview = forwardRef<
           )}
         </div>
 
-        {/* Weekly Bar Chart */}
+        {/* Weekly Bar Chart - no header, chart is self-explanatory */}
         {isWeekly && data.weeklyDailyData.length > 0 && (
           <div style={getSectionStyle(isStory)}>
-            <div
-              style={{
-                ...getSectionHeaderStyle(),
-                justifyContent: 'center',
-              }}
-            >
-              <BarChartIcon size={12} color={colors.text.tertiary} />
-              <span>{t('share:dailyBreakdown', 'Daily Breakdown')}</span>
-            </div>
             <WeeklyBarChart data={data.weeklyDailyData} isStory={isStory} />
           </div>
         )}
 
-        {/* Pieces Section - NO flex:1, let content determine size */}
+        {/* Pieces Section - no header, show all pieces */}
         {piecesToShow.length > 0 && (
           <div style={getSectionStyle(isStory)}>
-            <div style={getSectionHeaderStyle()}>
-              <MusicIcon size={12} color={colors.text.accent} />
-              <span>
-                {isWeekly
-                  ? t('share:topPieces', 'Top Pieces This Week')
-                  : t('share:piecesPracticed', 'Pieces Practiced')}
-              </span>
-            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {piecesToShow.map((piece, index) => (
                 <div
@@ -653,27 +619,14 @@ export const ShareCardPreview = forwardRef<
                   )}
                 </div>
               ))}
-              {data.periodPieces.length > maxPieces && (
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: colors.text.tertiary,
-                    fontStyle: 'italic',
-                    marginTop: 2,
-                  }}
-                >
-                  +{data.periodPieces.length - maxPieces}{' '}
-                  {t('share:morePieces', 'more')}
-                </div>
-              )}
             </div>
           </div>
         )}
 
-        {/* Events Section (Weekly only) */}
+        {/* Events Section (Weekly only) - single line header */}
         {eventsToShow.length > 0 && (
           <div style={getSectionStyle(isStory)}>
-            <div style={getSectionHeaderStyle()}>
+            <div style={{ ...getSectionHeaderStyle(), whiteSpace: 'nowrap' }}>
               <ActivityIcon size={12} color={colors.text.tertiary} />
               <span>{t('share:keyEvents', 'Key Events')}</span>
             </div>
@@ -756,18 +709,34 @@ export const ShareCardPreview = forwardRef<
               marginBottom: 8,
             }}
           >
-            <div style={getSectionHeaderStyle()}>
+            <div
+              style={{
+                ...getSectionHeaderStyle(),
+                whiteSpace: 'nowrap',
+                marginBottom: 0,
+              }}
+            >
               <CalendarIcon size={12} color={colors.text.tertiary} />
               <span>{t('share:practiceJourney', 'Practice Journey')}</span>
             </div>
             <div
               style={{
-                fontSize: 11,
+                display: 'flex',
+                gap: 12,
+                fontSize: 10,
                 fontWeight: 500,
                 color: colors.text.primary,
+                whiteSpace: 'nowrap',
               }}
             >
-              {t('share:totalTime', 'Total')}: {data.totalFormatted}
+              {isWeekly && (
+                <span style={{ color: colors.text.secondary }}>
+                  {data.weeklySessionCount} {t('share:sessions', 'sessions')}
+                </span>
+              )}
+              <span>
+                {t('share:totalTime', 'Total')}: {data.totalFormatted}
+              </span>
             </div>
           </div>
           <MiniHeatmap
@@ -777,7 +746,7 @@ export const ShareCardPreview = forwardRef<
           />
         </div>
 
-        {/* Footer */}
+        {/* Footer with export timestamp */}
         <div
           style={{
             display: 'flex',
@@ -819,12 +788,29 @@ export const ShareCardPreview = forwardRef<
           )}
           <div
             style={{
-              fontSize: 10,
-              color: colors.text.tertiary,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
               marginLeft: showUsername ? 0 : 'auto',
             }}
           >
-            mirubato.com
+            <span
+              style={{
+                fontSize: 9,
+                color: colors.text.tertiary,
+                fontWeight: 300,
+              }}
+            >
+              {format(new Date(), 'MMM d, yyyy HH:mm')}
+            </span>
+            <span
+              style={{
+                fontSize: 10,
+                color: colors.text.tertiary,
+              }}
+            >
+              mirubato.com
+            </span>
           </div>
         </div>
       </div>
