@@ -10,7 +10,7 @@ export interface DropdownMenuItem {
   icon?: React.ReactNode
 }
 
-interface DropdownMenuProps {
+export interface DropdownMenuProps {
   items: DropdownMenuItem[]
   isOpen: boolean
   onToggle: () => void

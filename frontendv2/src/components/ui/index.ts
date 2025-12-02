@@ -68,31 +68,88 @@ export {
 
 // Re-export types from @mirubato/ui
 export type {
+  // Autocomplete
   AutocompleteOption,
+  AutocompleteProps,
+  // Button
   ButtonProps,
+  // Card
+  CardProps,
+  CardHeaderProps,
+  CardTitleProps,
+  CardDescriptionProps,
+  CardContentProps,
+  CardFooterProps,
+  // Checkbox
   CheckboxProps,
+  // ClockTimePicker
+  ClockTimePickerProps,
+  // DateSeparator
+  DateSeparatorProps,
+  // DropdownMenu
   DropdownMenuItem,
+  DropdownMenuProps,
+  // FormError
+  FormErrorProps,
+  // Input
   InputProps,
   TextareaProps,
+  // Loading
+  LoadingProps,
+  LoadingSkeletonProps,
+  LoadingOverlayProps,
+  // Modal
+  ModalProps,
+  ModalBodyProps,
+  ModalFooterProps,
+  // PeriodSelector
   PeriodLevel,
   PeriodDate,
   PeriodStats,
+  PeriodSelectorProps,
+  // ProgressiveImage
+  ProgressiveImageProps,
+  // RadioGroup
   RadioGroupProps,
   RadioProps,
+  // ResizableSplitView
+  ResizableSplitViewProps,
+  // SegmentedControl
   SegmentOption,
+  SegmentedControlProps,
+  // Select
   SelectOption,
+  SelectProps,
+  MultiSelectProps,
+  // Tabs
+  Tab,
+  TabsProps,
+  // Tag
+  TagProps,
+  // TimelineNav
+  TimelineLevel,
+  TimelineNavProps,
+  // Toast
   ToastProps,
+  ToastContainerProps,
   UseToastReturn,
+  // Typography
   TypographyProps,
 } from '@mirubato/ui'
 
 // Frontendv2-specific components (have business logic dependencies)
 export { EntryDetailPanel } from './EntryDetailPanel'
+export type { EntryDetailPanelProps } from './EntryDetailPanel'
+
 export { CompactEntryRow } from './CompactEntryRow'
+export type { CompactEntryRowProps } from './CompactEntryRow'
+
 export { ToastProvider } from './ToastProvider'
 
 // Protected button components (prevent double-clicks/submissions)
 export { default as ProtectedButton } from './ProtectedButton'
+export type { ProtectedButtonProps } from './ProtectedButton'
+
 export {
   createProtectedButton,
   LogPracticeButton,

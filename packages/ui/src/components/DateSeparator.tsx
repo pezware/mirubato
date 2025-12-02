@@ -1,7 +1,7 @@
 import React from 'react'
 import { cn } from '../utils/cn'
 
-interface DateSeparatorProps {
+export interface DateSeparatorProps {
   date: string
   totalDuration: string
   className?: string

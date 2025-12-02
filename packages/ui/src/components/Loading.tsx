@@ -1,6 +1,6 @@
 import { cn } from '../utils/cn'
 
-interface LoadingProps {
+export interface LoadingProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
   variant?: 'spinner' | 'dots' | 'pulse'
   color?: 'primary' | 'white' | 'gray'
@@ -109,7 +109,7 @@ export function Loading({
   return loadingContent
 }
 
-interface LoadingSkeletonProps {
+export interface LoadingSkeletonProps {
   className?: string
   animate?: boolean
 }
@@ -129,7 +129,7 @@ export function LoadingSkeleton({
   )
 }
 
-interface LoadingOverlayProps {
+export interface LoadingOverlayProps {
   isLoading: boolean
   children: React.ReactNode
   text?: string

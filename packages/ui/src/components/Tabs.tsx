@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '../utils/cn'
 
-interface Tab {
+export interface Tab {
   id: string
   label: string
   icon?: React.ReactNode
@@ -10,7 +10,7 @@ interface Tab {
   mobileIconOnly?: boolean
 }
 
-interface TabsProps {
+export interface TabsProps {
   tabs: Tab[]
   activeTab: string
   onTabChange: (tabId: string) => void

@@ -1,6 +1,6 @@
 import { cn } from '../utils/cn'
 
-interface TagProps {
+export interface TagProps {
   children: React.ReactNode
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger'
   size?: 'sm' | 'md' | 'lg'

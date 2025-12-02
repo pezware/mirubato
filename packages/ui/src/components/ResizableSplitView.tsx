@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { cn } from '../utils/cn'
 
-interface ResizableSplitViewProps {
+export interface ResizableSplitViewProps {
   children: [React.ReactNode, React.ReactNode] // Exactly 2 children
   defaultRatio?: number // Default split ratio (0-1)
   minSizes?: [number, number] // Min width in pixels for [left, right]

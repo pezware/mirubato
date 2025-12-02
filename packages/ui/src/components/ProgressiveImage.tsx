@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { cn } from '../utils/cn'
 
-interface ProgressiveImageProps {
+export interface ProgressiveImageProps {
   src: string
   alt: string
   className?: string

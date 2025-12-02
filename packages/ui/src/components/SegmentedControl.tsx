@@ -8,7 +8,7 @@ export interface SegmentOption {
   icon?: React.ReactNode
 }
 
-interface SegmentedControlProps {
+export interface SegmentedControlProps {
   options: SegmentOption[]
   value: string
   onChange: (value: string) => void

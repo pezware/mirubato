@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { cn } from '../utils/cn'
 
-interface CardProps {
+export interface CardProps {
   children: ReactNode
   className?: string
   variant?: 'default' | 'bordered' | 'elevated' | 'ghost'
@@ -57,7 +57,7 @@ export function Card({
   )
 }
 
-interface CardHeaderProps {
+export interface CardHeaderProps {
   children: ReactNode
   className?: string
 }
@@ -66,7 +66,7 @@ export function CardHeader({ children, className }: CardHeaderProps) {
   return <div className={cn('mb-4', className)}>{children}</div>
 }
 
-interface CardTitleProps {
+export interface CardTitleProps {
   children: ReactNode
   className?: string
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div'
@@ -89,7 +89,7 @@ export function CardTitle({
   )
 }
 
-interface CardDescriptionProps {
+export interface CardDescriptionProps {
   children: ReactNode
   className?: string
 }
@@ -104,7 +104,7 @@ export function CardDescription({ children, className }: CardDescriptionProps) {
   )
 }
 
-interface CardContentProps {
+export interface CardContentProps {
   children: ReactNode
   className?: string
 }
@@ -117,7 +117,7 @@ export function CardContent({ children, className }: CardContentProps) {
   )
 }
 
-interface CardFooterProps {
+export interface CardFooterProps {
   children: ReactNode
   className?: string
 }

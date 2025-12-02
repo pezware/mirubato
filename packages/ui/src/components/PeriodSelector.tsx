@@ -20,7 +20,7 @@ export interface PeriodStats {
   uniquePieces: number
 }
 
-interface PeriodSelectorProps {
+export interface PeriodSelectorProps {
   selectedLevel: PeriodLevel
   selectedDate: PeriodDate
   stats: PeriodStats

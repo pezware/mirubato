@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import Button from './Button'
 
-interface ClockTimePickerProps {
+export interface ClockTimePickerProps {
   value: string // HH:MM format
   onChange: (value: string) => void
   className?: string

@@ -7,7 +7,7 @@ export interface TimelineLevel {
   level: 'year' | 'month' | 'week'
 }
 
-interface TimelineNavProps {
+export interface TimelineNavProps {
   levels: TimelineLevel[]
   selectedLevel: string
   onLevelChange: (level: TimelineLevel) => void

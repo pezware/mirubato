@@ -21,13 +21,14 @@ import {
   MusicTitle,
   MusicComposer,
   DropdownMenu,
+  cn,
+  formatDuration,
   type DropdownMenuItem,
 } from '@mirubato/ui'
 import { formatDateSeparator } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
-import { cn, formatDuration } from '@mirubato/ui'
 
-interface EntryDetailPanelProps {
+export interface EntryDetailPanelProps {
   entry: LogbookEntry | null
   onClose?: () => void
   onEdit?: (entry: LogbookEntry) => void

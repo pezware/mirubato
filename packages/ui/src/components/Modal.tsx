@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { X } from 'lucide-react'
 import { cn } from '../utils/cn'
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean
   onClose: () => void
   title?: string
@@ -124,7 +124,7 @@ export function Modal({
   )
 }
 
-interface ModalFooterProps {
+export interface ModalFooterProps {
   children: ReactNode
   className?: string
 }
@@ -137,7 +137,7 @@ export function ModalFooter({ children, className }: ModalFooterProps) {
   )
 }
 
-interface ModalBodyProps {
+export interface ModalBodyProps {
   children: ReactNode
   className?: string
 }

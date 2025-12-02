@@ -1,6 +1,6 @@
 import { IconAlertCircle } from '@tabler/icons-react'
 
-interface FormErrorProps {
+export interface FormErrorProps {
   error?: string
   className?: string
 }

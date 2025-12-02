@@ -12,7 +12,7 @@ export interface AutocompleteOption {
   }
 }
 
-interface AutocompleteProps {
+export interface AutocompleteProps {
   value: string
   onChange: (value: string) => void
   onSelect?: (option: AutocompleteOption) => void

@@ -122,7 +122,7 @@ export function Toast({
   )
 }
 
-interface ToastContainerProps {
+export interface ToastContainerProps {
   toasts: ToastProps[]
   onClose: (id: string) => void
 }

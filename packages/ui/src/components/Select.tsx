@@ -9,7 +9,7 @@ export interface SelectOption {
   disabled?: boolean
 }
 
-interface SelectProps {
+export interface SelectProps {
   value: string | number | undefined
   onChange: (value: string | number) => void
   options: SelectOption[]
@@ -141,7 +141,8 @@ export function Select({
   )
 }
 
-interface MultiSelectProps extends Omit<SelectProps, 'value' | 'onChange'> {
+export interface MultiSelectProps
+  extends Omit<SelectProps, 'value' | 'onChange'> {
   value: (string | number)[]
   onChange: (value: (string | number)[]) => void
 }
