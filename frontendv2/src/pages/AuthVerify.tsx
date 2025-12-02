@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
+import { Button } from '../components/ui'
 
 export default function AuthVerifyPage() {
   const navigate = useNavigate()
@@ -84,9 +85,7 @@ export default function AuthVerifyPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 {verificationError}
               </p>
-              <button onClick={() => navigate('/')} className="btn-primary">
-                Back to Home
-              </button>
+              <Button onClick={() => navigate('/')}>Back to Home</Button>
             </>
           ) : (
             <>
