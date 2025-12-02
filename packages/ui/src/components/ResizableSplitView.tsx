@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { cn } from '@/utils/cn'
+import { cn } from '../utils/cn'
 
 interface ResizableSplitViewProps {
   children: [React.ReactNode, React.ReactNode] // Exactly 2 children

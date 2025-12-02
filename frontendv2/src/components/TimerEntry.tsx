@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Modal } from './ui/Modal'
-import Button from './ui/Button'
+import { Modal, Button } from './ui'
 import { Play, Pause, Square, RotateCcw, ChevronDown, X } from 'lucide-react'
 import { formatTime as formatTimeUtil } from '@/utils/dateUtils'
 import { useGlobalTimer, formatTime } from '@/hooks/useGlobalTimer'

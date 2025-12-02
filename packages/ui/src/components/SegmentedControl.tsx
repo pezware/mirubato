@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { cn } from '../../utils/cn'
+import { cn } from '../utils/cn'
 
 export interface SegmentOption {
   value: string

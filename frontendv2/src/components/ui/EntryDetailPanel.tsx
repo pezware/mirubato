@@ -17,11 +17,12 @@ import {
   IconMoodHappy,
 } from '@tabler/icons-react'
 import { LogbookEntry } from '@/api/logbook'
-import { MusicTitle, MusicComposer } from '@/components/ui'
 import {
+  MusicTitle,
+  MusicComposer,
   DropdownMenu,
   type DropdownMenuItem,
-} from '@/components/ui/DropdownMenu'
+} from '@/components/ui'
 import { formatDuration, formatDateSeparator } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { cn } from '@/utils/cn'

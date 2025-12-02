@@ -1,7 +1,7 @@
 import { Fragment, useEffect } from 'react'
 import { Transition } from '@headlessui/react'
 import { X, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react'
-import { cn } from '../../utils/cn'
+import { cn } from '../utils/cn'
 
 export interface ToastProps {
   id: string

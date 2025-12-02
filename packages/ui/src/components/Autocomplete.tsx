@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { cn } from '../../utils/cn'
+import { cn } from '../utils/cn'
 
 export interface AutocompleteOption {
   value: string

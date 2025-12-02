@@ -10,9 +10,16 @@ import {
   RefreshCw,
   HardDrive,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
-import { Modal, ModalBody, ModalFooter } from '../ui/Modal'
-import Button from '../ui/Button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  Button,
+} from '../ui'
 import { useAuthStore } from '../../stores/authStore'
 import { useLogbookStore } from '../../stores/logbookStore'
 import { useRepertoireStore } from '../../stores/repertoireStore'

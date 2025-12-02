@@ -13,8 +13,12 @@ import {
 import { cn } from '@/utils/cn'
 import { formatDuration } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
-import { MusicTitle, MusicComposer } from './Typography'
-import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu'
+import {
+  MusicTitle,
+  MusicComposer,
+  DropdownMenu,
+  type DropdownMenuItem,
+} from '@mirubato/ui'
 
 interface CompactEntryRowProps {
   time: string

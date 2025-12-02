@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import GoogleSignInButton from '../GoogleSignInButton'
-import { Modal } from '../ui/Modal'
-import Button from '../ui/Button'
-import { Input } from '../ui/Input'
+import { Modal, Button, Input } from '../ui'
 
 interface SignInModalProps {
   isOpen: boolean

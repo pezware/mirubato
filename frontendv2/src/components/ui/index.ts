@@ -1,64 +1,68 @@
-// UI Component Library Exports
+// UI Component Library - Re-exports from @mirubato/ui plus frontendv2-specific components
+// This file maintains backward compatibility while transitioning to the shared package
 
-export { default as Button } from './Button'
-export type { ButtonProps } from './Button'
-
+// Re-export all shared components from @mirubato/ui
 export {
+  // Utilities
+  cn,
+  // Components
+  Autocomplete,
+  Button,
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
   CardFooter,
-} from './Card'
-
-export { Input, Textarea } from './Input'
-export type { InputProps, TextareaProps } from './Input'
-
-export { Loading, LoadingSkeleton, LoadingOverlay } from './Loading'
-
-export { Modal, ModalBody, ModalFooter } from './Modal'
-
-export { Select, MultiSelect } from './Select'
-export type { SelectOption } from './Select'
-
-export { Toast, ToastContainer } from './Toast'
-export type { ToastProps, UseToastReturn } from './Toast'
-
-export { default as Tag } from './Tag'
-
-export { default as Autocomplete } from './Autocomplete'
-
-export { default as ProgressiveImage } from './ProgressiveImage'
-
-export { default as TimelineNav } from './TimelineNav'
-
-export { PeriodSelector } from './PeriodSelector'
-export type { PeriodLevel, PeriodDate, PeriodStats } from './PeriodSelector'
-
-export { DropdownMenu } from './DropdownMenu'
-export type { DropdownMenuItem } from './DropdownMenu'
-
-export { Tabs } from './Tabs'
-
-export { SegmentedControl } from './SegmentedControl'
-export type { SegmentOption } from './SegmentedControl'
-
-export {
+  ClockTimePicker,
+  DateSeparator,
+  DropdownMenu,
+  FormError,
+  Input,
+  Textarea,
+  Loading,
+  LoadingSkeleton,
+  LoadingOverlay,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  PeriodSelector,
+  ProgressiveImage,
+  ResizableSplitView,
+  SegmentedControl,
+  Select,
+  MultiSelect,
+  Tabs,
+  Tag,
+  TimelineNav,
+  TimePicker,
+  Toast,
+  ToastContainer,
   Typography,
   MusicTitle,
   MusicComposer,
   MusicMetadata,
   MusicTitleLarge,
   MusicComposerLarge,
-} from './Typography'
-export type { TypographyProps } from './Typography'
+} from '@mirubato/ui'
 
-export { ResizableSplitView } from './ResizableSplitView'
+// Re-export types from @mirubato/ui
+export type {
+  ButtonProps,
+  DropdownMenuItem,
+  InputProps,
+  TextareaProps,
+  PeriodLevel,
+  PeriodDate,
+  PeriodStats,
+  SegmentOption,
+  SelectOption,
+  ToastProps,
+  UseToastReturn,
+  TypographyProps,
+} from '@mirubato/ui'
+
+// Frontendv2-specific components (have business logic dependencies)
 export { EntryDetailPanel } from './EntryDetailPanel'
-export { DateSeparator } from './DateSeparator'
 export { CompactEntryRow } from './CompactEntryRow'
-
 export { ToastProvider } from './ToastProvider'
-export { default as TimePicker } from './TimePicker'
-export { default as ClockTimePicker } from './ClockTimePicker'

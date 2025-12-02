@@ -1,4 +1,4 @@
-import Button, { type ButtonProps } from './Button'
+import { Button, type ButtonProps } from '@mirubato/ui'
 import { useClickProtection } from '@/hooks/useSubmissionProtection'
 
 interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {

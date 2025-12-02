@@ -1,5 +1,5 @@
 import React from 'react'
-import type { ButtonProps } from './Button'
+import type { ButtonProps } from '@mirubato/ui'
 import ProtectedButton from './ProtectedButton'
 
 interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {

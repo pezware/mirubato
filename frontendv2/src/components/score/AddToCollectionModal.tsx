@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { scoreService } from '../../services/scoreService'
 import { Collection } from '../../types/collections'
-import Button from '../ui/Button'
-import Tag from '../ui/Tag'
+import { Button, Tag } from '../ui'
 import { cn } from '../../utils/cn'
 
 interface AddToCollectionModalProps {

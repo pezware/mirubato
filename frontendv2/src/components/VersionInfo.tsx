@@ -13,8 +13,7 @@ import {
   getFormattedBuildDate,
   getGitHubCommitUrl,
 } from '../utils/buildInfo'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
-import Button from './ui/Button'
+import { Card, CardContent, CardHeader, CardTitle, Button } from './ui'
 
 interface VersionInfoProps {
   className?: string

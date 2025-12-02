@@ -1,10 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Modal } from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
-import { Input, Textarea } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
-import { Card } from '@/components/ui/Card'
+import { Modal, Button, Input, Textarea, Select, Card } from '@/components/ui'
 import { showToast } from '@/utils/toastManager'
 import { Goal, GoalType, GoalStatus } from '@/api/goals'
 

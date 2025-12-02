@@ -17,3 +17,5 @@ export function FormError({ error, className = '' }: FormErrorProps) {
     </div>
   )
 }
+
+export default FormError

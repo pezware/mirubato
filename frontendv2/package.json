@@ -26,6 +26,7 @@
     "translate:missing": "node scripts/translate-missing.cjs"
   },
   "dependencies": {
+    "@mirubato/ui": "workspace:*",
     "@headlessui/react": "^2.2.4",
     "@tabler/icons-react": "3.34.1",
     "@types/react-router-dom": "^5.3.3",

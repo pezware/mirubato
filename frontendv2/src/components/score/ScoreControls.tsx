@@ -8,7 +8,7 @@ import {
   type VisualCallback,
 } from '../../services/metronomeService'
 import CollapsibleMetronome from '../metronome/CollapsibleMetronome'
-import Button from '../ui/Button'
+import { Button } from '../ui'
 import {
   ChevronUp,
   ChevronDown,

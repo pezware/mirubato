@@ -3,13 +3,16 @@ import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useLogbookStore } from '@/stores/logbookStore'
-import { Modal } from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
-import { Select } from '@/components/ui/Select'
-import { Input, Textarea } from '@/components/ui/Input'
-import { Card } from '@/components/ui/Card'
-import { Loading } from '@/components/ui/Loading'
-import Autocomplete from '@/components/ui/Autocomplete'
+import {
+  Modal,
+  Button,
+  Select,
+  Input,
+  Textarea,
+  Card,
+  Loading,
+  Autocomplete,
+} from '@/components/ui'
 import { useAutocomplete } from '@/hooks/useAutocomplete'
 import { showToast } from '@/utils/toastManager'
 import { RepertoireStatus } from '@/api/repertoire'

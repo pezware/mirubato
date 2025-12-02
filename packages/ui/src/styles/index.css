@@ -1,0 +1,237 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Force light theme throughout the app until proper theme system is implemented
+   TODO: Replace this with a proper theme switcher (dark/light/system) in the future */
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+  html {
+    color-scheme: light !important;
+  }
+
+  body {
+    @apply bg-white text-morandi-stone-700;
+  }
+
+  /* Override dark mode styles for UI components */
+  .dark\:bg-gray-800 {
+    background-color: white !important;
+  }
+
+  .dark\:border-gray-700,
+  .dark\:border-gray-600 {
+    border-color: rgb(229 231 235) !important; /* gray-200 */
+  }
+
+  .dark\:text-gray-100,
+  .dark\:text-gray-300,
+  .dark\:text-gray-400 {
+    color: rgb(75 85 99) !important; /* gray-600 */
+  }
+}
+
+@layer components {
+  /* Legacy button styles for backward compatibility */
+  .btn-primary {
+    @apply px-6 py-3 bg-morandi-sage-500 text-white font-medium rounded-lg hover:bg-morandi-sage-400 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg;
+  }
+
+  .btn-accent {
+    @apply px-6 py-3 bg-gradient-to-r from-morandi-sage-400 to-morandi-sage-500 text-white font-medium rounded-lg hover:from-morandi-sage-500 hover:to-morandi-sage-400 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 border border-morandi-stone-300 text-morandi-stone-600 rounded-lg hover:bg-morandi-stone-100 transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 text-morandi-stone-600 hover:text-morandi-stone-700 hover:bg-morandi-stone-100 rounded-lg transition-all duration-200;
+  }
+
+  /* Form inputs */
+  .input {
+    @apply w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent transition-all duration-200;
+  }
+
+  .textarea {
+    @apply w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent resize-none transition-all duration-200;
+  }
+
+  /* Cards and panels */
+  .card {
+    @apply p-6 bg-white rounded-lg shadow-sm border border-morandi-stone-200;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-md transition-all duration-200;
+  }
+
+  .glass-panel {
+    @apply bg-white/90 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl;
+  }
+
+  /* Backgrounds */
+  .hero-gradient {
+    @apply bg-gradient-to-br from-morandi-sage-100 via-white to-morandi-sand-100;
+  }
+
+  /* Badges and tags */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-sage {
+    @apply badge bg-morandi-sage-100 text-morandi-stone-700;
+  }
+
+  .badge-sand {
+    @apply badge bg-morandi-sand-100 text-morandi-stone-700;
+  }
+
+  .badge-sky {
+    @apply badge bg-morandi-sky-100 text-morandi-stone-700;
+  }
+
+  .badge-blush {
+    @apply badge bg-morandi-blush-100 text-morandi-stone-700;
+  }
+
+  /* Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Time and Date Input Styling */
+  input[type='time'],
+  input[type='date'] {
+    color-scheme: light;
+    accent-color: #94a37b; /* Morandi sage color for browser elements */
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  input[type='time']::-webkit-calendar-picker-indicator,
+  input[type='date']::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer opacity-60 hover:opacity-100;
+    filter: invert(0.4) sepia(1) saturate(0.7) hue-rotate(60deg) brightness(0.9);
+  }
+
+  input[type='time']::-webkit-datetime-edit,
+  input[type='date']::-webkit-datetime-edit {
+    @apply text-morandi-stone-700;
+  }
+
+  input[type='time']::-webkit-datetime-edit-fields-wrapper,
+  input[type='date']::-webkit-datetime-edit-fields-wrapper {
+    @apply text-morandi-stone-700;
+  }
+
+  input[type='time']::-webkit-datetime-edit-hour-field,
+  input[type='time']::-webkit-datetime-edit-minute-field,
+  input[type='time']::-webkit-datetime-edit-ampm-field,
+  input[type='date']::-webkit-datetime-edit-day-field,
+  input[type='date']::-webkit-datetime-edit-month-field,
+  input[type='date']::-webkit-datetime-edit-year-field {
+    @apply text-morandi-stone-700 focus:bg-morandi-sage-100 focus:outline-none rounded px-1;
+  }
+
+  /* Time picker specific styling for WebKit */
+  input[type='time']::-webkit-datetime-edit-hour-field:focus,
+  input[type='time']::-webkit-datetime-edit-minute-field:focus,
+  input[type='time']::-webkit-datetime-edit-ampm-field:focus {
+    background-color: #94a37b !important; /* Morandi sage */
+    color: white !important;
+  }
+
+  /* Try to override the time picker popup colors */
+  input[type='time']::-webkit-time-picker-indicator {
+    @apply cursor-pointer;
+    filter: invert(0.4) sepia(1) saturate(0.7) hue-rotate(60deg) brightness(0.9);
+  }
+
+  /* Firefox */
+  input[type='time']::-moz-focus-inner,
+  input[type='date']::-moz-focus-inner {
+    @apply border-0;
+  }
+
+  /* Ensure mobile time picker doesn't overflow */
+  @media (max-width: 640px) {
+    input[type='time'] {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  /* Thin scrollbar with auto-hide behavior */
+  .scrollbar-thin-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb transparent;
+  }
+
+  .scrollbar-thin-auto::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  .scrollbar-thin-auto::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin-auto::-webkit-scrollbar-thumb {
+    background-color: #e5e7eb;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin-auto:hover::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+  }
+
+  /* Touch-friendly scrolling for mobile devices */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    scrollbar-gutter: stable both-edges;
+  }
+
+  /* Optional: Contain overscroll behavior */
+  .overscroll-contain {
+    overscroll-behavior: contain;
+  }
+}

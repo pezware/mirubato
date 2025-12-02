@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight, Clock, Music, Calendar } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import type { SegmentOption } from './SegmentedControl'
-import { cn } from '../../utils/cn'
-import { formatDuration } from '../../utils/dateUtils'
+import { cn } from '../utils/cn'
+import { formatDuration } from '../utils/dateUtils'
 
 export type PeriodLevel = 'week' | 'month' | 'year'
 
