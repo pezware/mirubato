@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
+import { scoreService } from '../../services/scoreService'
+import type { Collection } from '../../types/collections'
 import Button from '../ui/Button'
 import Tag from '../ui/Tag'
 import { Input } from '../ui/Input'
@@ -33,8 +35,13 @@ export default function CollectionsManager({
   const [isCreating, setIsCreating] = useState(false)
   const [newCollectionName, setNewCollectionName] = useState('')
   const [newCollectionPublic, setNewCollectionPublic] = useState(false)
-  const [activeTab, setActiveTab] = useState<'my' | 'featured'>('my')
+  const [activeTab, setActiveTab] = useState<'my' | 'shared' | 'featured'>('my')
   const [error, setError] = useState<string | null>(null)
+  const [sharedCollections, setSharedCollections] = useState<Collection[]>([])
+  const [initialCollectionIds, setInitialCollectionIds] = useState<Set<string>>(
+    new Set()
+  )
+  const [isSaving, setIsSaving] = useState(false)
 
   // Load collections on mount
   useEffect(() => {
@@ -42,19 +49,43 @@ export default function CollectionsManager({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const loadCollections = async () => {
+  const loadCollections = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
       // Load collections in parallel
-      await Promise.all([loadUserCollections(), loadFeaturedCollections()])
+      const promises: Promise<unknown>[] = [
+        loadUserCollections(),
+        loadFeaturedCollections(),
+      ]
 
-      // TODO: Load shared collections when API is ready
+      // Load shared collections
+      promises.push(
+        scoreService
+          .getSharedCollections()
+          .then(collections => setSharedCollections(collections))
+          .catch(() => setSharedCollections([]))
+      )
 
       // If we have a scoreId, load which collections it belongs to
       if (scoreId) {
-        // TODO: Load score's collections
+        promises.push(
+          scoreService
+            .getScoreCollections(scoreId)
+            .then(collectionIds => {
+              const ids = new Set(collectionIds)
+              setSelectedCollections(ids)
+              setInitialCollectionIds(ids)
+            })
+            .catch(() => {
+              // If loading fails, start with empty selection
+              setSelectedCollections(new Set())
+              setInitialCollectionIds(new Set())
+            })
+        )
       }
+
+      await Promise.all(promises)
     } catch (err) {
       console.error('Failed to load collections:', err)
       setError(
@@ -63,7 +94,7 @@ export default function CollectionsManager({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [scoreId, loadUserCollections, loadFeaturedCollections, t])
 
   const handleCreateCollection = async () => {
     if (!newCollectionName.trim()) return
@@ -105,16 +136,58 @@ export default function CollectionsManager({
   const handleSave = async () => {
     if (!scoreId) return
 
-    // TODO: Update score's collections
-    console.log('Saving score to collections:', Array.from(selectedCollections))
+    setIsSaving(true)
+    setError(null)
 
-    if (onClose) onClose()
+    try {
+      // Determine which collections to add and remove
+      const collectionsToAdd = Array.from(selectedCollections).filter(
+        id => !initialCollectionIds.has(id)
+      )
+      const collectionsToRemove = Array.from(initialCollectionIds).filter(
+        id => !selectedCollections.has(id)
+      )
+
+      // Execute add/remove operations in parallel
+      const operations: Promise<void>[] = []
+
+      for (const collectionId of collectionsToAdd) {
+        operations.push(
+          scoreService.addScoreToCollection(collectionId, scoreId)
+        )
+      }
+
+      for (const collectionId of collectionsToRemove) {
+        operations.push(
+          scoreService.removeScoreFromCollection(collectionId, scoreId)
+        )
+      }
+
+      await Promise.all(operations)
+
+      // Reload user collections to update counts
+      await loadUserCollections()
+
+      if (onClose) onClose()
+    } catch (err) {
+      console.error('Failed to update score collections:', err)
+      setError(
+        t(
+          'scorebook:errors.updateCollections',
+          'Failed to update collections. Please try again.'
+        )
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   // Filter collections by tab
   const filteredCollections = (() => {
     if (activeTab === 'my') {
       return userCollections
+    } else if (activeTab === 'shared') {
+      return sharedCollections
     } else if (activeTab === 'featured') {
       return featuredCollections
     }
@@ -155,6 +228,18 @@ export default function CollectionsManager({
           )}
         >
           {t('scorebook:myCollections', 'My Collections')}
+        </Button>
+        <Button
+          onClick={() => setActiveTab('shared')}
+          variant="ghost"
+          className={cn(
+            'flex-1 rounded-none px-4 py-2 text-sm font-medium transition-colors',
+            activeTab === 'shared'
+              ? 'text-morandi-sage-600 border-b-2 border-morandi-sage-500'
+              : 'text-morandi-stone-600 hover:text-morandi-stone-800'
+          )}
+        >
+          {t('scorebook:sharedWithMe', 'Shared')}
         </Button>
         <Button
           onClick={() => setActiveTab('featured')}
@@ -277,6 +362,14 @@ export default function CollectionsManager({
                       </p>
                     </>
                   )}
+                  {activeTab === 'shared' && (
+                    <p>
+                      {t(
+                        'scorebook:noSharedCollections',
+                        'No collections have been shared with you'
+                      )}
+                    </p>
+                  )}
                   {activeTab === 'featured' && (
                     <p>
                       {t(
@@ -353,10 +446,12 @@ export default function CollectionsManager({
       {scoreId && (
         <div className="p-3 sm:p-4 border-t border-morandi-stone-200">
           <div className="flex justify-end gap-3">
-            <Button variant="ghost" onClick={onClose}>
+            <Button variant="ghost" onClick={onClose} disabled={isSaving}>
               {t('common:cancel', 'Cancel')}
             </Button>
-            <Button onClick={handleSave}>{t('common:save', 'Save')}</Button>
+            <Button onClick={handleSave} loading={isSaving} disabled={isSaving}>
+              {t('common:save', 'Save')}
+            </Button>
           </div>
         </div>
       )}
