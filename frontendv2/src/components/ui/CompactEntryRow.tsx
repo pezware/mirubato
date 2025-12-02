@@ -10,8 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react'
-import { cn } from '@/utils/cn'
-import { formatDuration } from '@/utils/dateUtils'
+import { cn, formatDuration } from '@mirubato/ui'
 import { toTitleCase } from '@/utils/textFormatting'
 import {
   MusicTitle,

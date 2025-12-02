@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
 import { scoreService } from '../../services/scoreService'
 import type { Collection } from '../../types/collections'
-import { Button, Tag, Input } from '../ui'
-import { cn } from '../../utils/cn'
+import { Button, Tag, Input, cn } from '../ui'
 import { X } from 'lucide-react'
 
 interface CollectionsManagerProps {

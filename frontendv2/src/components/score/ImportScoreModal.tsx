@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Modal, Button, Input, Select } from '../ui'
+import { Modal, Button, Input, Select, cn } from '../ui'
 import { scoreService } from '../../services/scoreService'
 import type { Score } from '../../services/scoreService'
 import type { Collection } from '../../types/collections'
-import { cn } from '../../utils/cn'
 import {
   FileText,
   Image,

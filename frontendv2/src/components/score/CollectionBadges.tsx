@@ -1,5 +1,5 @@
 import { Collection } from '../../types/collections'
-import { cn } from '../../utils/cn'
+import { cn } from '../ui'
 import { useNavigate } from 'react-router-dom'
 
 interface CollectionBadgesProps {

@@ -11,8 +11,7 @@ import {
   BarChart3,
 } from 'lucide-react'
 import type { PlanningAnalyticsData } from '@/hooks/usePlanningAnalytics'
-import { Card, Typography, Tag } from '@/components/ui'
-import { cn } from '@/utils/cn'
+import { Card, Typography, Tag, cn } from '@/components/ui'
 import { format, parseISO } from 'date-fns'
 
 interface PlanningAnalyticsPanelProps {

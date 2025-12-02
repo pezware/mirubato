@@ -5,6 +5,8 @@
 export {
   // Utilities
   cn,
+  formatDuration,
+  formatDurationLong,
   // Components
   Autocomplete,
   Button,

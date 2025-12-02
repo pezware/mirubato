@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import * as Tone from 'tone'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
-import { cn } from '../../utils/cn'
+import { cn } from '../ui'
 import {
   getMetronome,
   type VisualCallback,

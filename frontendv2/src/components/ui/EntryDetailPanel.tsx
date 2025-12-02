@@ -23,9 +23,9 @@ import {
   DropdownMenu,
   type DropdownMenuItem,
 } from '@mirubato/ui'
-import { formatDuration, formatDateSeparator } from '@/utils/dateUtils'
+import { formatDateSeparator } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
-import { cn } from '@/utils/cn'
+import { cn, formatDuration } from '@mirubato/ui'
 
 interface EntryDetailPanelProps {
   entry: LogbookEntry | null
