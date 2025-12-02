@@ -48,6 +48,7 @@ export {
 
 // Re-export types from @mirubato/ui
 export type {
+  AutocompleteOption,
   ButtonProps,
   DropdownMenuItem,
   InputProps,
@@ -66,3 +67,11 @@ export type {
 export { EntryDetailPanel } from './EntryDetailPanel'
 export { CompactEntryRow } from './CompactEntryRow'
 export { ToastProvider } from './ToastProvider'
+
+// Protected button components (prevent double-clicks/submissions)
+export { default as ProtectedButton } from './ProtectedButton'
+export {
+  createProtectedButton,
+  LogPracticeButton,
+  SubmitButton,
+} from './ProtectedButtonFactory'

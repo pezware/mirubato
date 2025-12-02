@@ -22,7 +22,7 @@ import {
   MusicComposer,
   DropdownMenu,
   type DropdownMenuItem,
-} from '@/components/ui'
+} from '@mirubato/ui'
 import { formatDuration, formatDateSeparator } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { cn } from '@/utils/cn'
