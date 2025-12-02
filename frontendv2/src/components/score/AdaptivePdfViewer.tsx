@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import PdfViewer, { type PdfError } from './PdfViewer'
 import ImageBasedPdfViewer from './ImageBasedPdfViewer'
 import ImageScoreViewer from './ImageScoreViewer'
@@ -16,6 +16,13 @@ interface AdaptivePdfViewerProps {
   forcePdfViewer?: boolean // For testing or specific use cases
 }
 
+interface RenderStatus {
+  preRenderedPages: number[]
+  preRenderedCount: number
+  browserAvailable: boolean
+  renderingEnabled: boolean
+}
+
 export default function AdaptivePdfViewer({
   scoreId,
   currentPage = 1,
@@ -30,6 +37,8 @@ export default function AdaptivePdfViewer({
   const [isImageBasedScore, setIsImageBasedScore] = useState(false)
   const [totalPages, setTotalPages] = useState<number | undefined>()
   const [errorCount, setErrorCount] = useState(0)
+  const [renderStatus, setRenderStatus] = useState<RenderStatus | null>(null)
+  const [viewerReady, setViewerReady] = useState(false)
   const maxRetries = 3
 
   // Memoize PDF URL to prevent re-renders
@@ -40,24 +49,40 @@ export default function AdaptivePdfViewer({
     return ''
   }, [scoreId, useImageViewer, isImageBasedScore])
 
-  // Reset error count when scoreId changes
+  // Reset state when scoreId changes
   useEffect(() => {
     setErrorCount(0)
+    setViewerReady(false)
+    setRenderStatus(null)
   }, [scoreId])
 
-  // Detect device and capabilities
+  // Check render status to determine best viewer strategy
+  const checkRenderStatus = useCallback(async () => {
+    try {
+      const status = await scoreService.getRenderStatus(scoreId)
+      setRenderStatus(status)
+      return status
+    } catch (error) {
+      console.warn('Failed to fetch render status:', error)
+      return null
+    }
+  }, [scoreId])
+
+  // Detect device and capabilities with improved logic
   useEffect(() => {
     const detectViewerMode = async () => {
       // When forcePdfViewer is true, we know it's a PDF - skip everything
       if (forcePdfViewer) {
         setUseImageViewer(false)
-        setIsImageBasedScore(false) // Explicitly set to false
+        setIsImageBasedScore(false)
+        setViewerReady(true)
         return
       }
 
       // Check for forced image viewer
       if (forceImageViewer) {
         setUseImageViewer(true)
+        setViewerReady(true)
         return
       }
 
@@ -69,6 +94,7 @@ export default function AdaptivePdfViewer({
           score.source_type === 'multi-image'
         ) {
           setIsImageBasedScore(true)
+          setViewerReady(true)
           return // Always use ImageScoreViewer for image-based scores
         }
       } catch (error) {
@@ -79,45 +105,36 @@ export default function AdaptivePdfViewer({
       if (DeviceDetection.isLocalDevelopment()) {
         console.log('Local development detected - using PDF viewer')
         setUseImageViewer(false)
+        setViewerReady(true)
         return
       }
 
-      // TEMPORARY: Disable image viewer due to browser rendering instability
-      // TODO: Re-enable once browser rendering is more stable or implement pre-rendering
-      console.log('Using PDF viewer - image rendering temporarily disabled')
-      setUseImageViewer(false)
-      return
+      // Check render status to see if pre-rendered pages are available
+      const status = await checkRenderStatus()
 
-      // Use device detection to determine viewer mode
-      const deviceScore = DeviceDetection.getDeviceScore()
-      const shouldUseImage = DeviceDetection.shouldUseImageViewer()
-
-      console.log(
-        `Device score: ${deviceScore}, using image viewer: ${shouldUseImage}`
-      )
-
-      // Check if the browser supports required APIs
-      const hasRequiredAPIs = DeviceDetection.hasRequiredAPIs()
-
-      // Decision logic
-      if (shouldUseImage || !hasRequiredAPIs) {
-        // Use image viewer for low-capability devices or browsers
+      // If we have pre-rendered pages available, prefer image viewer for performance
+      if (status && status.preRenderedCount > 0) {
+        console.log(
+          `Pre-rendered pages available (${status.preRenderedCount}), using image viewer`
+        )
         setUseImageViewer(true)
+        setTotalPages(status.preRenderedCount)
+        setViewerReady(true)
+        return
+      }
 
-        // Try to get metadata for total pages
-        try {
-          const metadata = await scoreService.getScoreMetadata(scoreId)
-          setTotalPages(metadata.numPages)
-        } catch (error) {
-          // If metadata fails, we'll let the image viewer handle it
-          console.warn('Failed to fetch score metadata:', error)
-        }
-      } else {
-        // Desktop with good resources - check user preference
-        const preferImageViewer =
-          localStorage.getItem('preferImageViewer') === 'true'
+      // If browser rendering is available and healthy, use image viewer on mobile
+      if (status?.browserAvailable && status?.renderingEnabled) {
+        const shouldUseImage = DeviceDetection.shouldUseImageViewer()
+        const hasRequiredAPIs = DeviceDetection.hasRequiredAPIs()
+        const deviceScore = DeviceDetection.getDeviceScore()
 
-        if (preferImageViewer) {
+        console.log(
+          `Device score: ${deviceScore}, should use image: ${shouldUseImage}, has APIs: ${hasRequiredAPIs}`
+        )
+
+        if (shouldUseImage || !hasRequiredAPIs) {
+          // Use image viewer for mobile/low-capability devices
           setUseImageViewer(true)
           try {
             const metadata = await scoreService.getScoreMetadata(scoreId)
@@ -125,37 +142,93 @@ export default function AdaptivePdfViewer({
           } catch (error) {
             console.warn('Failed to fetch score metadata:', error)
           }
-        } else {
-          // Default to PDF viewer on desktop
-          setUseImageViewer(false)
+          setViewerReady(true)
+          return
         }
       }
+
+      // Check user preference for image viewer
+      const preferImageViewer =
+        localStorage.getItem('preferImageViewer') === 'true'
+
+      if (preferImageViewer && status?.browserAvailable) {
+        setUseImageViewer(true)
+        try {
+          const metadata = await scoreService.getScoreMetadata(scoreId)
+          setTotalPages(metadata.numPages)
+        } catch (error) {
+          console.warn('Failed to fetch score metadata:', error)
+        }
+      } else {
+        // Default to PDF viewer (client-side rendering)
+        setUseImageViewer(false)
+      }
+
+      setViewerReady(true)
     }
 
     detectViewerMode()
-  }, [scoreId, forceImageViewer, forcePdfViewer])
+  }, [scoreId, forceImageViewer, forcePdfViewer, checkRenderStatus])
 
-  // Common error handler that works with both viewer types
-  const handleError = (error: PdfError | { message: string; type: string }) => {
-    console.error('Viewer error:', error)
+  // Common error handler with improved fallback logic
+  const handleError = useCallback(
+    (error: PdfError | { message: string; type: string }) => {
+      console.error('Viewer error:', error)
 
-    // Increment error count
-    setErrorCount(prev => prev + 1)
+      // Increment error count
+      const newErrorCount = errorCount + 1
+      setErrorCount(newErrorCount)
 
-    // If we've exceeded max retries, stop trying
-    if (errorCount >= maxRetries) {
-      console.error(`Max retries (${maxRetries}) exceeded, stopping`)
+      // If we've exceeded max retries, stop trying
+      if (newErrorCount >= maxRetries) {
+        console.error(`Max retries (${maxRetries}) exceeded, stopping`)
+        onError?.(error)
+        return
+      }
+
+      // If image viewer fails, try PDF viewer as fallback
+      if (useImageViewer && !forcePdfViewer) {
+        console.log('Image viewer failed, falling back to PDF viewer')
+        setUseImageViewer(false)
+        return // Don't propagate error yet, we're trying fallback
+      }
+
+      // If PDF viewer fails and browser rendering is available, try image viewer
+      if (
+        !useImageViewer &&
+        renderStatus?.browserAvailable &&
+        !forceImageViewer
+      ) {
+        console.log('PDF viewer failed, trying image viewer as fallback')
+        setUseImageViewer(true)
+        return // Don't propagate error yet, we're trying fallback
+      }
+
       onError?.(error)
-      return
-    }
+    },
+    [
+      errorCount,
+      maxRetries,
+      useImageViewer,
+      forcePdfViewer,
+      forceImageViewer,
+      renderStatus,
+      onError,
+    ]
+  )
 
-    // If image viewer fails, try PDF viewer as fallback
-    if (useImageViewer && !forcePdfViewer) {
-      console.log('Image viewer failed, falling back to PDF viewer')
-      setUseImageViewer(false)
-    }
-
-    onError?.(error)
+  // Show loading state while detecting viewer mode
+  if (!viewerReady) {
+    return (
+      <div className={`adaptive-pdf-viewer ${className}`}>
+        <div className="flex items-center justify-center p-8 min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p className="text-sm text-gray-600">Loading viewer...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Render appropriate viewer
