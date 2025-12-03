@@ -84,6 +84,7 @@ export default function Profile() {
           activeTab={activeTab}
           onTabChange={handleTabChange}
           className="mb-3 sm:mb-4"
+          ariaLabel={t('profile:tabs.navigation', 'Profile navigation')}
         />
 
         {/* Tab Content */}

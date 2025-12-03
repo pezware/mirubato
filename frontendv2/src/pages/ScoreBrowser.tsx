@@ -892,6 +892,7 @@ export default function ScoreBrowserPage() {
           activeTab={tabView}
           onTabChange={tabId => setTabView(tabId as TabView)}
           className="mb-6"
+          ariaLabel={t('scorebook:tabs.navigation', 'Scorebook navigation')}
         />
 
         <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200">

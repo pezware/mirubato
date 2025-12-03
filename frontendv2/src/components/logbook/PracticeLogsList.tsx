@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Clock } from 'lucide-react'
 import { LogbookEntry } from '@/api/logbook'
 import { CompactEntryRow, DateSeparator, PeriodSelector } from '@/components/ui'
-import type { PeriodLevel } from '@/components/ui'
+import type { PeriodLevel, PeriodSelectorLabels } from '@/components/ui'
 import { formatDuration, formatDateSeparator } from '@/utils/dateUtils'
 
 // Using PeriodLevel from PeriodSelector component
@@ -42,6 +42,50 @@ export function PracticeLogsList({
     month: number
     week: number
   } | null>(null)
+
+  // Labels for PeriodSelector component
+  const periodSelectorLabels: PeriodSelectorLabels = useMemo(
+    () => ({
+      periodLevels: {
+        week: t('common:time.week'),
+        month: t('common:time.month'),
+        year: t('common:time.year'),
+      },
+      months: [
+        t('common:months.january'),
+        t('common:months.february'),
+        t('common:months.march'),
+        t('common:months.april'),
+        t('common:months.may'),
+        t('common:months.june'),
+        t('common:months.july'),
+        t('common:months.august'),
+        t('common:months.september'),
+        t('common:months.october'),
+        t('common:months.november'),
+        t('common:months.december'),
+      ],
+      navigation: {
+        prevWeek: t('logbook:periodSelector.prevWeek'),
+        prevMonth: t('logbook:periodSelector.prevMonth'),
+        prevYear: t('logbook:periodSelector.prevYear'),
+        nextWeek: t('logbook:periodSelector.nextWeek'),
+        nextMonth: t('logbook:periodSelector.nextMonth'),
+        nextYear: t('logbook:periodSelector.nextYear'),
+      },
+      viewBy: t('logbook:periodSelector.viewBy'),
+      stats: {
+        sessions: t('logbook:periodSelector.sessions'),
+        totalTime: t('logbook:periodSelector.totalTime'),
+        pieces: t('logbook:periodSelector.pieces'),
+      },
+      segmentedControlAriaLabel: t(
+        'logbook:periodSelector.ariaLabel',
+        'Period selection'
+      ),
+    }),
+    [t]
+  )
 
   // Format time for display
   const formatTime = useCallback(
@@ -265,6 +309,8 @@ export function PracticeLogsList({
           onLevelChange={setSelectedLevel}
           onPrevious={handlePrevious}
           onNext={handleNext}
+          labels={periodSelectorLabels}
+          locale={i18n.language}
         />
       )}
 

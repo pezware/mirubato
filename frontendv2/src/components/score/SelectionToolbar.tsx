@@ -55,21 +55,22 @@ export default function SelectionToolbar({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         {/* Selection info and toggle */}
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={allSelected ? onDeselectAll : onSelectAll}
-            className="flex items-center gap-2 text-sm text-morandi-sage-700 hover:text-morandi-sage-900 transition-colors"
+            leftIcon={
+              allSelected ? (
+                <CheckSquare className="w-5 h-5" />
+              ) : (
+                <Square className="w-5 h-5" />
+              )
+            }
           >
-            {allSelected ? (
-              <CheckSquare className="w-5 h-5" />
-            ) : (
-              <Square className="w-5 h-5" />
-            )}
-            <span>
-              {allSelected
-                ? t('scorebook:deselectAll', 'Deselect all')
-                : t('scorebook:selectAll', 'Select all')}
-            </span>
-          </button>
+            {allSelected
+              ? t('scorebook:deselectAll', 'Deselect all')
+              : t('scorebook:selectAll', 'Select all')}
+          </Button>
 
           <span className="text-sm font-medium text-morandi-sage-800">
             {t('scorebook:selectedCount', '{{count}} selected', {
@@ -77,13 +78,14 @@ export default function SelectionToolbar({
             })}
           </span>
 
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={onDeselectAll}
-            className="p-1 text-morandi-sage-600 hover:text-morandi-sage-800 hover:bg-morandi-sage-100 rounded transition-colors"
             title={t('scorebook:clearSelection', 'Clear selection')}
           >
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Actions */}

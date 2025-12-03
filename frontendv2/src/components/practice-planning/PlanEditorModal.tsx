@@ -894,6 +894,10 @@ export function PlanEditorModal({
                 setScheduleKind(value as 'single' | 'recurring')
               }
               fullWidth
+              ariaLabel={t(
+                'reports:planningEditor.scheduleKind',
+                'Schedule type'
+              )}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

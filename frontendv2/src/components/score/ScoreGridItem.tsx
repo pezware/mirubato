@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Score } from '../../services/scoreService'
 import type { Collection } from '../../types/collections'
-import { MusicTitle, MusicComposer, cn } from '../ui'
+import { Button, MusicTitle, MusicComposer, cn } from '../ui'
 import { scoreService } from '../../services/scoreService'
 import { FolderPlus, Music, Star, CheckSquare, Square } from 'lucide-react'
 
@@ -92,12 +92,14 @@ export default function ScoreGridItem({
     >
       {/* Selection Checkbox */}
       {selectionMode && (
-        <button
+        <Button
+          variant="icon"
+          size="icon-sm"
           onClick={handleCheckboxClick}
           className={cn(
-            'absolute top-2 left-2 z-10 p-1 rounded transition-colors',
+            'absolute top-2 left-2 z-10',
             isSelected
-              ? 'bg-morandi-sage-500 text-white'
+              ? 'bg-morandi-sage-500 text-white hover:bg-morandi-sage-600'
               : 'bg-white/90 text-morandi-stone-600 hover:bg-white'
           )}
         >
@@ -106,7 +108,7 @@ export default function ScoreGridItem({
           ) : (
             <Square className="w-5 h-5" />
           )}
-        </button>
+        </Button>
       )}
 
       {/* Thumbnail */}
@@ -134,10 +136,12 @@ export default function ScoreGridItem({
             )}
           >
             {onToggleFavorite && (
-              <button
+              <Button
+                variant="icon"
+                size="icon-md"
                 onClick={handleToggleFavorite}
                 className={cn(
-                  'p-2 rounded-full transition-colors',
+                  'rounded-full',
                   isFavorited
                     ? 'bg-amber-500 text-white hover:bg-amber-600'
                     : 'bg-white/90 text-morandi-stone-700 hover:bg-white'
@@ -155,16 +159,18 @@ export default function ScoreGridItem({
                   className="w-5 h-5"
                   fill={isFavorited ? 'currentColor' : 'none'}
                 />
-              </button>
+              </Button>
             )}
             {onAddToCollection && (
-              <button
+              <Button
+                variant="icon"
+                size="icon-md"
                 onClick={handleAddToCollection}
-                className="p-2 bg-white/90 rounded-full text-morandi-stone-700 hover:bg-white transition-colors"
+                className="bg-white/90 rounded-full text-morandi-stone-700 hover:bg-white"
                 title={t('scorebook:addToCollection', 'Add to collection')}
               >
                 <FolderPlus className="w-5 h-5" />
-              </button>
+              </Button>
             )}
           </div>
         )}

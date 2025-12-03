@@ -1,5 +1,4 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
 import { cn } from '../utils/cn'
 
 export interface SegmentOption {
@@ -15,6 +14,8 @@ export interface SegmentedControlProps {
   className?: string
   size?: 'sm' | 'md' | 'lg'
   fullWidth?: boolean
+  /** Aria label for the segmented control - required for accessibility */
+  ariaLabel: string
 }
 
 export const SegmentedControl: React.FC<SegmentedControlProps> = ({
@@ -24,8 +25,8 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   className,
   size = 'md',
   fullWidth = false,
+  ariaLabel,
 }) => {
-  const { t } = useTranslation('ui')
   const sizeClasses = {
     sm: 'p-0.5',
     md: 'p-1',
@@ -47,7 +48,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
         className
       )}
       role="tablist"
-      aria-label={t('components.segmentedControl.ariaLabel')}
+      aria-label={ariaLabel}
     >
       {options.map(option => {
         const isActive = value === option.value

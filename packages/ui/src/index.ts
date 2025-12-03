@@ -56,7 +56,10 @@ export { default as Checkbox } from './components/Checkbox'
 export type { CheckboxProps } from './components/Checkbox'
 
 export { default as ClockTimePicker } from './components/ClockTimePicker'
-export type { ClockTimePickerProps } from './components/ClockTimePicker'
+export type {
+  ClockTimePickerProps,
+  ClockTimePickerLabels,
+} from './components/ClockTimePicker'
 
 export { DateSeparator } from './components/DateSeparator'
 export type { DateSeparatorProps } from './components/DateSeparator'
@@ -93,6 +96,7 @@ export type {
   PeriodDate,
   PeriodStats,
   PeriodSelectorProps,
+  PeriodSelectorLabels,
 } from './components/PeriodSelector'
 
 export { default as ProgressiveImage } from './components/ProgressiveImage'

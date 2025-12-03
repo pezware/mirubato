@@ -909,6 +909,7 @@ const PlanningView = ({
         onTabChange={(tabId: string) =>
           setActiveTab(tabId as 'plans' | 'templates')
         }
+        ariaLabel={t('common:navigation.planTabs', 'Plan and template tabs')}
       />
 
       {/* Plans Tab Content */}
@@ -1143,6 +1144,10 @@ const PlanningView = ({
             onTabChange={(tabId: string) =>
               setTemplateSubtab(tabId as 'browse' | 'mine')
             }
+            ariaLabel={t(
+              'common:navigation.templateTabs',
+              'Template browsing tabs'
+            )}
           />
 
           {/* Browse Tab */}

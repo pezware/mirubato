@@ -1,20 +1,40 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
 import Button from './Button'
 import { useClickOutside } from '../utils/hooks'
+
+export interface ClockTimePickerLabels {
+  /** AM indicator (e.g., "AM") */
+  am: string
+  /** PM indicator (e.g., "PM") */
+  pm: string
+  /** Header title (e.g., "Select Practice Time") */
+  title: string
+  /** Hint text below clock (e.g., "Drag to set hour, tap numbers for minutes") */
+  hint: string
+  /** Tooltip for manual time entry (e.g., "Click to type manually") */
+  clickToTypeManually: string
+  /** Input placeholder (e.g., "HH:MM") */
+  placeholder: string
+  /** Cancel button label */
+  cancel: string
+  /** Confirm button label (e.g., "Set Time") */
+  confirm: string
+}
 
 export interface ClockTimePickerProps {
   value: string // HH:MM format
   onChange: (value: string) => void
   className?: string
+  /** All text labels - required for i18n support */
+  labels: ClockTimePickerLabels
 }
 
 export default function ClockTimePicker({
   value,
   onChange,
   className = '',
+  labels,
 }: ClockTimePickerProps) {
-  const { t } = useTranslation(['common', 'ui'])
   const [isOpen, setIsOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isEditingTime, setIsEditingTime] = useState(false)
@@ -42,7 +62,7 @@ export default function ClockTimePicker({
   // Format display
   const hour12 =
     tempHours === 0 ? 12 : tempHours > 12 ? tempHours - 12 : tempHours
-  const ampm = tempHours >= 12 ? t('time.pm') : t('time.am')
+  const ampm = tempHours >= 12 ? labels.pm : labels.am
   const displayTime = `${hour12}:${tempMinutes.toString().padStart(2, '0')} ${ampm}`
 
   // Adjust dropdown position when opened
@@ -252,7 +272,7 @@ export default function ClockTimePicker({
           onPointerLeave={handlePointerUp}
         >
           <h3 className="text-center text-base sm:text-lg font-medium text-gray-800 mb-3 sm:mb-4">
-            {t('timePicker.selectPracticeTime')}
+            {labels.title}
           </h3>
 
           {/* Clock face */}
@@ -422,7 +442,7 @@ export default function ClockTimePicker({
 
           {/* Hint text */}
           <p className="text-xs text-gray-500 text-center mb-3">
-            {t('timePicker.hint')}
+            {labels.hint}
           </p>
 
           {/* Digital display with AM/PM */}
@@ -436,13 +456,13 @@ export default function ClockTimePicker({
                 onBlur={handleTimeInputBlur}
                 onKeyDown={handleTimeInputKeyDown}
                 className="text-xl sm:text-2xl font-light bg-white text-gray-800 text-center rounded px-2 py-1 w-24 sm:w-28 focus:outline-none focus:ring-2 focus:ring-morandi-sage-400 border border-gray-300"
-                placeholder={t('ui:components.timePicker.placeholder')}
+                placeholder={labels.placeholder}
               />
             ) : (
               <div
                 onClick={handleTimeClick}
                 className="text-xl sm:text-2xl font-light cursor-pointer hover:bg-gray-200 rounded px-2 sm:px-3 py-1 transition-colors flex items-center gap-1"
-                title={t('timePicker.clickToTypeManually')}
+                title={labels.clickToTypeManually}
               >
                 {tempHours.toString().padStart(2, '0')}:
                 {tempMinutes.toString().padStart(2, '0')}
@@ -480,10 +500,10 @@ export default function ClockTimePicker({
               variant="secondary"
               className="flex-1"
             >
-              {t('cancel')}
+              {labels.cancel}
             </Button>
             <Button onClick={handleSet} variant="primary" className="flex-1">
-              {t('timePicker.confirmTime')}
+              {labels.confirm}
             </Button>
           </div>
         </div>

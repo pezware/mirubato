@@ -4,6 +4,7 @@ import ImageBasedPdfViewer from './ImageBasedPdfViewer'
 import ImageScoreViewer from './ImageScoreViewer'
 import { scoreService } from '../../services/scoreService'
 import { DeviceDetection } from '../../constants/deviceDetection'
+import { Button } from '../ui'
 
 interface AdaptivePdfViewerProps {
   scoreId: string
@@ -282,12 +283,9 @@ export default function AdaptivePdfViewer({
               We're having trouble loading this score. Please try refreshing the
               page or contact support if the issue persists.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
+            <Button variant="primary" onClick={() => window.location.reload()}>
               Refresh Page
-            </button>
+            </Button>
           </div>
         </div>
       </div>

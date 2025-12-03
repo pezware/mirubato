@@ -84,6 +84,7 @@ export type {
   CheckboxProps,
   // ClockTimePicker
   ClockTimePickerProps,
+  ClockTimePickerLabels,
   // DateSeparator
   DateSeparatorProps,
   // DropdownMenu
@@ -107,6 +108,7 @@ export type {
   PeriodDate,
   PeriodStats,
   PeriodSelectorProps,
+  PeriodSelectorLabels,
   // ProgressiveImage
   ProgressiveImageProps,
   // RadioGroup

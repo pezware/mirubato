@@ -17,6 +17,7 @@ import {
   type DuplicateMatch,
 } from '../utils/scoreIdNormalizer'
 import { Button, TimePicker, Modal, FormError } from './ui'
+import type { ClockTimePickerLabels } from './ui'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
 import { InstrumentSelector } from './logbook/InstrumentSelector'
@@ -342,6 +343,24 @@ export default function ManualEntryForm({
   useEffect(() => {
     loadRepertoire()
   }, [loadRepertoire])
+
+  // Labels for TimePicker component
+  const timePickerLabels: ClockTimePickerLabels = {
+    am: t('common:time.am', 'AM'),
+    pm: t('common:time.pm', 'PM'),
+    title: t('logbook:timePicker.selectPracticeTime', 'Select Practice Time'),
+    hint: t(
+      'logbook:timePicker.hint',
+      'Drag to set hour, tap numbers for minutes'
+    ),
+    clickToTypeManually: t(
+      'logbook:timePicker.clickToTypeManually',
+      'Click to type manually'
+    ),
+    placeholder: t('logbook:timePicker.placeholder', 'HH:MM'),
+    cancel: t('common:cancel', 'Cancel'),
+    confirm: t('logbook:timePicker.confirmTime', 'Set Time'),
+  }
 
   const planPrefillDuration = computePlanDuration(planOccurrenceDetails)
   const planPrefillPieces = buildPiecesFromDetails(planOccurrenceDetails)
@@ -715,6 +734,7 @@ export default function ManualEntryForm({
                 value={practiceTime}
                 onChange={setPracticeTime}
                 className="w-full"
+                labels={timePickerLabels}
               />
             </div>
 

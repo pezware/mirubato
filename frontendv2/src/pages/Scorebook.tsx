@@ -7,7 +7,7 @@ import ScoreControls from '../components/score/ScoreControls'
 import ScoreManagement from '../components/score/ScoreManagement'
 import AppLayout from '../components/layout/AppLayout'
 import TimerEntry from '../components/TimerEntry'
-import { MusicTitle, MusicComposer } from '../components/ui'
+import { MusicTitle, MusicComposer, Button } from '../components/ui'
 
 export default function ScorebookPage() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -99,15 +99,15 @@ export default function ScorebookPage() {
                 {t('scorebook:error', 'Error loading score')}
               </h3>
               <p className="text-red-700 mb-4">{error}</p>
-              <button
+              <Button
+                variant="danger"
                 onClick={() => {
                   clearError()
                   if (scoreId) loadScore(scoreId)
                 }}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 {t('common:retry')}
-              </button>
+              </Button>
             </div>
           </div>
         )}

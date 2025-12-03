@@ -1,46 +1,49 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { PeriodSelector, PeriodDate, PeriodStats } from './PeriodSelector'
+import {
+  PeriodSelector,
+  PeriodDate,
+  PeriodStats,
+  PeriodSelectorLabels,
+} from './PeriodSelector'
 
-// Mock react-i18next
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => {
-      const translations: Record<string, string> = {
-        'common:time.week': 'Week',
-        'common:time.month': 'Month',
-        'common:time.year': 'Year',
-        'common:months.january': 'January',
-        'common:months.february': 'February',
-        'common:months.march': 'March',
-        'common:months.april': 'April',
-        'common:months.may': 'May',
-        'common:months.june': 'June',
-        'common:months.july': 'July',
-        'common:months.august': 'August',
-        'common:months.september': 'September',
-        'common:months.october': 'October',
-        'common:months.november': 'November',
-        'common:months.december': 'December',
-        'logbook:periodSelector.viewBy': 'View by',
-        'logbook:periodSelector.prevWeek': 'Previous week',
-        'logbook:periodSelector.nextWeek': 'Next week',
-        'logbook:periodSelector.prevMonth': 'Previous month',
-        'logbook:periodSelector.nextMonth': 'Next month',
-        'logbook:periodSelector.prevYear': 'Previous year',
-        'logbook:periodSelector.nextYear': 'Next year',
-        'logbook:periodSelector.sessions': 'sessions',
-        'logbook:periodSelector.totalTime': 'total time',
-        'logbook:periodSelector.pieces': 'pieces',
-      }
-      return translations[key] || key
-    },
-    i18n: {
-      language: 'en',
-    },
-  }),
-}))
+const mockLabels: PeriodSelectorLabels = {
+  periodLevels: {
+    week: 'Week',
+    month: 'Month',
+    year: 'Year',
+  },
+  months: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ],
+  navigation: {
+    prevWeek: 'Previous week',
+    prevMonth: 'Previous month',
+    prevYear: 'Previous year',
+    nextWeek: 'Next week',
+    nextMonth: 'Next month',
+    nextYear: 'Next year',
+  },
+  viewBy: 'View by',
+  stats: {
+    sessions: 'sessions',
+    totalTime: 'total time',
+    pieces: 'pieces',
+  },
+  segmentedControlAriaLabel: 'Period selection',
+}
 
 // Mock SegmentedControl since it's already tested
 vi.mock('./SegmentedControl', () => ({
@@ -48,12 +51,14 @@ vi.mock('./SegmentedControl', () => ({
     value,
     onChange,
     options,
+    ariaLabel,
   }: {
     value: string
     onChange: (v: string) => void
     options: Array<{ value: string; label: string }>
+    ariaLabel: string
   }) => (
-    <div data-testid="segmented-control">
+    <div data-testid="segmented-control" aria-label={ariaLabel}>
       {options.map(opt => (
         <button
           key={opt.value}
@@ -88,6 +93,8 @@ describe('PeriodSelector', () => {
     onLevelChange: vi.fn(),
     onPrevious: vi.fn(),
     onNext: vi.fn(),
+    labels: mockLabels,
+    locale: 'en',
   }
 
   it('should render period level selector', () => {

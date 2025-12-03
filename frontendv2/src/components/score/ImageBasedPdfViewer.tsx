@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { scoreService } from '../../services/scoreService'
-import { ProgressiveImage } from '../ui'
+import { Button, ProgressiveImage } from '../ui'
 import { ProgressiveImageLoader } from '../../utils/imageUtils'
 
 interface ImageBasedPdfViewerProps {
@@ -230,15 +230,15 @@ export default function ImageBasedPdfViewer({
               <p className="text-gray-600 mb-4">
                 Unable to display page {pageNumber}
               </p>
-              <button
+              <Button
+                variant="primary"
                 onClick={() => {
                   setImageError(false)
                   setLoading(true)
                 }}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
               >
                 Retry
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -260,13 +260,14 @@ export default function ImageBasedPdfViewer({
       {/* Navigation Controls */}
       {numPages > 1 && (
         <div className="mt-4 flex items-center justify-center gap-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => changePage(-1)}
             disabled={pageNumber <= 1}
-            className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
           >
             Previous
-          </button>
+          </Button>
 
           <div className="flex items-center gap-2">
             <span className="text-sm">Page</span>
@@ -281,13 +282,14 @@ export default function ImageBasedPdfViewer({
             <span className="text-sm">of {numPages || '?'}</span>
           </div>
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => changePage(1)}
             disabled={pageNumber >= numPages}
-            className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
 

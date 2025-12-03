@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from '../ui'
 import { scoreService } from '../../services/scoreService'
 
 interface ImageScoreViewerProps {
@@ -170,51 +172,31 @@ export default function ImageScoreViewer({
       {/* Navigation buttons for multi-page scores */}
       {pages.length > 1 && (
         <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <button
+          <Button
+            variant="secondary"
+            size="icon-md"
             onClick={() => onPageChange?.(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="p-2 bg-white/90 backdrop-blur rounded-lg shadow-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             aria-label={t('components.scoreViewer.previousPage')}
+            className="bg-white/90 backdrop-blur shadow-lg hover:bg-white"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
           <div className="px-3 py-2 bg-white/90 backdrop-blur rounded-lg shadow-lg">
             <span className="text-sm font-medium">
               {currentPage} / {pages.length}
             </span>
           </div>
-          <button
+          <Button
+            variant="secondary"
+            size="icon-md"
             onClick={() => onPageChange?.(currentPage + 1)}
             disabled={currentPage >= pages.length}
-            className="p-2 bg-white/90 backdrop-blur rounded-lg shadow-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             aria-label={t('components.scoreViewer.nextPage')}
+            className="bg-white/90 backdrop-blur shadow-lg hover:bg-white"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
+            <ChevronRight className="w-5 h-5" />
+          </Button>
         </div>
       )}
 

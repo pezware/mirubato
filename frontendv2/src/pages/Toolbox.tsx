@@ -668,6 +668,7 @@ const Toolbox: React.FC = () => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           className="mb-6"
+          ariaLabel={t('tabs.navigation', 'Toolbox navigation')}
         />
 
         {/* Tab Content */}

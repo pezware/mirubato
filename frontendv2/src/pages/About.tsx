@@ -73,6 +73,7 @@ export default function About() {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           className="mb-3 sm:mb-4"
+          ariaLabel={t('about:tabs.navigation', 'About navigation')}
         />
 
         {/* Tab Content */}
