@@ -46,14 +46,14 @@ Mirubato uses a two-layer UI component architecture for maximum reusability:
 
 ```
 @mirubato/ui (packages/ui/)     # Shared, pure UI components
-├── Autocomplete, Button, Card, Modal, Input, Select, Toast
-├── Typography (MusicTitle, MusicComposer, MusicMetadata)
-├── Loading, SegmentedControl, Tabs, Tag, TimePicker
-└── Utilities: cn(), formatDuration()
+├── Components: Autocomplete, Button, Card, Modal, Input, Select, Toast,
+│               Typography (MusicTitle, MusicComposer), Loading, Tabs, Tag
+├── Hooks: useModal, useModals, useFormValidation, useClickOutside
+└── Utilities: cn(), formatDuration(), formatTimerDisplay(), formatTimerCompact()
 
 frontendv2/src/components/ui/   # App-specific components with business logic
-├── EntryDetailPanel           # Logbook entry details
-├── CompactEntryRow            # Compact entry display
+├── EntryDetailPanel           # Logbook entry details (uses stores)
+├── CompactEntryRow            # Compact entry display (uses stores)
 ├── ToastProvider              # Toast state management
 ├── ProtectedButton            # Click protection with hooks
 └── index.ts                   # Barrel re-exporting @mirubato/ui
@@ -61,13 +61,15 @@ frontendv2/src/components/ui/   # App-specific components with business logic
 
 ### Design Principles
 
-1. **Pure Components in Package**: `@mirubato/ui` contains only stateless, reusable UI components with no business logic or app-specific dependencies.
+1. **Pure Components in Package**: `@mirubato/ui` contains stateless, reusable UI components with no business logic.
 
-2. **Business Logic in App**: Components that depend on stores, hooks, or app state stay in `frontendv2/src/components/ui/`.
+2. **Shared Hooks & Utilities**: Generic hooks (`useModal`, `useFormValidation`) and utilities (`formatDuration`, `cn`) go in `@mirubato/ui`.
 
-3. **Single Import Path**: All UI components are imported from `@/components/ui` which re-exports both package and app-specific components.
+3. **Business Logic in App**: Components/hooks that depend on stores or app state stay in `frontendv2/`.
 
-4. **Named Exports Only**: All components use named exports for better tree-shaking and explicit imports.
+4. **Single Import Path**: All imports from `@/components/ui` which re-exports both package and local components.
+
+5. **DRY Principle**: Any utility used in 2+ places must be in `@mirubato/ui`, not duplicated locally.
 
 ### Import Convention
 
