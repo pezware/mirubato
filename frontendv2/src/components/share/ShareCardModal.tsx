@@ -8,9 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { Modal, ModalFooter } from '../ui/Modal'
-import Button from '../ui/Button'
-import { SegmentedControl } from '../ui/SegmentedControl'
+import { Modal, ModalFooter, Button, SegmentedControl } from '../ui'
 import { ShareCardPreview, type CardVariant } from './ShareCardPreview'
 import { useShareCard } from '../../hooks/useShareCard'
 

@@ -33,37 +33,52 @@ adminPortal.get('/', c => {
         }
         
         :root {
-            /* Morandi color palette */
-            --morandi-sage-50: #f5f7f4;
-            --morandi-sage-100: #e8ebe6;
-            --morandi-sage-300: #b8c2b0;
-            --morandi-sage-500: #7a8a6f;
-            --morandi-sage-600: #687a5c;
-            --morandi-rose-50: #fdf5f5;
-            --morandi-rose-100: #fbe8e8;
-            --morandi-rose-300: #f4c1c1;
-            --morandi-rose-500: #e89595;
-            --morandi-peach-50: #fef7f3;
-            --morandi-peach-100: #fdeee4;
-            --morandi-peach-300: #f9d3bd;
-            --morandi-peach-500: #f3b08a;
-            --morandi-sky-50: #f3f7fb;
-            --morandi-sky-100: #e4eef6;
-            --morandi-sky-300: #bdd7ec;
-            --morandi-sky-500: #8cb9dc;
-            --morandi-sand-50: #faf9f7;
-            --morandi-sand-100: #f3f0eb;
-            --morandi-sand-300: #e0d8cb;
-            --morandi-sand-500: #c5b8a1;
-            --morandi-stone-50: #f7f7f6;
-            --morandi-stone-600: #6b6b66;
-            --morandi-stone-800: #3d3d3a;
+            /* Morandi color palette - aligned with packages/ui/tailwind.preset.js */
+            --morandi-sage-50: #f4f5f2;
+            --morandi-sage-100: #e8ebe4;
+            --morandi-sage-200: #d4d9cc;
+            --morandi-sage-300: #b8c2a9;
+            --morandi-sage-400: #9ca888;
+            --morandi-sage-500: #818f6d;
+            --morandi-sage-600: #6b7857;
+            --morandi-sage-700: #555e45;
+            --morandi-rose-50: #fdf2f2;
+            --morandi-rose-100: #fce7e7;
+            --morandi-rose-200: #fbbcbc;
+            --morandi-rose-300: #f98a8a;
+            --morandi-rose-400: #f45252;
+            --morandi-rose-500: #ec2727;
+            --morandi-peach-50: #fef5f0;
+            --morandi-peach-100: #fde8dd;
+            --morandi-peach-200: #fbccb8;
+            --morandi-peach-300: #f8a888;
+            --morandi-peach-400: #f47c52;
+            --morandi-peach-500: #ec5a2b;
+            --morandi-sky-100: #eef2f5;
+            --morandi-sky-200: #dde5eb;
+            --morandi-sky-300: #c2d1db;
+            --morandi-sky-400: #a8bccb;
+            --morandi-sky-500: #8ea7bb;
+            --morandi-sand-100: #f5f2ed;
+            --morandi-sand-200: #e8e2d5;
+            --morandi-sand-300: #d4c4b0;
+            --morandi-sand-400: #c1a68b;
+            --morandi-sand-500: #ad8866;
+            --morandi-stone-50: #f8f7f6;
+            --morandi-stone-100: #f0efec;
+            --morandi-stone-200: #e2dfd9;
+            --morandi-stone-300: #ccc7bd;
+            --morandi-stone-400: #b5afa1;
+            --morandi-stone-500: #9e9789;
+            --morandi-stone-600: #7a756b;
+            --morandi-stone-700: #5c5850;
+            --morandi-stone-900: #3a3632;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background-color: var(--morandi-sage-50);
-            color: var(--morandi-stone-800);
+            color: var(--morandi-stone-900);
             line-height: 1.6;
         }
         
@@ -92,7 +107,7 @@ adminPortal.get('/', c => {
         h1 {
             font-size: 28px;
             font-weight: 600;
-            color: var(--morandi-stone-800);
+            color: var(--morandi-stone-900);
         }
         
         .environment-badge {
@@ -173,7 +188,7 @@ adminPortal.get('/', c => {
         .card-title {
             font-size: 20px;
             font-weight: 600;
-            color: var(--morandi-stone-800);
+            color: var(--morandi-stone-900);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -205,7 +220,7 @@ adminPortal.get('/', c => {
         .metric-value {
             font-size: 24px;
             font-weight: 600;
-            color: var(--morandi-stone-800);
+            color: var(--morandi-stone-900);
         }
         
         .metric-value.small {
@@ -316,7 +331,7 @@ adminPortal.get('/', c => {
         
         .queue-item-term {
             font-weight: 500;
-            color: var(--morandi-stone-800);
+            color: var(--morandi-stone-900);
         }
         
         .queue-item-meta {
@@ -334,7 +349,7 @@ adminPortal.get('/', c => {
         
         .status-badge.pending {
             background: var(--morandi-sand-300);
-            color: var(--morandi-stone-800);
+            color: var(--morandi-stone-900);
         }
         
         .status-badge.processing {

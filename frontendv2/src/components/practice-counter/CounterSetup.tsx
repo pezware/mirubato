@@ -1,7 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Input } from '../ui'
-import { cn } from '../../utils/cn'
+import { Button, Input, cn } from '../ui'
 
 export type CounterMode = 'up' | 'down'
 

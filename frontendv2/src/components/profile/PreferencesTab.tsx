@@ -1,10 +1,15 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Globe, Music, Check } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
-import { Select } from '../ui'
-import Button from '../ui/Button'
-import { Input } from '../ui'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Select,
+  Button,
+  Input,
+} from '../ui'
 import { useUserPreferences } from '../../hooks/useUserPreferences'
 import { showToast } from '../../utils/toastManager'
 

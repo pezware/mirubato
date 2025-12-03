@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edit2, Music, Link, Trash2 } from 'lucide-react'
-import Button from '@/components/ui/Button'
 import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
-import { Card } from '@/components/ui/Card'
-import { Select } from '@/components/ui/Select'
 import {
+  Button,
+  Card,
+  Select,
   MusicTitleLarge,
   MusicComposerLarge,
   Modal,

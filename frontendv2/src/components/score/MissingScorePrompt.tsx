@@ -1,9 +1,7 @@
 import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import Button from '../ui/Button'
-import { Card } from '../ui/Card'
-import { Modal } from '../ui/Modal'
+import { Button, Card, Modal } from '../ui'
 
 interface MissingScorePromptProps {
   scoreId: string

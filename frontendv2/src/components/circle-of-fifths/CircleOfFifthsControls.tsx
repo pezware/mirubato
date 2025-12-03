@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Volume2, VolumeX, Play, Square } from 'lucide-react'
-import Button from '../ui/Button'
+import { Button } from '../ui'
 import { PlaybackMode } from './types'
 
 interface CircleOfFifthsControlsProps {

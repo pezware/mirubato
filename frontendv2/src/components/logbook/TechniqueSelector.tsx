@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Button from '../ui/Button'
+import { Button } from '../ui'
 import { DEFAULT_TECHNIQUES } from '../../constants/techniques'
 import { X } from 'lucide-react'
 import { useCustomTechniques } from '../../hooks/useCustomTechniques'

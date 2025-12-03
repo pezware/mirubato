@@ -14,8 +14,13 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
-import { Tabs } from '../components/ui'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Tabs,
+} from '../components/ui'
 import VersionInfo from '../components/VersionInfo'
 import { WebSocketSyncDemo } from '../components/debug'
 import { DataSubjectRights } from '../components/privacy/DataSubjectRights'

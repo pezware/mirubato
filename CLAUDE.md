@@ -271,28 +271,83 @@ For detailed feature specifications, see **[Feature Specs](docs/specs/05-feature
 
 ## 6. UI Components {#ui-components}
 
-### Component Library Usage
+### Package Architecture (Updated v1.8.0)
+
+Mirubato uses a two-layer UI component architecture:
+
+```
+packages/ui/                    # @mirubato/ui - Shared reusable components
+├── src/components/             # Pure UI components (no business logic)
+│   ├── Autocomplete.tsx
+│   ├── Button.tsx
+│   ├── Card.tsx
+│   ├── Modal.tsx
+│   ├── Typography.tsx          # MusicTitle, MusicComposer, etc.
+│   └── ...
+├── src/utils/
+│   ├── cn.ts                   # Tailwind class merging utility
+│   └── dateUtils.ts            # formatDuration, formatDurationLong
+└── src/index.ts                # Barrel export
+
+frontendv2/src/components/ui/   # App-specific components
+├── index.ts                    # Re-exports @mirubato/ui + local components
+├── EntryDetailPanel.tsx        # Has logbook business logic
+├── CompactEntryRow.tsx         # Has logbook business logic
+├── ToastProvider.tsx           # Has toast state management
+├── ProtectedButton.tsx         # Has click protection hook
+└── ProtectedButtonFactory.ts   # Button factory functions
+```
+
+### Import Guidelines
 
 ```tsx
-// ❌ NEVER do this
-;<button>Click me</button>
+// ✅ PREFERRED: Import from barrel export (for all shared components)
+import { Button, Modal, Card, MusicTitle, Input } from '@/components/ui'
+import type { ButtonProps, SelectOption } from '@/components/ui'
 
-// ✅ ALWAYS do this
-import { Button } from '@/components/ui'
-;<Button>Click me</Button>
+// ✅ OK: Direct import from @mirubato/ui (for packages/ui components only)
+import { Button } from '@mirubato/ui'
+
+// ❌ NEVER: Direct imports to deleted files
+import Button from '@/components/ui/Button'  // File doesn't exist!
+
+// ❌ NEVER: Native HTML elements
+<button>Click me</button>
+<input type="text" />
+
+// ✅ ALWAYS: Use component library
+<Button>Click me</Button>
+<Input type="text" />
 ```
+
+### Component Ownership Rules
+
+| Location         | Contains                | Business Logic | Example                           |
+| ---------------- | ----------------------- | -------------- | --------------------------------- |
+| `@mirubato/ui`   | Pure UI components      | ❌ None        | Button, Card, Modal, Typography   |
+| `frontendv2/ui/` | App-specific components | ✅ Yes         | EntryDetailPanel, ProtectedButton |
+
+**When creating new components:**
+
+- If it's a pure UI component with no business logic → Add to `packages/ui/`
+- If it depends on stores, hooks, or app state → Keep in `frontendv2/src/components/ui/`
 
 ### Available Components
 
-| Component | Variants                                | Usage              |
-| --------- | --------------------------------------- | ------------------ |
-| Button    | primary, secondary, ghost, danger, icon | Actions, forms     |
-| Modal     | sm, md, lg, xl                          | Dialogs, forms     |
-| Card      | default, bordered, elevated, ghost      | Content containers |
-| Input     | text, email, password, number           | Form fields        |
-| Select    | single, multi                           | Dropdowns          |
-| Toast     | success, error, warning, info           | Notifications      |
-| Loading   | spinner, dots, pulse, skeleton          | Loading states     |
+| Component                     | Package      | Variants                                | Usage                    |
+| ----------------------------- | ------------ | --------------------------------------- | ------------------------ |
+| Button                        | @mirubato/ui | primary, secondary, ghost, danger, icon | Actions, forms           |
+| Modal, ModalBody, ModalFooter | @mirubato/ui | sm, md, lg, xl                          | Dialogs, forms           |
+| Card, CardHeader, CardContent | @mirubato/ui | default, bordered, elevated             | Content containers       |
+| Input, Textarea               | @mirubato/ui | text, email, password, number           | Form fields              |
+| Select, MultiSelect           | @mirubato/ui | single, multi                           | Dropdowns                |
+| Toast, ToastContainer         | @mirubato/ui | success, error, warning, info           | Notifications            |
+| Loading, LoadingSkeleton      | @mirubato/ui | spinner, dots, pulse, skeleton          | Loading states           |
+| MusicTitle, MusicComposer     | @mirubato/ui | -                                       | Music content typography |
+| Autocomplete                  | @mirubato/ui | -                                       | Search with suggestions  |
+| ProtectedButton               | frontendv2   | -                                       | Prevents double-clicks   |
+| EntryDetailPanel              | frontendv2   | -                                       | Logbook entry details    |
+| CompactEntryRow               | frontendv2   | -                                       | Compact entry display    |
 
 ### Typography Design System (Updated v1.7.6)
 
@@ -503,6 +558,8 @@ Mirubato uses pnpm workspaces with the following structure:
 
 ```
 mirubato/
+├── packages/
+│   └── ui/              # @mirubato/ui - Shared UI Component Library
 ├── frontendv2/          # React SPA (Vite + TypeScript)
 ├── api/                 # Main API Worker (Hono + D1)
 ├── scores/              # Sheet Music Worker (PDF + AI)
@@ -517,6 +574,7 @@ mirubato/
 pnpm -r run build        # Run build in all workspaces
 pnpm -r run test         # Run tests in all workspaces
 pnpm --filter @mirubato/frontendv2 run dev  # Run specific workspace
+pnpm --filter @mirubato/ui run build        # Build UI package only
 ```
 
 ## Debugging UI Component Issues

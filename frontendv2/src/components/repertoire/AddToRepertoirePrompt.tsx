@@ -4,7 +4,7 @@ import { useRepertoireStore } from '@/stores/repertoireStore'
 import { showToast } from '@/utils/toastManager'
 import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
 import { getDisplayComposerName } from '@/utils/composerCanonicalizer'
-import Button from '@/components/ui/Button'
+import { Button } from '@/components/ui'
 import { Music, X } from 'lucide-react'
 
 interface AddToRepertoirePromptProps {

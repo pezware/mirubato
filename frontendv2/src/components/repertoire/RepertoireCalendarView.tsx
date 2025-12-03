@@ -10,7 +10,7 @@ import {
 } from 'date-fns'
 import { formatDuration } from '@/utils/dateUtils'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Button from '@/components/ui/Button'
+import { Button } from '@/components/ui'
 import { RepertoireItem } from '@/api/repertoire'
 
 interface RecentPractice {

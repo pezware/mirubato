@@ -38,6 +38,55 @@ For comprehensive technical details:
 - **[REST API](./specs/03-api/rest-api.md)** - Complete endpoint documentation
 - **[WebSocket Protocol](./specs/03-api/websocket.md)** - Real-time sync implementation
 
+## UI Component Architecture (v1.8.0)
+
+Mirubato uses a two-layer UI component architecture for maximum reusability:
+
+### Package Structure
+
+```
+@mirubato/ui (packages/ui/)     # Shared, pure UI components
+├── Autocomplete, Button, Card, Modal, Input, Select, Toast
+├── Typography (MusicTitle, MusicComposer, MusicMetadata)
+├── Loading, SegmentedControl, Tabs, Tag, TimePicker
+└── Utilities: cn(), formatDuration()
+
+frontendv2/src/components/ui/   # App-specific components with business logic
+├── EntryDetailPanel           # Logbook entry details
+├── CompactEntryRow            # Compact entry display
+├── ToastProvider              # Toast state management
+├── ProtectedButton            # Click protection with hooks
+└── index.ts                   # Barrel re-exporting @mirubato/ui
+```
+
+### Design Principles
+
+1. **Pure Components in Package**: `@mirubato/ui` contains only stateless, reusable UI components with no business logic or app-specific dependencies.
+
+2. **Business Logic in App**: Components that depend on stores, hooks, or app state stay in `frontendv2/src/components/ui/`.
+
+3. **Single Import Path**: All UI components are imported from `@/components/ui` which re-exports both package and app-specific components.
+
+4. **Named Exports Only**: All components use named exports for better tree-shaking and explicit imports.
+
+### Import Convention
+
+```tsx
+// All UI imports go through the barrel export
+import { Button, Modal, MusicTitle, ProtectedButton } from '@/components/ui'
+import type { ButtonProps, SelectOption } from '@/components/ui'
+```
+
+### Typography System
+
+Music-specific typography uses Noto Serif for excellent multilingual support:
+
+- `<MusicTitle>` - Piece titles
+- `<MusicComposer>` - Composer names
+- `<MusicMetadata>` - Opus numbers, catalog info
+
+General UI uses Inter (body) and Lexend (headers).
+
 ## Getting Started
 
 For development setup and commands:
@@ -47,8 +96,10 @@ For development setup and commands:
 
 ## Version & Roadmap
 
-**Current Version**: 1.7.6 (Sept 2025)
+**Current Version**: 1.8.0 (Dec 2025)
 
+- Shared UI Component Library (`@mirubato/ui`)
+- Two-layer component architecture
 - Real-time WebSocket synchronization
 - Advanced analytics and reporting
 - Unified typography system
@@ -62,4 +113,4 @@ For details:
 
 > **📚 Summary**: Mirubato is an edge-first music education platform with comprehensive practice tracking, sheet music management, and real-time sync. This document serves as a navigation hub to detailed technical specifications in the [specs](./specs/) folder.
 
-_Last updated: Sept 2025 | Version 1.7.6_
+_Last updated: Dec 2025 | Version 1.8.0_

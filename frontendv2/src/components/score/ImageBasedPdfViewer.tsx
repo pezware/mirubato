@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { scoreService } from '../../services/scoreService'
-import ProgressiveImage from '../ui/ProgressiveImage'
+import { ProgressiveImage } from '../ui'
 import { ProgressiveImageLoader } from '../../utils/imageUtils'
 
 interface ImageBasedPdfViewerProps {
