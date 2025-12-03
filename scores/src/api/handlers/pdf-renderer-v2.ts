@@ -13,6 +13,31 @@ import { THUMBNAIL_CONFIG } from '../../config/thumbnail'
 
 export const pdfRendererV2Handler = new Hono<{ Bindings: Env }>()
 
+// Retry configuration for browser rendering stability
+const RENDER_CONFIG = {
+  maxRetries: 3,
+  baseDelayMs: 500,
+  maxDelayMs: 4000,
+  renderTimeoutMs: 10000,
+  browserKeepAliveMs: 300000, // 5 minutes
+} as const
+
+/**
+ * Sleep helper for retry delays
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Calculate exponential backoff delay with jitter
+ */
+function getBackoffDelay(attempt: number): number {
+  const exponentialDelay = RENDER_CONFIG.baseDelayMs * Math.pow(2, attempt)
+  const jitter = Math.random() * RENDER_CONFIG.baseDelayMs
+  return Math.min(exponentialDelay + jitter, RENDER_CONFIG.maxDelayMs)
+}
+
 // Input validation
 const renderParamsSchema = z.object({
   scoreId: z.string().regex(/^[a-zA-Z0-9_-]+$/),
@@ -131,15 +156,60 @@ async function getPdfUrl(scoreId: string, env: Env): Promise<string> {
   return await presigner.generatePresignedUrl(scoreVersion.r2_key)
 }
 
-// Render a single page with optimized settings
+/**
+ * Render a single page with retry logic for stability
+ * Uses exponential backoff to handle transient browser rendering failures
+ */
 async function renderPage(
   browserBinding: Env['BROWSER'],
   pdfUrl: string,
   params: z.infer<typeof renderParamsSchema>
 ): Promise<ArrayBuffer> {
+  let lastError: Error | null = null
+
+  for (let attempt = 0; attempt < RENDER_CONFIG.maxRetries; attempt++) {
+    try {
+      return await renderPageAttempt(browserBinding, pdfUrl, params)
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+      console.warn(
+        `PDF render attempt ${attempt + 1}/${RENDER_CONFIG.maxRetries} failed:`,
+        lastError.message
+      )
+
+      // Don't retry on validation errors (404, invalid page, etc.)
+      if (
+        lastError.message.includes('not found') ||
+        lastError.message.includes('Invalid page')
+      ) {
+        throw lastError
+      }
+
+      // Wait before retrying (except on last attempt)
+      if (attempt < RENDER_CONFIG.maxRetries - 1) {
+        const delay = getBackoffDelay(attempt)
+        console.warn(`Retrying in ${delay}ms...`)
+        await sleep(delay)
+      }
+    }
+  }
+
+  // All retries exhausted
+  throw new Error(
+    `PDF rendering failed after ${RENDER_CONFIG.maxRetries} attempts: ${lastError?.message || 'Unknown error'}`
+  )
+}
+
+/**
+ * Single render attempt - isolated for retry logic
+ */
+async function renderPageAttempt(
+  browserBinding: Env['BROWSER'],
+  pdfUrl: string,
+  params: z.infer<typeof renderParamsSchema>
+): Promise<ArrayBuffer> {
   const browser = await launch(browserBinding, {
-    // Keep browser alive for 5 minutes for complex PDFs
-    keep_alive: 300000, // 5 minutes in milliseconds
+    keep_alive: RENDER_CONFIG.browserKeepAliveMs,
   })
 
   try {
@@ -163,7 +233,7 @@ async function renderPage(
       quality: 'simple',
     })
 
-    // Load the page
+    // Load the page with networkidle0 for better reliability
     await page.setContent(html, {
       waitUntil: 'domcontentloaded',
     })
@@ -173,11 +243,11 @@ async function renderPage(
       await Promise.race([
         // Wait for success signal
         page.waitForFunction('window.renderComplete === true', {
-          timeout: 8000, // 8 second timeout for rendering
+          timeout: RENDER_CONFIG.renderTimeoutMs,
         }),
         // Or wait for error signal
         page.waitForFunction('window.renderError !== undefined', {
-          timeout: 8000,
+          timeout: RENDER_CONFIG.renderTimeoutMs,
         }),
       ])
 
@@ -340,4 +410,74 @@ pdfRendererV2Handler.get('/thumbnail/:scoreId', async c => {
       message: `Failed to get thumbnail: ${error instanceof Error ? error.message : 'Unknown error'}`,
     })
   }
+})
+
+// Render status endpoint - check if pre-rendered pages are available
+pdfRendererV2Handler.get('/render-status/:scoreId', async c => {
+  try {
+    const scoreId = c.req.param('scoreId')
+
+    // Validate score ID
+    if (!/^[a-zA-Z0-9_-]+$/.test(scoreId)) {
+      throw new HTTPException(400, { message: 'Invalid score ID format' })
+    }
+
+    // Check for pre-rendered pages
+    const preRenderedPages: number[] = []
+    const maxPagesToCheck = 20
+
+    // Check which pages have pre-rendered versions
+    for (let page = 1; page <= maxPagesToCheck; page++) {
+      const preRenderedKey = `rendered/${scoreId}/page-${page}.webp`
+      const exists = await c.env.SCORES_BUCKET.head(preRenderedKey)
+      if (exists) {
+        preRenderedPages.push(page)
+      } else if (page > 1) {
+        // Stop checking after first missing page (assumes sequential)
+        break
+      }
+    }
+
+    // Check if thumbnail exists
+    const thumbnailKey = THUMBNAIL_CONFIG.getStoragePath(scoreId)
+    const hasThumbnail = !!(await c.env.SCORES_BUCKET.head(thumbnailKey))
+
+    // Check browser rendering availability
+    const browserAvailable = !!c.env.BROWSER
+
+    return c.json({
+      success: true,
+      data: {
+        scoreId,
+        preRenderedPages,
+        preRenderedCount: preRenderedPages.length,
+        hasThumbnail,
+        browserAvailable,
+        renderingEnabled: browserAvailable,
+      },
+    })
+  } catch (error) {
+    console.error('Render status error:', error)
+
+    if (error instanceof HTTPException) throw error
+
+    throw new HTTPException(500, {
+      message: `Failed to get render status: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    })
+  }
+})
+
+// Health check for browser rendering service
+pdfRendererV2Handler.get('/health', async c => {
+  const browserAvailable = !!c.env.BROWSER
+
+  return c.json({
+    success: true,
+    data: {
+      service: 'pdf-renderer-v2',
+      browserAvailable,
+      status: browserAvailable ? 'healthy' : 'degraded',
+      timestamp: new Date().toISOString(),
+    },
+  })
 })

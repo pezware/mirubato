@@ -590,6 +590,49 @@ class ScoreService {
     }
   }
 
+  // Get render status for a score (pre-rendered pages, browser availability)
+  async getRenderStatus(scoreId: string): Promise<{
+    preRenderedPages: number[]
+    preRenderedCount: number
+    hasThumbnail: boolean
+    browserAvailable: boolean
+    renderingEnabled: boolean
+  }> {
+    try {
+      const response = await scoresApiClient.get(
+        `/api/pdf/v2/render-status/${scoreId}`
+      )
+      return response.data.data
+    } catch (error) {
+      // Return a default response on error (graceful degradation)
+      console.warn('Failed to fetch render status:', error)
+      return {
+        preRenderedPages: [],
+        preRenderedCount: 0,
+        hasThumbnail: false,
+        browserAvailable: false,
+        renderingEnabled: false,
+      }
+    }
+  }
+
+  // Check if PDF rendering service is healthy
+  async checkRenderHealth(): Promise<{
+    browserAvailable: boolean
+    status: 'healthy' | 'degraded'
+  }> {
+    try {
+      const response = await scoresApiClient.get('/api/pdf/v2/health')
+      return response.data.data
+    } catch {
+      // Return degraded status on error
+      return {
+        browserAvailable: false,
+        status: 'degraded',
+      }
+    }
+  }
+
   // Render a score (returns URL or base64 data)
   async renderScore(
     id: string,
