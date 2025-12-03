@@ -137,7 +137,7 @@ export default function ImageScoreViewer({
       <div className={`flex items-center justify-center h-96 ${className}`}>
         <div className="text-center">
           <svg
-            className="w-16 h-16 text-red-500 mx-auto mb-4"
+            className="w-16 h-16 text-morandi-rose-500 mx-auto mb-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -149,7 +149,9 @@ export default function ImageScoreViewer({
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <p className="text-red-600 font-medium mb-2">Error loading score</p>
+          <p className="text-morandi-rose-600 font-medium mb-2">
+            Error loading score
+          </p>
           <p className="text-sm text-morandi-stone-600">{error}</p>
         </div>
       </div>

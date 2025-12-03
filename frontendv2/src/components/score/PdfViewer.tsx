@@ -419,7 +419,7 @@ export default function PdfViewer({
         <div className="text-center max-w-md">
           <div className="text-5xl mb-4">⚠️</div>
           <h3 className="text-xl font-semibold mb-2">PDF Loading Error</h3>
-          <p className="text-gray-600 mb-4">{error.message}</p>
+          <p className="text-morandi-stone-600 mb-4">{error.message}</p>
           {error.recoverable && (
             <Button variant="primary" onClick={() => window.location.reload()}>
               Retry
@@ -445,8 +445,8 @@ export default function PdfViewer({
         loading={
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-              <p className="text-sm text-gray-600">Loading PDF...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500 mx-auto mb-2"></div>
+              <p className="text-sm text-morandi-stone-600">Loading PDF...</p>
             </div>
           </div>
         }
@@ -454,7 +454,7 @@ export default function PdfViewer({
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
               <div className="text-5xl mb-4">📄</div>
-              <p className="text-gray-600">Failed to load PDF</p>
+              <p className="text-morandi-stone-600">Failed to load PDF</p>
             </div>
           </div>
         }
@@ -468,7 +468,7 @@ export default function PdfViewer({
           loading={
             <div className="flex items-center justify-center p-8">
               <div
-                className="animate-pulse bg-gray-200 rounded"
+                className="animate-pulse bg-morandi-stone-200 rounded"
                 style={{ width: pageWidth || 600, height: 800 }}
               />
             </div>

@@ -208,12 +208,12 @@ export default function ImageBasedPdfViewer({
       onTouchEnd={handleTouchEnd}
     >
       {/* Main Image Display */}
-      <div className="relative bg-gray-100 rounded-lg shadow-lg overflow-hidden">
+      <div className="relative bg-morandi-stone-100 rounded-lg shadow-lg overflow-hidden">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-              <p className="text-sm text-gray-600">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500 mx-auto mb-2"></div>
+              <p className="text-sm text-morandi-stone-600">
                 Loading page {pageNumber}...
               </p>
             </div>
@@ -227,7 +227,7 @@ export default function ImageBasedPdfViewer({
               <h3 className="text-xl font-semibold mb-2">
                 Failed to load page
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-morandi-stone-600 mb-4">
                 Unable to display page {pageNumber}
               </p>
               <Button
@@ -295,7 +295,7 @@ export default function ImageBasedPdfViewer({
 
       {/* Preload Status (dev only) */}
       {process.env.NODE_ENV === 'development' && enablePreloading && (
-        <div className="mt-2 text-xs text-gray-500 text-center">
+        <div className="mt-2 text-xs text-morandi-stone-500 text-center">
           Preloaded:{' '}
           {Array.from(preloadedImages.keys())
             .sort((a, b) => a - b)

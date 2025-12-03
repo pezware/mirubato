@@ -185,8 +185,8 @@ export default function ScoreListItem({
                 }}
                 className={cn(
                   isFavorited
-                    ? 'text-amber-500 hover:text-amber-600'
-                    : 'text-morandi-stone-400 hover:text-amber-500 opacity-0 group-hover:opacity-100'
+                    ? 'text-morandi-peach-500 hover:text-morandi-peach-600'
+                    : 'text-morandi-stone-400 hover:text-morandi-peach-500 opacity-0 group-hover:opacity-100'
                 )}
                 title={
                   isFavorited

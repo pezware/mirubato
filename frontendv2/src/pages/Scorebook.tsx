@@ -94,11 +94,11 @@ export default function ScorebookPage() {
         {/* Error State */}
         {error && (
           <div className="flex-1 flex items-center justify-center p-3 sm:px-6 sm:py-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 max-w-md">
-              <h3 className="text-red-800 font-medium mb-2">
+            <div className="bg-morandi-rose-50 border border-morandi-rose-200 rounded-lg p-3 sm:p-4 max-w-md">
+              <h3 className="text-morandi-rose-800 font-medium mb-2">
                 {t('scorebook:error', 'Error loading score')}
               </h3>
-              <p className="text-red-700 mb-4">{error}</p>
+              <p className="text-morandi-rose-700 mb-4">{error}</p>
               <Button
                 variant="danger"
                 onClick={() => {

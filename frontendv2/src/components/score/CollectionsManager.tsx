@@ -255,7 +255,7 @@ export default function CollectionsManager({
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-4">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          <div className="mb-4 p-3 bg-morandi-rose-50 border border-morandi-rose-200 rounded-lg text-sm text-morandi-rose-700">
             {error}
           </div>
         )}

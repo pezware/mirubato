@@ -143,7 +143,7 @@ export default function ScoreGridItem({
                 className={cn(
                   'rounded-full',
                   isFavorited
-                    ? 'bg-amber-500 text-white hover:bg-amber-600'
+                    ? 'bg-morandi-peach-500 text-white hover:bg-morandi-peach-600'
                     : 'bg-white/90 text-morandi-stone-700 hover:bg-white'
                 )}
                 title={
@@ -179,7 +179,7 @@ export default function ScoreGridItem({
         {isFavorited && !selectionMode && (
           <div className="absolute top-2 left-2">
             <Star
-              className="w-5 h-5 text-amber-500 drop-shadow-md"
+              className="w-5 h-5 text-morandi-peach-500 drop-shadow-md"
               fill="currentColor"
             />
           </div>
@@ -190,10 +190,12 @@ export default function ScoreGridItem({
           <span
             className={cn(
               'px-2 py-0.5 text-xs rounded-full font-medium',
-              score.difficulty === 'beginner' && 'bg-green-100 text-green-700',
+              score.difficulty === 'beginner' &&
+                'bg-morandi-sage-100 text-morandi-sage-700',
               score.difficulty === 'intermediate' &&
-                'bg-amber-100 text-amber-700',
-              score.difficulty === 'advanced' && 'bg-red-100 text-red-700'
+                'bg-morandi-peach-100 text-morandi-peach-700',
+              score.difficulty === 'advanced' &&
+                'bg-morandi-rose-100 text-morandi-rose-700'
             )}
           >
             {score.difficulty}
