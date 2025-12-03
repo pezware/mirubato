@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card } from '../../../ui'
+import { Card, formatDuration } from '../../../ui'
 import {
   format,
   eachDayOfInterval,
@@ -315,13 +315,4 @@ export function HeatmapCalendar({
       </div>
     </Card>
   )
-}
-
-function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const mins = Math.round(minutes % 60)
-
-  if (hours === 0) return `${mins}m`
-  if (mins === 0) return `${hours}h`
-  return `${hours}h ${mins}m`
 }

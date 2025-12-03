@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { type ChartData, type TooltipItem } from 'chart.js'
 import { ChartContainer } from './ChartContainer'
 import { ComparativeData, ChartConfig } from '../../../../types/reporting'
+import { formatDuration } from '../../../ui'
 
 interface ComparativeChartProps {
   data: ComparativeData[]
@@ -168,13 +169,4 @@ function ChangeIndicator({ item }: { item: ComparativeData }) {
       </div>
     </div>
   )
-}
-
-function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const mins = Math.round(minutes % 60)
-
-  if (hours === 0) return `${mins}m`
-  if (mins === 0) return `${hours}h`
-  return `${hours}h ${mins}m`
 }

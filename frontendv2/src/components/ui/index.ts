@@ -22,6 +22,14 @@ export {
   checkIsYesterday,
   formatTimeOnly,
   getDateLocale,
+  // Timer utilities (for raw seconds)
+  formatTimerDisplay,
+  formatTimerCompact,
+  // Hooks
+  useClickOutside,
+  useModal,
+  useModals,
+  useFormValidation,
   // Components
   Autocomplete,
   Button,
@@ -68,6 +76,11 @@ export {
 
 // Re-export types from @mirubato/ui
 export type {
+  // Hooks
+  UseModalReturn,
+  UseModalsReturn,
+  UseFormValidationOptions,
+  UseFormValidationReturn,
   // Autocomplete
   AutocompleteOption,
   AutocompleteProps,

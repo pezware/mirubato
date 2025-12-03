@@ -3,7 +3,18 @@
 
 // Utilities
 export { cn } from './utils/cn'
-export { useClickOutside } from './utils/hooks'
+export {
+  useClickOutside,
+  useModal,
+  useModals,
+  useFormValidation,
+} from './utils/hooks'
+export type {
+  UseModalReturn,
+  UseModalsReturn,
+  UseFormValidationOptions,
+  UseFormValidationReturn,
+} from './utils/hooks'
 export {
   formatDuration,
   formatDurationLong,
@@ -22,6 +33,9 @@ export {
   checkIsYesterday,
   formatTimeOnly,
   getDateLocale,
+  // Timer utilities (for raw seconds)
+  formatTimerDisplay,
+  formatTimerCompact,
 } from './utils/dateUtils'
 
 // Components
