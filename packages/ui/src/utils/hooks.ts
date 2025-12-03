@@ -1,5 +1,32 @@
 import { useEffect, useState, useCallback, RefObject } from 'react'
-import type { z } from 'zod'
+
+// =============================================================================
+// Zod 4 Compatible Types
+// =============================================================================
+
+/**
+ * Zod 4 changed its internal type system significantly.
+ * This interface provides a duck-typed approach that works with both Zod 3 and 4
+ * by only requiring the methods we actually use.
+ */
+interface ZodSafeParseable<T = unknown> {
+  safeParse(
+    data: unknown
+  ): { success: true; data: T } | { success: false; error: ZodErrorLike }
+}
+
+interface ZodErrorLike {
+  issues: ReadonlyArray<{ path: PropertyKey[]; message: string }>
+}
+
+/** Type for navigating nested Zod schemas (works with Zod 4) */
+interface ZodSchemaWithShape {
+  shape?: Record<string, ZodSafeParseable>
+}
+
+interface ZodSchemaWithElement {
+  element?: ZodSafeParseable
+}
 
 /**
  * Custom hook for managing modal state
@@ -173,10 +200,10 @@ interface ValidationState {
 
 /** Options for useFormValidation hook */
 export interface UseFormValidationOptions<T> {
-  /** Zod schema to validate against */
-  schema: z.ZodSchema<T>
+  /** Zod schema to validate against (works with Zod 3 and 4) */
+  schema: ZodSafeParseable<T>
   /** Optional callback when validation fails */
-  onValidationError?: (errors: z.ZodError) => void
+  onValidationError?: (errors: ZodErrorLike) => void
 }
 
 /**
@@ -229,8 +256,11 @@ export function useFormValidation<T>({
 
       // Convert Zod errors to field-based error map
       const errors: Record<string, string> = {}
-      result.error.issues.forEach((err: z.ZodIssue) => {
-        const path = err.path.join('.')
+      result.error.issues.forEach(err => {
+        // Convert PropertyKey[] to string path (filter out symbols)
+        const path = err.path
+          .filter((p): p is string | number => typeof p !== 'symbol')
+          .join('.')
         if (!errors[path]) {
           errors[path] = err.message
         }
@@ -249,20 +279,20 @@ export function useFormValidation<T>({
       // Create a partial schema for single field validation
       try {
         const fieldPath = fieldName.split('.')
-        let fieldSchema: z.ZodTypeAny = schema
+        let fieldSchema: ZodSafeParseable = schema as ZodSafeParseable
 
-        // Navigate to the specific field schema
+        // Navigate to the specific field schema (duck-typed for Zod 3/4 compat)
         for (const segment of fieldPath) {
-          if ('shape' in fieldSchema) {
-            // Type assertion for ZodObject
-            const objectSchema = fieldSchema as z.ZodObject<
-              Record<string, z.ZodTypeAny>
-            >
-            fieldSchema = objectSchema.shape[segment]
-          } else if ('element' in fieldSchema) {
-            // Type assertion for ZodArray
-            const arraySchema = fieldSchema as z.ZodArray<z.ZodTypeAny>
-            fieldSchema = arraySchema.element
+          const schemaWithShape = fieldSchema as unknown as ZodSchemaWithShape
+          const schemaWithElement =
+            fieldSchema as unknown as ZodSchemaWithElement
+
+          if (schemaWithShape.shape) {
+            // Navigate into object schema
+            fieldSchema = schemaWithShape.shape[segment]
+          } else if (schemaWithElement.element) {
+            // Navigate into array schema
+            fieldSchema = schemaWithElement.element
           }
         }
 
