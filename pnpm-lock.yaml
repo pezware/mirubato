@@ -416,8 +416,8 @@ importers:
         specifier: ^4.20.5
         version: 4.25.0(@cloudflare/workers-types@4.20250726.0)
       zod:
-        specifier: 4.0.5
-        version: 4.0.5
+        specifier: ^4.0.0
+        version: 4.0.17
 
   packages/ui:
     dependencies:
@@ -497,6 +497,9 @@ importers:
       vitest:
         specifier: ^4.0.10
         version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+      zod:
+        specifier: ^4.0.0
+        version: 4.0.17
 
   scores:
     dependencies:
@@ -7738,12 +7741,6 @@ packages:
         integrity: sha512-1PHjlYRevNxxdy2JZ8JcNAw7rX8V9P1AKkP+x/xZfxB0K5FYfuV+Ug6P/6NVSR2jHQ+FzDDoDHS04nYUsOIyLQ==,
       }
 
-  zod@4.0.5:
-    resolution:
-      {
-        integrity: sha512-/5UuuRPStvHXu7RS+gmvRf4NXrNxpSllGwDnCBcJZtQsKrviYXm54yDGV2KYNLT5kq0lHGcl7lqWJLgSaG+tgA==,
-      }
-
   zustand@4.5.7:
     resolution:
       {
@@ -11925,8 +11922,6 @@ snapshots:
   zod@3.25.76: {}
 
   zod@4.0.17: {}
-
-  zod@4.0.5: {}
 
   zustand@4.5.7(@types/react@18.3.23)(immer@10.1.1)(react@18.3.1):
     dependencies:

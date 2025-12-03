@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
 import { useAuthStore } from '../../stores/authStore'
 import { scoreService } from '../../services/scoreService'
-import { Autocomplete, Button } from '../ui'
+import { Autocomplete, Button, MusicTitle, MusicComposer } from '../ui'
 import { useScoreSearch } from '../../hooks/useScoreSearch'
 import ImageEditor from './ImageEditor'
 import { X, Upload, Trash2, Edit } from 'lucide-react'
@@ -428,7 +428,7 @@ export default function ScoreManagement() {
 
               {/* Error message */}
               {scoreSearch.error && (
-                <div className="mt-2 text-sm text-red-600">
+                <div className="mt-2 text-sm text-morandi-rose-600">
                   {scoreSearch.error}
                 </div>
               )}
@@ -720,8 +720,8 @@ export default function ScoreManagement() {
                   <div
                     className={`mt-3 p-3 rounded-lg text-sm ${
                       uploadResult.success
-                        ? 'bg-green-50 text-green-800 border border-green-200'
-                        : 'bg-red-50 text-red-800 border border-red-200'
+                        ? 'bg-morandi-sage-50 text-morandi-sage-800 border border-morandi-sage-200'
+                        : 'bg-morandi-rose-50 text-morandi-rose-800 border border-morandi-rose-200'
                     }`}
                   >
                     {uploadResult.message}
@@ -756,11 +756,15 @@ export default function ScoreManagement() {
                       className="justify-start text-left p-3"
                     >
                       <div className="w-full">
-                        <div className="font-medium text-morandi-stone-800">
+                        <MusicTitle className="text-morandi-stone-800">
                           {score.title}
-                        </div>
+                        </MusicTitle>
                         <div className="text-sm text-morandi-stone-600">
-                          {score.composer} • {score.instrument}
+                          <MusicComposer as="span">
+                            {score.composer}
+                          </MusicComposer>
+                          {' • '}
+                          {score.instrument}
                         </div>
                       </div>
                     </Button>

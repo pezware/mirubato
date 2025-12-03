@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
+import { Button } from '../ui'
 
 // Configure pdf.js worker - must be set before any PDF operations
 // Using the exact version that react-pdf bundles
@@ -418,14 +419,11 @@ export default function PdfViewer({
         <div className="text-center max-w-md">
           <div className="text-5xl mb-4">⚠️</div>
           <h3 className="text-xl font-semibold mb-2">PDF Loading Error</h3>
-          <p className="text-gray-600 mb-4">{error.message}</p>
+          <p className="text-morandi-stone-600 mb-4">{error.message}</p>
           {error.recoverable && (
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
+            <Button variant="primary" onClick={() => window.location.reload()}>
               Retry
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -447,8 +445,8 @@ export default function PdfViewer({
         loading={
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-              <p className="text-sm text-gray-600">Loading PDF...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500 mx-auto mb-2"></div>
+              <p className="text-sm text-morandi-stone-600">Loading PDF...</p>
             </div>
           </div>
         }
@@ -456,7 +454,7 @@ export default function PdfViewer({
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
               <div className="text-5xl mb-4">📄</div>
-              <p className="text-gray-600">Failed to load PDF</p>
+              <p className="text-morandi-stone-600">Failed to load PDF</p>
             </div>
           </div>
         }
@@ -470,7 +468,7 @@ export default function PdfViewer({
           loading={
             <div className="flex items-center justify-center p-8">
               <div
-                className="animate-pulse bg-gray-200 rounded"
+                className="animate-pulse bg-morandi-stone-200 rounded"
                 style={{ width: pageWidth || 600, height: 800 }}
               />
             </div>
@@ -484,13 +482,14 @@ export default function PdfViewer({
           {/* Mobile Navigation - Bottom centered */}
           {isMobile && (
             <div className="pdf-viewer-controls mt-4 flex items-center justify-center gap-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3">
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => changePage(-1)}
                 disabled={pageNumber <= 1}
-                className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
               >
                 Previous
-              </button>
+              </Button>
 
               <div className="flex items-center gap-2">
                 <span className="text-sm">Page</span>
@@ -505,13 +504,14 @@ export default function PdfViewer({
                 <span className="text-sm">of {numPages}</span>
               </div>
 
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => changePage(1)}
                 disabled={pageNumber >= numPages}
-                className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
               >
                 Next
-              </button>
+              </Button>
             </div>
           )}
 

@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight, Clock, Music, Calendar } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import type { SegmentOption } from './SegmentedControl'
@@ -20,6 +19,36 @@ export interface PeriodStats {
   uniquePieces: number
 }
 
+export interface PeriodSelectorLabels {
+  /** Period level labels */
+  periodLevels: {
+    week: string
+    month: string
+    year: string
+  }
+  /** Month names (January through December, 0-indexed array) */
+  months: string[]
+  /** Navigation button labels */
+  navigation: {
+    prevWeek: string
+    prevMonth: string
+    prevYear: string
+    nextWeek: string
+    nextMonth: string
+    nextYear: string
+  }
+  /** Section header (e.g., "View by") */
+  viewBy: string
+  /** Stats section labels */
+  stats: {
+    sessions: string
+    totalTime: string
+    pieces: string
+  }
+  /** Segmented control aria label */
+  segmentedControlAriaLabel: string
+}
+
 export interface PeriodSelectorProps {
   selectedLevel: PeriodLevel
   selectedDate: PeriodDate
@@ -28,6 +57,10 @@ export interface PeriodSelectorProps {
   onPrevious: () => void
   onNext: () => void
   className?: string
+  /** All text labels - required for i18n support */
+  labels: PeriodSelectorLabels
+  /** Locale for date formatting (e.g., 'en-US', 'zh-TW') */
+  locale?: string
 }
 
 export function PeriodSelector({
@@ -38,52 +71,37 @@ export function PeriodSelector({
   onPrevious,
   onNext,
   className,
+  labels,
+  locale = 'en-US',
 }: PeriodSelectorProps) {
-  const { t, i18n } = useTranslation(['logbook', 'common'])
-
   // Period level options for segmented control
   const periodOptions: SegmentOption[] = useMemo(
     () => [
       {
         value: 'week',
-        label: t('common:time.week'),
+        label: labels.periodLevels.week,
         icon: <Calendar className="w-3.5 h-3.5" />,
       },
       {
         value: 'month',
-        label: t('common:time.month'),
+        label: labels.periodLevels.month,
         icon: <Calendar className="w-3.5 h-3.5" />,
       },
       {
         value: 'year',
-        label: t('common:time.year'),
+        label: labels.periodLevels.year,
         icon: <Calendar className="w-3.5 h-3.5" />,
       },
     ],
-    [t]
+    [labels.periodLevels]
   )
 
   // Format the current period label based on selected level
   const periodLabel = useMemo(() => {
-    const monthNames = [
-      t('common:months.january'),
-      t('common:months.february'),
-      t('common:months.march'),
-      t('common:months.april'),
-      t('common:months.may'),
-      t('common:months.june'),
-      t('common:months.july'),
-      t('common:months.august'),
-      t('common:months.september'),
-      t('common:months.october'),
-      t('common:months.november'),
-      t('common:months.december'),
-    ]
-
     if (selectedLevel === 'year') {
       return selectedDate.year.toString()
     } else if (selectedLevel === 'month') {
-      return `${monthNames[selectedDate.month]} ${selectedDate.year}`
+      return `${labels.months[selectedDate.month]} ${selectedDate.year}`
     } else {
       // Week level - show date range
       const firstDayOfMonth = new Date(selectedDate.year, selectedDate.month, 1)
@@ -99,9 +117,9 @@ export function PeriodSelector({
       const weekEnd = new Date(weekStart)
       weekEnd.setDate(weekEnd.getDate() + 6)
 
-      // Format dates
+      // Format dates using locale
       const formatDate = (date: Date) => {
-        return date.toLocaleDateString(i18n.language, {
+        return date.toLocaleDateString(locale, {
           month: 'short',
           day: 'numeric',
         })
@@ -113,20 +131,20 @@ export function PeriodSelector({
       }
       return `${formatDate(weekStart)} - ${weekEnd.getDate()}, ${weekEnd.getFullYear()}`
     }
-  }, [selectedLevel, selectedDate, t, i18n.language])
+  }, [selectedLevel, selectedDate, labels.months, locale])
 
   // Navigation button labels
   const prevLabel = useMemo(() => {
-    if (selectedLevel === 'week') return t('logbook:periodSelector.prevWeek')
-    if (selectedLevel === 'month') return t('logbook:periodSelector.prevMonth')
-    return t('logbook:periodSelector.prevYear')
-  }, [selectedLevel, t])
+    if (selectedLevel === 'week') return labels.navigation.prevWeek
+    if (selectedLevel === 'month') return labels.navigation.prevMonth
+    return labels.navigation.prevYear
+  }, [selectedLevel, labels.navigation])
 
   const nextLabel = useMemo(() => {
-    if (selectedLevel === 'week') return t('logbook:periodSelector.nextWeek')
-    if (selectedLevel === 'month') return t('logbook:periodSelector.nextMonth')
-    return t('logbook:periodSelector.nextYear')
-  }, [selectedLevel, t])
+    if (selectedLevel === 'week') return labels.navigation.nextWeek
+    if (selectedLevel === 'month') return labels.navigation.nextMonth
+    return labels.navigation.nextYear
+  }, [selectedLevel, labels.navigation])
 
   return (
     <div
@@ -139,7 +157,7 @@ export function PeriodSelector({
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-medium text-morandi-stone-600">
-            {t('logbook:periodSelector.viewBy')}
+            {labels.viewBy}
           </h3>
         </div>
         <SegmentedControl
@@ -148,6 +166,7 @@ export function PeriodSelector({
           onChange={value => onLevelChange(value as PeriodLevel)}
           size="sm"
           className="w-full"
+          ariaLabel={labels.segmentedControlAriaLabel}
         />
       </div>
 
@@ -196,7 +215,7 @@ export function PeriodSelector({
                 {stats.entries}
               </p>
               <p className="text-xs text-morandi-stone-500">
-                {t('logbook:periodSelector.sessions')}
+                {labels.stats.sessions}
               </p>
             </div>
           </div>
@@ -211,7 +230,7 @@ export function PeriodSelector({
                 {formatDuration(stats.totalDuration)}
               </p>
               <p className="text-xs text-morandi-stone-500">
-                {t('logbook:periodSelector.totalTime')}
+                {labels.stats.totalTime}
               </p>
             </div>
           </div>
@@ -226,7 +245,7 @@ export function PeriodSelector({
                 {stats.uniquePieces}
               </p>
               <p className="text-xs text-morandi-stone-500">
-                {t('logbook:periodSelector.pieces')}
+                {labels.stats.pieces}
               </p>
             </div>
           </div>

@@ -102,9 +102,9 @@ function ConfidenceIndicator({ confidence }: { confidence?: number }) {
   if (confidence === undefined) return null
 
   const getColor = (conf: number) => {
-    if (conf >= 0.8) return 'bg-green-500'
-    if (conf >= 0.5) return 'bg-amber-500'
-    return 'bg-red-500'
+    if (conf >= 0.8) return 'bg-morandi-sage-500'
+    if (conf >= 0.5) return 'bg-morandi-peach-500'
+    return 'bg-morandi-rose-500'
   }
 
   const getLabel = (conf: number) => {
@@ -563,9 +563,9 @@ export default function ImportScoreModal({
 
         {/* Error message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="mb-4 p-3 bg-morandi-rose-50 border border-morandi-rose-200 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-morandi-rose-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-morandi-rose-700">{error}</p>
           </div>
         )}
 

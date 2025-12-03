@@ -30,6 +30,7 @@ export default function AnalyticsView({ analytics }: AnalyticsViewProps) {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           className="mb-3 sm:mb-4"
+          ariaLabel={t('reports:analytics.tabNavigation', 'Analytics controls')}
         />
 
         <div className="p-2 sm:p-4">

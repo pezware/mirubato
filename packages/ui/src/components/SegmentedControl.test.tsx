@@ -3,13 +3,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SegmentedControl, SegmentOption } from './SegmentedControl'
 
-// Mock react-i18next
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}))
-
 const mockOptions: SegmentOption[] = [
   { value: 'list', label: 'List' },
   { value: 'grid', label: 'Grid' },
@@ -21,6 +14,7 @@ describe('SegmentedControl', () => {
     options: mockOptions,
     value: 'list',
     onChange: vi.fn(),
+    ariaLabel: 'View mode selection',
   }
 
   it('should render all options', () => {
@@ -106,6 +100,7 @@ describe('SegmentedControl', () => {
           options={optionsWithIcon}
           value="home"
           onChange={vi.fn()}
+          ariaLabel="Navigation"
         />
       )
 

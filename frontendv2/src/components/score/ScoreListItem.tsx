@@ -4,8 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import type { Score } from '../../services/scoreService'
 import type { Collection } from '../../types/collections'
 import CollectionBadges from './CollectionBadges'
-import { MusicTitle, MusicComposer, cn } from '../ui'
-import { Star, CheckSquare, Square } from 'lucide-react'
+import { Button, MusicTitle, MusicComposer, cn } from '../ui'
+import {
+  Star,
+  CheckSquare,
+  Square,
+  ChevronRight,
+  FolderPlus,
+} from 'lucide-react'
 
 interface ScoreListItemProps {
   score: Score
@@ -97,16 +103,18 @@ export default function ScoreListItem({
         <div className="flex items-start justify-between">
           {/* Selection Checkbox */}
           {selectionMode && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={handleCheckboxClick}
-              className="mr-3 mt-0.5 flex-shrink-0 text-morandi-sage-600 hover:text-morandi-sage-800 transition-colors"
+              className="mr-3 mt-0.5 flex-shrink-0 text-morandi-sage-600 hover:text-morandi-sage-800"
             >
               {isSelected ? (
                 <CheckSquare className="w-5 h-5" />
               ) : (
                 <Square className="w-5 h-5" />
               )}
-            </button>
+            </Button>
           )}
 
           <div className="flex-1">
@@ -168,16 +176,17 @@ export default function ScoreListItem({
           <div className="flex items-center gap-2 ml-4">
             {/* Favorite star button */}
             {onToggleFavorite && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon-md"
                 onClick={e => {
                   e.stopPropagation()
                   onToggleFavorite(e, score)
                 }}
                 className={cn(
-                  'p-2 transition-all',
                   isFavorited
-                    ? 'text-amber-500 hover:text-amber-600'
-                    : 'text-morandi-stone-400 hover:text-amber-500 opacity-0 group-hover:opacity-100'
+                    ? 'text-morandi-peach-500 hover:text-morandi-peach-600'
+                    : 'text-morandi-stone-400 hover:text-morandi-peach-500 opacity-0 group-hover:opacity-100'
                 )}
                 title={
                   isFavorited
@@ -192,51 +201,31 @@ export default function ScoreListItem({
                   className="w-5 h-5"
                   fill={isFavorited ? 'currentColor' : 'none'}
                 />
-              </button>
+              </Button>
             )}
             {onAddToCollection && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon-md"
                 onClick={e => {
                   e.stopPropagation()
                   onAddToCollection(e, score)
                 }}
-                className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="text-morandi-stone-600 hover:text-morandi-stone-800 opacity-0 group-hover:opacity-100"
                 title={t('scorebook:addToCollection', 'Add to collection')}
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
-              </button>
+                <FolderPlus className="w-5 h-5" />
+              </Button>
             )}
-            <button
+            <Button
+              variant="ghost"
+              size="icon-md"
               onClick={handleScoreSelect}
-              className="p-2 text-morandi-sage-600 hover:text-morandi-sage-800 transition-colors"
+              className="text-morandi-sage-600 hover:text-morandi-sage-800"
               title={t('scorebook:viewScore', 'View score')}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
+              <ChevronRight className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       </div>
@@ -313,12 +302,9 @@ export default function ScoreListItem({
           )}
 
           <div className="mt-4 flex gap-2">
-            <button
-              onClick={handleScoreSelect}
-              className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-600 transition-colors text-sm"
-            >
+            <Button variant="primary" size="sm" onClick={handleScoreSelect}>
               {t('scorebook:viewScore', 'View Score')}
-            </button>
+            </Button>
           </div>
         </div>
       )}

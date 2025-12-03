@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Modal } from '../ui'
+import { Button, Card, Modal, MusicTitle, MusicComposer } from '../ui'
 
 interface MissingScorePromptProps {
   scoreId: string
@@ -85,13 +85,16 @@ export default function MissingScorePrompt({
             />
           </svg>
 
-          <h3 className="text-2xl font-medium text-morandi-stone-800 mb-2">
+          <MusicTitle as="h3" className="text-2xl text-morandi-stone-800 mb-2">
             {scoreTitle}
-          </h3>
+          </MusicTitle>
           {scoreComposer && (
-            <p className="text-lg text-morandi-stone-600 mb-4">
+            <MusicComposer
+              as="p"
+              className="text-lg text-morandi-stone-600 mb-4"
+            >
               {t('scorebook:by')} {scoreComposer}
-            </p>
+            </MusicComposer>
           )}
         </div>
 

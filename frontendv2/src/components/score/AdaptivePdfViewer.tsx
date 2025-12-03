@@ -4,6 +4,7 @@ import ImageBasedPdfViewer from './ImageBasedPdfViewer'
 import ImageScoreViewer from './ImageScoreViewer'
 import { scoreService } from '../../services/scoreService'
 import { DeviceDetection } from '../../constants/deviceDetection'
+import { Button } from '../ui'
 
 interface AdaptivePdfViewerProps {
   scoreId: string
@@ -223,8 +224,8 @@ export default function AdaptivePdfViewer({
       <div className={`adaptive-pdf-viewer ${className}`}>
         <div className="flex items-center justify-center p-8 min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600">Loading viewer...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500 mx-auto mb-2"></div>
+            <p className="text-sm text-morandi-stone-600">Loading viewer...</p>
           </div>
         </div>
       </div>
@@ -278,16 +279,13 @@ export default function AdaptivePdfViewer({
           <div className="text-center max-w-md">
             <div className="text-5xl mb-4">⚠️</div>
             <h3 className="text-xl font-semibold mb-2">Unable to Load Score</h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-morandi-stone-600 mb-4">
               We're having trouble loading this score. Please try refreshing the
               page or contact support if the issue persists.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
+            <Button variant="primary" onClick={() => window.location.reload()}>
               Refresh Page
-            </button>
+            </Button>
           </div>
         </div>
       </div>

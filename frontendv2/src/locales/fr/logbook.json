@@ -145,5 +145,8 @@
   },
   "title": "Journal",
   "type": "Type",
+  "validation": {
+    "fixErrors": "Veuillez corriger les erreurs ci-dessus avant d'enregistrer"
+  },
   "viewScore": "Voir la partition"
 }

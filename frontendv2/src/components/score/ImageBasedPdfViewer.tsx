@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { scoreService } from '../../services/scoreService'
-import { ProgressiveImage } from '../ui'
+import { Button, ProgressiveImage } from '../ui'
 import { ProgressiveImageLoader } from '../../utils/imageUtils'
 
 interface ImageBasedPdfViewerProps {
@@ -208,12 +208,12 @@ export default function ImageBasedPdfViewer({
       onTouchEnd={handleTouchEnd}
     >
       {/* Main Image Display */}
-      <div className="relative bg-gray-100 rounded-lg shadow-lg overflow-hidden">
+      <div className="relative bg-morandi-stone-100 rounded-lg shadow-lg overflow-hidden">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-              <p className="text-sm text-gray-600">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500 mx-auto mb-2"></div>
+              <p className="text-sm text-morandi-stone-600">
                 Loading page {pageNumber}...
               </p>
             </div>
@@ -227,18 +227,18 @@ export default function ImageBasedPdfViewer({
               <h3 className="text-xl font-semibold mb-2">
                 Failed to load page
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-morandi-stone-600 mb-4">
                 Unable to display page {pageNumber}
               </p>
-              <button
+              <Button
+                variant="primary"
                 onClick={() => {
                   setImageError(false)
                   setLoading(true)
                 }}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
               >
                 Retry
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -260,13 +260,14 @@ export default function ImageBasedPdfViewer({
       {/* Navigation Controls */}
       {numPages > 1 && (
         <div className="mt-4 flex items-center justify-center gap-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => changePage(-1)}
             disabled={pageNumber <= 1}
-            className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
           >
             Previous
-          </button>
+          </Button>
 
           <div className="flex items-center gap-2">
             <span className="text-sm">Page</span>
@@ -281,19 +282,20 @@ export default function ImageBasedPdfViewer({
             <span className="text-sm">of {numPages || '?'}</span>
           </div>
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => changePage(1)}
             disabled={pageNumber >= numPages}
-            className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Preload Status (dev only) */}
       {process.env.NODE_ENV === 'development' && enablePreloading && (
-        <div className="mt-2 text-xs text-gray-500 text-center">
+        <div className="mt-2 text-xs text-morandi-stone-500 text-center">
           Preloaded:{' '}
           {Array.from(preloadedImages.keys())
             .sort((a, b) => a - b)

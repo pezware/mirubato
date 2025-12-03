@@ -286,7 +286,8 @@ packages/ui/                    # @mirubato/ui - Shared reusable components
 │   └── ...
 ├── src/utils/
 │   ├── cn.ts                   # Tailwind class merging utility
-│   └── dateUtils.ts            # formatDuration, formatDurationLong
+│   ├── dateUtils.ts            # formatDuration, formatTimerDisplay, etc.
+│   └── hooks.ts                # useModal, useModals, useFormValidation, useClickOutside
 └── src/index.ts                # Barrel export
 
 frontendv2/src/components/ui/   # App-specific components
@@ -325,12 +326,23 @@ import Button from '@/components/ui/Button'  // File doesn't exist!
 | Location         | Contains                | Business Logic | Example                           |
 | ---------------- | ----------------------- | -------------- | --------------------------------- |
 | `@mirubato/ui`   | Pure UI components      | ❌ None        | Button, Card, Modal, Typography   |
+| `@mirubato/ui`   | Generic hooks           | ❌ None        | useModal, useFormValidation       |
+| `@mirubato/ui`   | Formatting utilities    | ❌ None        | formatDuration, cn                |
 | `frontendv2/ui/` | App-specific components | ✅ Yes         | EntryDetailPanel, ProtectedButton |
 
-**When creating new components:**
+**When creating new code, add to `@mirubato/ui` if:**
 
-- If it's a pure UI component with no business logic → Add to `packages/ui/`
-- If it depends on stores, hooks, or app state → Keep in `frontendv2/src/components/ui/`
+- Pure UI component with no business logic
+- Generic hook (no stores, no app-specific imports)
+- Utility function used in 2+ places
+- Formatting function (dates, durations, numbers)
+
+**Keep in `frontendv2` if:**
+
+- Depends on stores (useAuthStore, useLogbookStore)
+- Depends on app-specific hooks or context
+- Uses i18n translations with app-specific keys
+- Contains business logic specific to Mirubato
 
 ### Available Components
 
@@ -348,6 +360,32 @@ import Button from '@/components/ui/Button'  // File doesn't exist!
 | ProtectedButton               | frontendv2   | -                                       | Prevents double-clicks   |
 | EntryDetailPanel              | frontendv2   | -                                       | Logbook entry details    |
 | CompactEntryRow               | frontendv2   | -                                       | Compact entry display    |
+
+### Shared Hooks & Utilities
+
+| Export               | Type    | Usage                                   |
+| -------------------- | ------- | --------------------------------------- |
+| `useModal`           | Hook    | Single modal open/close state           |
+| `useModals<T>`       | Hook    | Multiple named modals management        |
+| `useFormValidation`  | Hook    | Zod schema validation with field errors |
+| `useClickOutside`    | Hook    | Detect clicks outside element refs      |
+| `formatDuration`     | Utility | Minutes → "Xh Ym" (e.g., 90 → "1h 30m") |
+| `formatTimerDisplay` | Utility | Seconds → "H:MM:SS" or "M:SS"           |
+| `formatTimerCompact` | Utility | Seconds → "Xh Ym" or "Xm" or "Xs"       |
+| `cn`                 | Utility | Tailwind class merging (clsx + twMerge) |
+
+```tsx
+// ✅ Import hooks and utilities from @/components/ui
+import { useModal, useFormValidation, formatDuration, cn } from '@/components/ui'
+
+// ✅ Use useModal for simple modal state
+const confirmModal = useModal()
+<Button onClick={confirmModal.open}>Delete</Button>
+<Modal isOpen={confirmModal.isOpen} onClose={confirmModal.close}>...</Modal>
+
+// ✅ Use useFormValidation with Zod schemas
+const { validate, errors, getFieldError } = useFormValidation({ schema: mySchema })
+```
 
 ### Typography Design System (Updated v1.7.6)
 

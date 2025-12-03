@@ -146,5 +146,8 @@
     "every30min": "Every 30 minutes",
     "every45min": "Every 45 minutes",
     "every60min": "Every hour"
+  },
+  "validation": {
+    "fixErrors": "Please fix the errors above before saving"
   }
 }

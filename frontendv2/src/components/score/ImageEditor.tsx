@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
+import { Button } from '../ui'
 import { sanitizeImageUrl, getFallbackImageUrl } from '../../utils/urlSanitizer'
 
 interface ImageEditorProps {
@@ -152,29 +153,32 @@ export default function ImageEditor({
 
           {/* Action Buttons - Mobile responsive */}
           <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4 border-t border-morandi-stone-200">
-            <button
+            <Button
+              variant="secondary"
               onClick={onCancel}
-              className="flex-1 sm:flex-none px-4 py-2.5 text-morandi-stone-600 bg-morandi-stone-100 hover:bg-morandi-stone-200 rounded-lg transition-colors text-sm font-medium"
+              className="flex-1 sm:flex-none"
             >
               Cancel
-            </button>
+            </Button>
             <div className="flex gap-3 flex-1 sm:flex-none">
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setBrightness(100)
                   setContrast(100)
                   setCrop(undefined)
                 }}
-                className="flex-1 sm:flex-none px-4 py-2.5 text-morandi-stone-600 bg-morandi-stone-100 hover:bg-morandi-stone-200 rounded-lg transition-colors text-sm font-medium"
+                className="flex-1 sm:flex-none"
               >
                 Reset
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={handleSave}
-                className="flex-1 sm:flex-none px-6 py-2.5 bg-morandi-sage-500 text-white hover:bg-morandi-sage-600 rounded-lg transition-colors text-sm font-medium shadow-sm"
+                className="flex-1 sm:flex-none"
               >
                 Apply Changes
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -3,7 +3,18 @@
 
 // Utilities
 export { cn } from './utils/cn'
-export { useClickOutside } from './utils/hooks'
+export {
+  useClickOutside,
+  useModal,
+  useModals,
+  useFormValidation,
+} from './utils/hooks'
+export type {
+  UseModalReturn,
+  UseModalsReturn,
+  UseFormValidationOptions,
+  UseFormValidationReturn,
+} from './utils/hooks'
 export {
   formatDuration,
   formatDurationLong,
@@ -22,6 +33,9 @@ export {
   checkIsYesterday,
   formatTimeOnly,
   getDateLocale,
+  // Timer utilities (for raw seconds)
+  formatTimerDisplay,
+  formatTimerCompact,
 } from './utils/dateUtils'
 
 // Components
@@ -56,7 +70,10 @@ export { default as Checkbox } from './components/Checkbox'
 export type { CheckboxProps } from './components/Checkbox'
 
 export { default as ClockTimePicker } from './components/ClockTimePicker'
-export type { ClockTimePickerProps } from './components/ClockTimePicker'
+export type {
+  ClockTimePickerProps,
+  ClockTimePickerLabels,
+} from './components/ClockTimePicker'
 
 export { DateSeparator } from './components/DateSeparator'
 export type { DateSeparatorProps } from './components/DateSeparator'
@@ -93,6 +110,7 @@ export type {
   PeriodDate,
   PeriodStats,
   PeriodSelectorProps,
+  PeriodSelectorLabels,
 } from './components/PeriodSelector'
 
 export { default as ProgressiveImage } from './components/ProgressiveImage'

@@ -7,7 +7,7 @@ import {
   type ChartOptions,
 } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
-import { Card } from '@/components/ui'
+import { Card, formatDuration } from '@/components/ui'
 import { ArrowRight } from 'lucide-react'
 import {
   format,
@@ -351,15 +351,6 @@ function formatPeriodLabel(
   } catch {
     return key
   }
-}
-
-function formatDuration(minutes: number): string {
-  if (minutes === 0) return '0m'
-  const hours = Math.floor(minutes / 60)
-  const mins = Math.round(minutes % 60)
-  if (hours === 0) return `${mins}m`
-  if (mins === 0) return `${hours}h`
-  return `${hours}h ${mins}m`
 }
 
 function formatDate(timestamp: string): string {

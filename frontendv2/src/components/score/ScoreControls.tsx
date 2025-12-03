@@ -404,7 +404,9 @@ export default function ScoreControls() {
                   onChange={e => goToPage(parseInt(e.target.value) || 1)}
                   className="w-12 px-1 py-1 border rounded text-center text-xs"
                 />
-                <span className="text-xs text-gray-600">of {totalPages}</span>
+                <span className="text-xs text-morandi-stone-600">
+                  of {totalPages}
+                </span>
               </div>
 
               <Button

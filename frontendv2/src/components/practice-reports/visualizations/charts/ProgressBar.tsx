@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { type ChartData, type TooltipItem, type ChartDataset } from 'chart.js'
 import { ChartContainer } from './ChartContainer'
 import { ChartConfig } from '../../../../types/reporting'
+import { formatDuration } from '../../../ui'
 
 interface ProgressBarProps {
   data: Array<{
@@ -134,13 +135,4 @@ export function ProgressBar({
   return (
     <ChartContainer config={config} data={chartData} className={className} />
   )
-}
-
-function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const mins = Math.round(minutes % 60)
-
-  if (hours === 0) return `${mins}m`
-  if (mins === 0) return `${hours}h`
-  return `${hours}h ${mins}m`
 }

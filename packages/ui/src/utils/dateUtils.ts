@@ -251,3 +251,48 @@ export function formatTimeOnly(
     typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
   return format(d, 'h:mm a', { locale: getDateLocale(language) })
 }
+
+// =============================================================================
+// Timer Utilities - for formatting raw seconds (timers, countdowns, stopwatches)
+// =============================================================================
+
+/**
+ * Format total seconds to timer display format
+ * Example: 3665 → "1:01:05" (hours shown only if > 0)
+ * Example: 125 → "2:05"
+ *
+ * @param totalSeconds - Total seconds to format
+ * @returns Formatted string in H:MM:SS or M:SS format
+ */
+export function formatTimerDisplay(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const secs = totalSeconds % 60
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`
+}
+
+/**
+ * Format total seconds to compact human-readable format
+ * Example: 3665 → "1h 1m"
+ * Example: 125 → "2m"
+ * Example: 45 → "45s"
+ *
+ * @param totalSeconds - Total seconds to format
+ * @returns Formatted string like "Xh Ym" or "Xm" or "Xs"
+ */
+export function formatTimerCompact(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+
+  if (hours > 0) {
+    return `${hours}h${minutes > 0 ? ` ${minutes}m` : ''}`
+  }
+  if (minutes > 0) {
+    return `${minutes}m`
+  }
+  return `${totalSeconds}s`
+}

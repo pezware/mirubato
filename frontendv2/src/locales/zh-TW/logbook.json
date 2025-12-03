@@ -145,5 +145,8 @@
   },
   "title": "練習日誌",
   "type": "類型",
+  "validation": {
+    "fixErrors": "請先修正上方的錯誤再儲存"
+  },
   "viewScore": "查看樂譜"
 }

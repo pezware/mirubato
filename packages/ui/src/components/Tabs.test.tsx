@@ -3,13 +3,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Tabs, Tab } from './Tabs'
 
-// Mock react-i18next
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}))
-
 const mockTabs: Tab[] = [
   { id: 'tab1', label: 'Tab One' },
   { id: 'tab2', label: 'Tab Two' },
@@ -21,6 +14,7 @@ describe('Tabs', () => {
     tabs: mockTabs,
     activeTab: 'tab1',
     onTabChange: vi.fn(),
+    ariaLabel: 'Main navigation',
   }
 
   it('should render all tabs', () => {
@@ -66,7 +60,12 @@ describe('Tabs', () => {
       ]
 
       render(
-        <Tabs tabs={tabsWithIcon} activeTab="tab1" onTabChange={vi.fn()} />
+        <Tabs
+          tabs={tabsWithIcon}
+          activeTab="tab1"
+          onTabChange={vi.fn()}
+          ariaLabel="Tab navigation"
+        />
       )
 
       expect(screen.getByTestId('home-icon')).toBeInTheDocument()
@@ -80,7 +79,12 @@ describe('Tabs', () => {
       ]
 
       render(
-        <Tabs tabs={tabsWithShort} activeTab="tab1" onTabChange={vi.fn()} />
+        <Tabs
+          tabs={tabsWithShort}
+          activeTab="tab1"
+          onTabChange={vi.fn()}
+          ariaLabel="Settings navigation"
+        />
       )
 
       // Both labels should be in the document (shown/hidden via CSS)
@@ -105,6 +109,7 @@ describe('Tabs', () => {
           tabs={tabsWithMobileIcon}
           activeTab="tab1"
           onTabChange={vi.fn()}
+          ariaLabel="Dashboard navigation"
         />
       )
 

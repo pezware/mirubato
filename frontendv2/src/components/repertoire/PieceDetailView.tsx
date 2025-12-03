@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edit2, Music, Link, Trash2 } from 'lucide-react'
-import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
 import {
   Button,
   Card,
@@ -12,6 +11,7 @@ import {
   ModalBody,
   ModalFooter,
   DropdownMenu,
+  LogPracticeButton,
 } from '@/components/ui'
 import type { DropdownMenuItem } from '@/components/ui'
 import { LogbookSplitView } from '@/components/logbook/LogbookSplitView'

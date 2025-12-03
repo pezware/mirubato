@@ -268,6 +268,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
               shareCardData.setViewMode(value as 'day' | 'week')
             }
             size="sm"
+            ariaLabel={t('share:viewMode', 'View mode selection')}
           />
         </div>
 
@@ -304,6 +305,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
                 value={variant}
                 onChange={value => setVariant(value as CardVariant)}
                 size="sm"
+                ariaLabel={t('share:cardSizeSelection', 'Card size selection')}
               />
             </div>
 

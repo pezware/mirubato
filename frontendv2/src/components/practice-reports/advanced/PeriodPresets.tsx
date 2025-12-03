@@ -163,6 +163,7 @@ export function PeriodPresets({
           onChange={value => setSelectedPeriod(value as PeriodPreset['id'])}
           size="sm"
           className="w-full"
+          ariaLabel={t('reports:presets.periodSelection', 'Period selection')}
         />
       </div>
 

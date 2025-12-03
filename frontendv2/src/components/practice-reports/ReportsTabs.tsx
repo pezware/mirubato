@@ -70,6 +70,7 @@ export function ReportsTabs({
       activeTab={reportView}
       onTabChange={handleTabChange}
       className="mb-3 sm:mb-4"
+      ariaLabel={t('reports:tabs.navigation', 'Reports navigation')}
     />
   )
 }

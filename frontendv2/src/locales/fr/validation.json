@@ -10,6 +10,9 @@
   "composer": {
     "maxLength": "Le compositeur doit contenir moins de {{max}} caractères"
   },
+  "date": {
+    "futureNotAllowed": "La date ne peut pas être dans le futur"
+  },
   "datetime": {
     "invalid": "Date/heure invalide"
   },

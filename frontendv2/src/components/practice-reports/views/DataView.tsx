@@ -93,6 +93,7 @@ export default function DataView({ analytics }: DataViewProps) {
             value={activeView}
             onChange={value => setActiveView(value as ViewType)}
             className="w-full max-w-xs sm:w-auto"
+            ariaLabel={t('reports:data.viewSelection', 'Data view selection')}
           />
         </div>
 

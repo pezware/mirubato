@@ -145,5 +145,8 @@
   },
   "title": "Diario",
   "type": "Tipo",
+  "validation": {
+    "fixErrors": "Por favor, corrija los errores anteriores antes de guardar"
+  },
   "viewScore": "Ver partitura"
 }
