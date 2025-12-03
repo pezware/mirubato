@@ -3,6 +3,7 @@
 
 // Utilities
 export { cn } from './utils/cn'
+export { useClickOutside } from './utils/hooks'
 export {
   formatDuration,
   formatDurationLong,
@@ -26,6 +27,7 @@ export {
 // Components
 export { default as Autocomplete } from './components/Autocomplete'
 export type {
+  AutocompleteMetadata,
   AutocompleteOption,
   AutocompleteProps,
 } from './components/Autocomplete'
@@ -124,7 +126,8 @@ export type { TagProps } from './components/Tag'
 export { default as TimelineNav } from './components/TimelineNav'
 export type { TimelineLevel, TimelineNavProps } from './components/TimelineNav'
 
-export { default as TimePicker } from './components/TimePicker'
+// TimePicker is an alias for ClockTimePicker (for backward compatibility)
+export { default as TimePicker } from './components/ClockTimePicker'
 
 export { Toast, ToastContainer } from './components/Toast'
 export type {

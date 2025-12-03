@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import Button from './Button'
+import { useClickOutside } from '../utils/hooks'
 
 export interface ClockTimePickerProps {
   value: string // HH:MM format
@@ -67,20 +68,8 @@ export default function ClockTimePicker({
   }, [isOpen])
 
   // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        !triggerRef.current?.contains(event.target as Node)
-      ) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const handleClose = useCallback(() => setIsOpen(false), [])
+  useClickOutside([dropdownRef, triggerRef], handleClose, isOpen)
 
   // Calculate angle from coordinates
   const calculateAngle = (clientX: number, clientY: number) => {

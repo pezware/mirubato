@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { MoreVertical } from 'lucide-react'
 import { cn } from '../utils/cn'
+import { useClickOutside } from '../utils/hooks'
 
 export interface DropdownMenuItem {
   label: string
@@ -40,24 +41,8 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
   const [usePortal, setUsePortal] = useState(false)
 
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Check both container and menu for portal mode
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node) &&
-        (!menuRef.current || !menuRef.current.contains(event.target as Node))
-      ) {
-        onClose()
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isOpen, onClose])
+  // Close menu when clicking outside (checks both container and menu for portal mode)
+  useClickOutside([containerRef, menuRef], onClose, isOpen)
 
   // Helper to find scrollable parent
   const getScrollableParent = useCallback(

@@ -1,15 +1,23 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { cn } from '../utils/cn'
+import { useClickOutside } from '../utils/hooks'
+
+/** Metadata fields that can be attached to autocomplete options */
+export interface AutocompleteMetadata {
+  /** Composer name - displayed below option label */
+  composer?: string
+  /** Grade/difficulty level */
+  gradeLevel?: number
+  /** Instrument type */
+  instrument?: string
+  /** Additional custom fields (primitive values only) */
+  [key: string]: string | number | boolean | null | undefined
+}
 
 export interface AutocompleteOption {
   value: string
   label: string
-  metadata?: {
-    composer?: string
-    gradeLevel?: number
-    instrument?: string
-    [key: string]: unknown
-  }
+  metadata?: AutocompleteMetadata
 }
 
 export interface AutocompleteProps {
@@ -102,22 +110,11 @@ export default function Autocomplete({
   }
 
   // Handle click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false)
-        setSelectedIndex(-1)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+  const handleClickOutside = useCallback(() => {
+    setIsOpen(false)
+    setSelectedIndex(-1)
   }, [])
+  useClickOutside([inputRef, dropdownRef], handleClickOutside)
 
   // Reset selected index when options change
   useEffect(() => {
