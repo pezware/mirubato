@@ -7,7 +7,7 @@ import {
   type ChartOptions,
 } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
-import { Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui'
 import { ArrowRight } from 'lucide-react'
 import {
   format,

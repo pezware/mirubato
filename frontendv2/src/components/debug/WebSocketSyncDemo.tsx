@@ -6,8 +6,7 @@
 import { useState, useEffect } from 'react'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useAuthStore } from '@/stores/authStore'
-import Button from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button, Card } from '@/components/ui'
 import {
   IconWifi,
   IconWifiOff,

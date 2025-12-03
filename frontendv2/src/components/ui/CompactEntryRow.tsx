@@ -10,13 +10,17 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react'
-import { cn } from '@/utils/cn'
-import { formatDuration } from '@/utils/dateUtils'
+import {
+  cn,
+  formatDuration,
+  MusicTitle,
+  MusicComposer,
+  DropdownMenu,
+  type DropdownMenuItem,
+} from '@mirubato/ui'
 import { toTitleCase } from '@/utils/textFormatting'
-import { MusicTitle, MusicComposer } from './Typography'
-import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu'
 
-interface CompactEntryRowProps {
+export interface CompactEntryRowProps {
   time: string
   duration: number // in minutes
   type?: string

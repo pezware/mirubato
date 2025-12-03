@@ -4,6 +4,7 @@
   "version": "1.8.0",
   "type": "module",
   "workspaces": [
+    "packages/*",
     "frontendv2",
     "api",
     "scores",

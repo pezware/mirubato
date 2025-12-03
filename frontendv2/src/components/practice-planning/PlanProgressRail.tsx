@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
-import { cn } from '@/utils/cn'
+import { cn } from '@/components/ui'
 
 interface PlanProgressRailProps {
   completedCount: number

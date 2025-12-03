@@ -19,8 +19,9 @@ jobs:
       api: ${{ steps.filter.outputs.api }}
       scores: ${{ steps.filter.outputs.scores }}
       dictionary: ${{ steps.filter.outputs.dictionary }}
+      packages_ui: ${{ steps.filter.outputs.packages_ui }}
       shared: ${{ steps.filter.outputs.shared }}
-      any_workspace: ${{ steps.filter.outputs.frontendv2 == 'true' || steps.filter.outputs.api == 'true' || steps.filter.outputs.scores == 'true' || steps.filter.outputs.dictionary == 'true' || steps.filter.outputs.shared == 'true' }}
+      any_workspace: ${{ steps.filter.outputs.frontendv2 == 'true' || steps.filter.outputs.api == 'true' || steps.filter.outputs.scores == 'true' || steps.filter.outputs.dictionary == 'true' || steps.filter.outputs.packages_ui == 'true' || steps.filter.outputs.shared == 'true' }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -29,12 +30,15 @@ jobs:
           filters: |
             frontendv2:
               - 'frontendv2/**'
+              - 'packages/ui/**'
             api:
               - 'api/**'
             scores:
               - 'scores/**'
             dictionary:
               - 'dictionary/**'
+            packages_ui:
+              - 'packages/ui/**'
             shared:
               - 'package.json'
               - 'pnpm-lock.yaml'

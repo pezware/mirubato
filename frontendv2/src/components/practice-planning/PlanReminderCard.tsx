@@ -10,8 +10,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import type { PracticePlan, PlanOccurrence } from '@/api/planning'
-import { Button, Tag, Typography } from '@/components/ui'
-import { cn } from '@/utils/cn'
+import { Button, Tag, Typography, cn } from '@/components/ui'
 
 export type PlanReminderStatus = 'due' | 'upcoming'
 

@@ -196,8 +196,8 @@ ${structuredData}
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7f4;
-            color: #3d3d3a;
+            background: #f4f5f2; /* morandi-sage-50 */
+            color: #3a3632; /* morandi-stone-900 */
             line-height: 1.6;
             padding: 20px;
         }
@@ -212,7 +212,7 @@ ${structuredData}
         }
         
         .header {
-            background: linear-gradient(135deg, #7a8a6f 0%, #6b7a5c 100%);
+            background: linear-gradient(135deg, #818f6d 0%, #6b7857 100%); /* morandi-sage-500 to sage-600 */
             color: white;
             padding: 30px;
             text-align: center;
@@ -247,15 +247,15 @@ ${structuredData}
         }
         
         .definition h2 {
-            color: #7a8a6f;
+            color: #818f6d; /* morandi-sage-500 */
             margin-bottom: 15px;
             font-size: 1.3rem;
         }
-        
+
         .definition-text {
             font-size: 1.1rem;
             margin-bottom: 15px;
-            color: #444;
+            color: #5c5850; /* morandi-stone-700 */
         }
         
         .quality-score {
@@ -267,17 +267,17 @@ ${structuredData}
         }
         
         .quality-score.high {
-            background: #10b981;
+            background: #818f6d; /* morandi-sage-500 */
             color: white;
         }
-        
+
         .quality-score.medium {
-            background: #f59e0b;
+            background: #ec5a2b; /* morandi-peach-500 */
             color: white;
         }
-        
+
         .quality-score.low {
-            background: #ef4444;
+            background: #ec2727; /* morandi-rose-500 */
             color: white;
         }
         
@@ -286,13 +286,13 @@ ${structuredData}
         }
         
         .section h3 {
-            color: #6b7a5c;
+            color: #6b7857; /* morandi-sage-600 */
             margin-bottom: 10px;
             font-size: 1.1rem;
         }
-        
+
         .section p, .section ul {
-            color: #555;
+            color: #7a756b; /* morandi-stone-600 */
         }
         
         .section ul {
@@ -304,7 +304,7 @@ ${structuredData}
         }
         
         .related-terms {
-            background: #f9fafb;
+            background: #f0efec; /* morandi-stone-100 */
             padding: 20px;
             border-radius: 8px;
             margin-top: 30px;
@@ -321,7 +321,7 @@ ${structuredData}
         }
         
         .term-link {
-            background: #7a8a6f;
+            background: #818f6d; /* morandi-sage-500 */
             color: white;
             padding: 6px 12px;
             border-radius: 20px;
@@ -329,14 +329,14 @@ ${structuredData}
             font-size: 0.9rem;
             transition: background 0.2s;
         }
-        
+
         .term-link:hover {
-            background: #6b7a5c;
+            background: #6b7857; /* morandi-sage-600 */
             color: white;
         }
         
         .language-versions {
-            background: #e8ebe6;
+            background: #e8ebe4; /* morandi-sage-100 */
             padding: 20px;
             border-radius: 8px;
             margin-top: 30px;
@@ -354,35 +354,35 @@ ${structuredData}
         
         .language-link {
             background: white;
-            color: #7a8a6f;
+            color: #818f6d; /* morandi-sage-500 */
             padding: 8px 16px;
             border-radius: 6px;
             text-decoration: none;
             font-weight: 500;
-            border: 1px solid #7a8a6f;
+            border: 1px solid #818f6d;
             transition: all 0.2s;
         }
-        
+
         .language-link:hover {
-            background: #7a8a6f;
+            background: #818f6d; /* morandi-sage-500 */
             color: white;
         }
-        
+
         .language-link.current {
-            background: #7a8a6f;
+            background: #818f6d; /* morandi-sage-500 */
             color: white;
         }
         
         .footer {
-            background: #f5f7f4;
+            background: #f4f5f2; /* morandi-sage-50 */
             padding: 20px 30px;
-            border-top: 1px solid #e0d8cb;
+            border-top: 1px solid #ccc7bd; /* morandi-stone-300 */
             text-align: center;
-            color: #6b6b66;
+            color: #7a756b; /* morandi-stone-600 */
         }
-        
+
         .footer a {
-            color: #7a8a6f;
+            color: #818f6d; /* morandi-sage-500 */
             text-decoration: none;
         }
         
@@ -392,22 +392,22 @@ ${structuredData}
         
         .breadcrumb {
             padding: 15px 30px;
-            background: #f9fafb;
-            border-bottom: 1px solid #e0d8cb;
+            background: #f0efec; /* morandi-stone-100 */
+            border-bottom: 1px solid #ccc7bd; /* morandi-stone-300 */
             font-size: 0.9rem;
         }
-        
+
         .breadcrumb a {
-            color: #7a8a6f;
+            color: #818f6d; /* morandi-sage-500 */
             text-decoration: none;
         }
-        
+
         .breadcrumb a:hover {
             text-decoration: underline;
         }
-        
+
         .breadcrumb span {
-            color: #6b6b66;
+            color: #7a756b; /* morandi-stone-600 */
             margin: 0 8px;
         }
         
@@ -594,8 +594,8 @@ export function generateNotFoundHtml(
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7f4;
-            color: #3d3d3a;
+            background: #f4f5f2; /* morandi-sage-50 */
+            color: #3a3632; /* morandi-stone-900 */
             line-height: 1.6;
             padding: 20px;
         }

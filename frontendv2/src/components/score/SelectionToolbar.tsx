@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X, Trash2, FolderPlus, CheckSquare, Square } from 'lucide-react'
-import Button from '../ui/Button'
-import { Select } from '../ui'
+import { Button, Select } from '../ui'
 import type { Collection } from '../../types/collections'
 
 interface SelectionToolbarProps {

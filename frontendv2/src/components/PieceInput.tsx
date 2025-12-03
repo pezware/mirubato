@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import Autocomplete from './ui/Autocomplete'
-import Button from './ui/Button'
+import { Autocomplete, Button } from './ui'
 import { useAutocomplete } from '../hooks/useAutocomplete'
 import { getCanonicalComposerName } from '../utils/composerCanonicalizer'
 

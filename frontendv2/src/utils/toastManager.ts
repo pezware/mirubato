@@ -1,4 +1,4 @@
-import { ToastProps } from '@/components/ui/Toast'
+import type { ToastProps } from '@/components/ui'
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
 

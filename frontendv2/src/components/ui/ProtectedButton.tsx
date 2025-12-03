@@ -1,7 +1,7 @@
-import Button, { type ButtonProps } from './Button'
+import { Button, type ButtonProps } from '@mirubato/ui'
 import { useClickProtection } from '@/hooks/useSubmissionProtection'
 
-interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
+export interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
   /** The action to perform when clicked */
   onClick: () => void | Promise<void>
   /** Debounce delay in milliseconds (default: 300 for mobile, 150 for desktop) */

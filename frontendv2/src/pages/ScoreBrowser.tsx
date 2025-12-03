@@ -17,9 +17,7 @@ import SelectionToolbar from '../components/score/SelectionToolbar'
 import TimerEntry from '../components/TimerEntry'
 import { useAuthStore } from '../stores/authStore'
 import { useModals } from '../hooks/useModal'
-import Button from '../components/ui/Button'
-import { Tabs, Select, Modal } from '../components/ui'
-import { Input } from '../components/ui/Input'
+import { Button, Tabs, Select, Modal, Input } from '../components/ui'
 import {
   Plus,
   BookOpen,

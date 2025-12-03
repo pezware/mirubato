@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Plus, X, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
-import Button from '../../ui/Button'
-import { Card } from '../../ui/Card'
-import { Select } from '../../ui/Select'
+import { Button, Card, Select } from '../../ui'
 import { useReportingStore } from '../../../stores/reportingStore'
 import { SortConfig, SortField } from '../../../types/reporting'
 

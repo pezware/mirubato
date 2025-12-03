@@ -5,7 +5,7 @@ import { useLogbookStore } from '@/stores/logbookStore'
 import { useLayoutPreferences } from '@/hooks/useLayoutPreferences'
 import { PracticeLogsList } from './PracticeLogsList'
 import ManualEntryForm from '@/components/ManualEntryForm'
-import { cn } from '@/utils/cn'
+import { cn } from '@/components/ui'
 
 interface LogbookSplitViewProps {
   entries: LogbookEntry[]

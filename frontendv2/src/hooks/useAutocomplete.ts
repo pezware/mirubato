@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import useSWR from 'swr'
 import { autocompleteApi } from '../api/autocomplete'
-import type { AutocompleteOption } from '../components/ui/Autocomplete'
+import type { AutocompleteOption } from '@mirubato/ui'
 import { useLogbookStore } from '../stores/logbookStore'
 import { isOnline } from '../utils/offlineAutocomplete'
 import { getCanonicalComposerName } from '../utils/composerCanonicalizer'

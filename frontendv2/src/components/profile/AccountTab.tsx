@@ -11,10 +11,17 @@ import {
   Clock,
   Check,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
-import { Modal, ModalBody, ModalFooter } from '../ui/Modal'
-import { Input } from '../ui'
-import Button from '../ui/Button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  Input,
+  Button,
+} from '../ui'
 import GoogleSignInButton from '../GoogleSignInButton'
 import { useAuthStore } from '../../stores/authStore'
 import { showToast } from '../../utils/toastManager'

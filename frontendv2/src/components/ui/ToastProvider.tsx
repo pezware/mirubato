@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ToastContainer, ToastProps } from './Toast'
+import { ToastContainer, type ToastProps } from '@mirubato/ui'
 import { subscribeToToasts, hideToast } from '@/utils/toastManager'
 
 export function ToastProvider() {

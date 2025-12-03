@@ -6,8 +6,7 @@ import {
   type ChartData,
 } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
-import { Card } from '../../../ui/Card'
-import Button from '../../../ui/Button'
+import { Card, Button } from '../../../ui'
 import { Download, Maximize2, Info } from 'lucide-react'
 import { ChartConfig } from '../../../../types/reporting'
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cn } from '../../../utils/cn'
+import { cn } from '@mirubato/ui'
 
 describe('cn utility', () => {
   it('should combine class names', () => {

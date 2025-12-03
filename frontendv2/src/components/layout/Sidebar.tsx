@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { IconInfoSquareRoundedFilled } from '@tabler/icons-react'
 import { useAuthStore } from '../../stores/authStore'
-import Button from '../ui/Button'
+import { Button } from '../ui'
 import { SyncIndicator } from '../SyncIndicator'
 import { useBetaFeature } from '../../hooks/useBetaFeatures'
 import { TimerWidget } from '../timer/TimerWidget'

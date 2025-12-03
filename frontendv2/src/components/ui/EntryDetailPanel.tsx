@@ -17,16 +17,18 @@ import {
   IconMoodHappy,
 } from '@tabler/icons-react'
 import { LogbookEntry } from '@/api/logbook'
-import { MusicTitle, MusicComposer } from '@/components/ui'
 import {
+  MusicTitle,
+  MusicComposer,
   DropdownMenu,
+  cn,
+  formatDuration,
   type DropdownMenuItem,
-} from '@/components/ui/DropdownMenu'
-import { formatDuration, formatDateSeparator } from '@/utils/dateUtils'
+} from '@mirubato/ui'
+import { formatDateSeparator } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
-import { cn } from '@/utils/cn'
 
-interface EntryDetailPanelProps {
+export interface EntryDetailPanelProps {
   entry: LogbookEntry | null
   onClose?: () => void
   onEdit?: (entry: LogbookEntry) => void

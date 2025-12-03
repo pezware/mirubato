@@ -16,14 +16,11 @@ import {
   parseScoreId,
   type DuplicateMatch,
 } from '../utils/scoreIdNormalizer'
-import Button from './ui/Button'
-import TimePicker from './ui/TimePicker'
+import { Button, TimePicker, Modal, FormError } from './ui'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
 import { InstrumentSelector } from './logbook/InstrumentSelector'
 import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
-import { Modal } from './ui/Modal'
-import { FormError } from './ui/FormError'
 import { toLogbookInstrument } from '../utils/instrumentGuards'
 
 type PlanPiecePrefill = {

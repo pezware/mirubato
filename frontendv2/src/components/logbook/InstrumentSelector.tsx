@@ -10,7 +10,7 @@ import {
   IconLayoutGrid,
 } from '@tabler/icons-react'
 import { useUserPreferences } from '../../hooks/useUserPreferences'
-import Button from '../ui/Button'
+import { Button } from '../ui'
 
 // Common orchestral instruments
 const DEFAULT_INSTRUMENTS = [

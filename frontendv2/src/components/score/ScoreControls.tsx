@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import * as Tone from 'tone'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
-import { cn } from '../../utils/cn'
+import { cn } from '../ui'
 import {
   getMetronome,
   type VisualCallback,
 } from '../../services/metronomeService'
 import CollapsibleMetronome from '../metronome/CollapsibleMetronome'
-import Button from '../ui/Button'
+import { Button } from '../ui'
 import {
   ChevronUp,
   ChevronDown,

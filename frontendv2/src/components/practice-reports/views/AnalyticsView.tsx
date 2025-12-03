@@ -7,8 +7,7 @@ import { DistributionPie } from '../visualizations/charts/DistributionPie'
 import { FilterBuilder } from '../advanced/FilterBuilder'
 import { GroupingPanel } from '../advanced/GroupingPanel'
 import { SortingPanel } from '../advanced/SortingPanel'
-import { Tabs } from '../../ui/Tabs'
-import { Card } from '../../ui/Card'
+import { Tabs, Card } from '../../ui'
 
 interface AnalyticsViewProps {
   analytics: EnhancedAnalyticsData

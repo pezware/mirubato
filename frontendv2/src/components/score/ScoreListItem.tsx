@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Score } from '../../services/scoreService'
 import type { Collection } from '../../types/collections'
 import CollectionBadges from './CollectionBadges'
-import { MusicTitle, MusicComposer } from '../ui'
-import { cn } from '../../utils/cn'
+import { MusicTitle, MusicComposer, cn } from '../ui'
 import { Star, CheckSquare, Square } from 'lucide-react'
 
 interface ScoreListItemProps {

@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Settings, Bell, Volume2, Eye } from 'lucide-react'
-import { Modal } from '../ui/Modal'
-import Button from '../ui/Button'
+import { Modal, Button } from '../ui'
 import { useGlobalTimer } from '@/hooks/useGlobalTimer'
 
 interface TimerSettingsProps {

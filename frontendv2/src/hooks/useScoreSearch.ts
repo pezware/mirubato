@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { scoreService } from '../services/scoreService'
 import type { Score } from '../services/scoreService'
-import type { AutocompleteOption } from '../components/ui/Autocomplete'
+import type { AutocompleteOption } from '@mirubato/ui'
 
 interface UseScoreSearchOptions {
   minLength?: number
