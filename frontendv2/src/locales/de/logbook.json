@@ -145,5 +145,8 @@
   },
   "title": "Übungstagebuch",
   "type": "Typ",
+  "validation": {
+    "fixErrors": "Bitte beheben Sie die obigen Fehler, bevor Sie speichern"
+  },
   "viewScore": "Noten ansehen"
 }

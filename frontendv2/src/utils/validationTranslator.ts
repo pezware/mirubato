@@ -5,7 +5,11 @@ import i18n from '@/i18n/config'
  * Translates validation error messages from Zod schemas
  * Handles i18n keys and provides parameter substitution
  */
-export function translateValidationError(message: string): string {
+export function translateValidationError(
+  message: string | undefined
+): string | undefined {
+  if (!message) return undefined
+
   // Check if the message is an i18n key (format: namespace:key)
   if (message.includes(':')) {
     const translated = i18n.t(message)
@@ -65,7 +69,7 @@ export function translateValidationError(message: string): string {
 export function translateZodErrors(error: z.ZodError): z.ZodError {
   const translatedIssues = error.issues.map(issue => ({
     ...issue,
-    message: translateValidationError(issue.message),
+    message: translateValidationError(issue.message) ?? issue.message,
   }))
 
   return {
@@ -99,7 +103,8 @@ export function getAllTranslatedErrors(
 
   return errors.issues.map(err => {
     const path = err.path.join('.')
-    const translatedMessage = translateValidationError(err.message)
+    const translatedMessage =
+      translateValidationError(err.message) ?? err.message
     return path ? `${path}: ${translatedMessage}` : translatedMessage
   })
 }

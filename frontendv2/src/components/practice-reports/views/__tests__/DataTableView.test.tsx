@@ -11,6 +11,10 @@ vi.mock('react-i18next', () => ({
       changeLanguage: () => new Promise(() => {}),
     },
   }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: () => {},
+  },
 }))
 
 // Mock react-router-dom

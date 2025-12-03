@@ -10,6 +10,9 @@
   "composer": {
     "maxLength": "作曲家必須少於 {{max}} 個字符"
   },
+  "date": {
+    "futureNotAllowed": "日期不能是未來的日期"
+  },
   "datetime": {
     "invalid": "無效的日期/時間"
   },

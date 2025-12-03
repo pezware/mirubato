@@ -23,6 +23,7 @@ import { TechniqueSelector } from './logbook/TechniqueSelector'
 import { InstrumentSelector } from './logbook/InstrumentSelector'
 import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
 import { toLogbookInstrument } from '../utils/instrumentGuards'
+import { translateValidationError } from '../utils/validationTranslator'
 
 type PlanPiecePrefill = {
   title: string
@@ -469,6 +470,24 @@ export default function ManualEntryForm({
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   })
 
+  // Date validation error state (custom validation instead of browser native)
+  const [dateError, setDateError] = useState<string | undefined>()
+
+  // Handle date change with validation (replaces browser native max validation)
+  const handleDateChange = (value: string) => {
+    setPracticeDate(value)
+    const selectedDate = new Date(value)
+    const today = new Date()
+    // Set to end of day to allow today's date
+    today.setHours(23, 59, 59, 999)
+
+    if (selectedDate > today) {
+      setDateError(t('validation:date.futureNotAllowed'))
+    } else {
+      setDateError(undefined)
+    }
+  }
+
   // Time state - use initialStartTime from timer, existing entry time, or default to current time minus duration
   const [practiceTime, setPracticeTime] = useState(() => {
     if (entry?.timestamp) {
@@ -509,6 +528,12 @@ export default function ManualEntryForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Check for date validation error before submitting
+    if (dateError) {
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -715,14 +740,13 @@ export default function ManualEntryForm({
               <input
                 type="date"
                 value={practiceDate}
-                onChange={e => setPracticeDate(e.target.value)}
-                max={(() => {
-                  const today = new Date()
-                  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-                })()} // Don't allow future dates
-                className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                onChange={e => handleDateChange(e.target.value)}
+                className={`w-full px-3 py-2 bg-white border rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer ${
+                  dateError ? 'border-red-500' : 'border-morandi-stone-300'
+                }`}
                 required
               />
+              <FormError error={dateError} />
             </div>
 
             {/* Time */}
@@ -772,7 +796,9 @@ export default function ManualEntryForm({
                 required
                 data-testid="duration-input"
               />
-              <FormError error={getFieldError('duration')} />
+              <FormError
+                error={translateValidationError(getFieldError('duration'))}
+              />
             </div>
 
             {/* Instrument */}
@@ -890,7 +916,9 @@ export default function ManualEntryForm({
             data-testid="notes-textarea"
           />
           <div className="flex justify-between items-center mt-1">
-            <FormError error={getFieldError('notes')} />
+            <FormError
+              error={translateValidationError(getFieldError('notes'))}
+            />
             <span className="text-xs text-morandi-stone-500">
               {notes.length}/5000
             </span>
@@ -898,14 +926,11 @@ export default function ManualEntryForm({
         </div>
 
         {/* Validation Error Summary */}
-        {hasErrors() && (
+        {(hasErrors() || dateError) && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
             <IconAlertCircle size={20} className="text-red-600 mt-0.5" />
             <div className="text-sm text-red-700">
-              {t(
-                'logbook:validation.fixErrors',
-                'Please fix the errors above before saving'
-              )}
+              {t('logbook:validation.fixErrors')}
             </div>
           </div>
         )}

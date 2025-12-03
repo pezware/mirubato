@@ -145,5 +145,8 @@
   },
   "title": "练习日志",
   "type": "类型",
+  "validation": {
+    "fixErrors": "请先修正上方的错误再保存"
+  },
   "viewScore": "查看乐谱"
 }
