@@ -1,16 +1,4 @@
-import React from 'react'
-import ProtectedButton, { type ProtectedButtonProps } from './ProtectedButton'
-
-/**
- * Quick factory function for creating protected buttons with common patterns
- */
-export function createProtectedButton(
-  defaultProps: Partial<ProtectedButtonProps> = {}
-) {
-  return function CustomProtectedButton(props: ProtectedButtonProps) {
-    return React.createElement(ProtectedButton, { ...defaultProps, ...props })
-  }
-}
+import { createProtectedButton } from '@mirubato/ui'
 
 /**
  * Pre-configured protected button for "Log Practice" actions

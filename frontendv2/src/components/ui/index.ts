@@ -27,12 +27,15 @@ export {
   formatTimerCompact,
   // Hooks
   useClickOutside,
+  useClickProtection,
   useModal,
   useModals,
   useFormValidation,
   // Components
   Autocomplete,
   Button,
+  ProtectedButton,
+  createProtectedButton,
   Card,
   Checkbox,
   CardHeader,
@@ -77,6 +80,7 @@ export {
 // Re-export types from @mirubato/ui
 export type {
   // Hooks
+  UseClickProtectionReturn,
   UseModalReturn,
   UseModalsReturn,
   UseFormValidationOptions,
@@ -86,6 +90,8 @@ export type {
   AutocompleteProps,
   // Button
   ButtonProps,
+  // ProtectedButton
+  ProtectedButtonProps,
   // Card
   CardProps,
   CardHeaderProps,
@@ -161,12 +167,5 @@ export type { CompactEntryRowProps } from './CompactEntryRow'
 
 export { ToastProvider } from './ToastProvider'
 
-// Protected button components (prevent double-clicks/submissions)
-export { default as ProtectedButton } from './ProtectedButton'
-export type { ProtectedButtonProps } from './ProtectedButton'
-
-export {
-  createProtectedButton,
-  LogPracticeButton,
-  SubmitButton,
-} from './ProtectedButtonFactory'
+// Pre-configured protected button variants (app-specific configurations)
+export { LogPracticeButton, SubmitButton } from './ProtectedButtonFactory'

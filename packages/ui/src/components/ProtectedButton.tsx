@@ -1,5 +1,6 @@
-import { Button, type ButtonProps } from '@mirubato/ui'
-import { useClickProtection } from '@/hooks/useSubmissionProtection'
+import React from 'react'
+import Button, { type ButtonProps } from './Button'
+import { useClickProtection } from '../utils/hooks'
 
 export interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
   /** The action to perform when clicked */
@@ -15,6 +16,16 @@ export interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
 /**
  * Button component with built-in click protection and debouncing
  * Prevents rapid clicking and provides visual feedback during processing
+ *
+ * @example
+ * ```tsx
+ * <ProtectedButton
+ *   onClick={async () => await submitForm()}
+ *   loadingText="Submitting..."
+ * >
+ *   Submit
+ * </ProtectedButton>
+ * ```
  */
 export default function ProtectedButton({
   onClick,
@@ -41,4 +52,27 @@ export default function ProtectedButton({
       {isClicking && showLoadingState ? loadingText : children}
     </Button>
   )
+}
+
+/**
+ * Quick factory function for creating protected buttons with common patterns
+ *
+ * @example
+ * ```tsx
+ * const SubmitButton = createProtectedButton({
+ *   variant: 'primary',
+ *   debounceMs: 500,
+ *   loadingText: 'Submitting...',
+ * })
+ *
+ * // Usage
+ * <SubmitButton onClick={handleSubmit}>Submit</SubmitButton>
+ * ```
+ */
+export function createProtectedButton(
+  defaultProps: Partial<ProtectedButtonProps> = {}
+) {
+  return function CustomProtectedButton(props: ProtectedButtonProps) {
+    return React.createElement(ProtectedButton, { ...defaultProps, ...props })
+  }
 }

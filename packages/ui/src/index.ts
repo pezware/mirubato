@@ -5,11 +5,13 @@
 export { cn } from './utils/cn'
 export {
   useClickOutside,
+  useClickProtection,
   useModal,
   useModals,
   useFormValidation,
 } from './utils/hooks'
 export type {
+  UseClickProtectionReturn,
   UseModalReturn,
   UseModalsReturn,
   UseFormValidationOptions,
@@ -48,6 +50,12 @@ export type {
 
 export { default as Button } from './components/Button'
 export type { ButtonProps } from './components/Button'
+
+export {
+  default as ProtectedButton,
+  createProtectedButton,
+} from './components/ProtectedButton'
+export type { ProtectedButtonProps } from './components/ProtectedButton'
 
 export {
   Card,
