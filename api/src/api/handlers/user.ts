@@ -3,7 +3,7 @@ import type { Env } from '../../index'
 import { authMiddleware, validateBody, type Variables } from '../middleware'
 import { DatabaseHelpers } from '../../utils/database'
 import { schemas } from '../../utils/validation'
-import { Errors } from '../../utils/errors'
+import { NotFoundError, InternalError } from '@mirubato/workers-utils'
 
 export const userHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -22,7 +22,7 @@ userHandler.get('/me', async c => {
     const user = await db.findUserById(userId)
 
     if (!user) {
-      throw Errors.UserNotFound()
+      throw new NotFoundError('User not found')
     }
 
     return c.json({
@@ -69,7 +69,7 @@ userHandler.get('/preferences', async c => {
     return c.json(JSON.parse(preferencesRecord.data as string))
   } catch (error) {
     console.error('Error getting preferences:', error)
-    throw Errors.InternalError('Failed to get preferences')
+    throw new InternalError('Failed to get preferences')
   }
 })
 
@@ -101,7 +101,7 @@ userHandler.put(
       })
     } catch (error) {
       console.error('Error updating preferences:', error)
-      throw Errors.InternalError('Failed to update preferences')
+      throw new InternalError('Failed to update preferences')
     }
   }
 )
@@ -141,7 +141,7 @@ userHandler.delete('/me', async c => {
     })
   } catch (error) {
     console.error('Error deleting user:', error)
-    throw Errors.InternalError('Failed to delete account')
+    throw new InternalError('Failed to delete account')
   }
 })
 

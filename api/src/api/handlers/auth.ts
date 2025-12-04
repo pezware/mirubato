@@ -12,7 +12,11 @@ import { AuthService } from '../../services/auth'
 import { EmailService } from '../../services/email'
 import { DatabaseHelpers } from '../../utils/database'
 import { schemas } from '../../utils/validation'
-import { Errors } from '../../utils/errors'
+import {
+  AuthenticationError,
+  NotFoundError,
+  InternalError,
+} from '@mirubato/workers-utils'
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -62,7 +66,7 @@ authHandler.post(
       })
     } catch (error) {
       console.error('Error sending magic link:', error)
-      throw Errors.InternalError('Failed to send magic link')
+      throw new InternalError('Failed to send magic link')
     }
   }
 )
@@ -96,7 +100,7 @@ authHandler.post(
       // Get user details
       const user = await db.findUserById(userId)
       if (!user) {
-        throw Errors.UserNotFound()
+        throw new NotFoundError('User not found')
       }
 
       // Generate tokens
@@ -143,16 +147,16 @@ authHandler.post(
 
       // Handle specific error cases
       if (error.message?.includes('JWT expired')) {
-        throw Errors.TokenExpired()
+        throw new AuthenticationError('Token has expired')
       } else if (error.message?.includes('invalid signature')) {
-        throw Errors.InvalidToken()
+        throw new AuthenticationError('Invalid or expired token')
       } else if (error.message?.includes('D1_TYPE_ERROR')) {
         // This shouldn't happen anymore, but log it clearly
         console.error('Database type error:', error)
-        throw Errors.DatabaseError()
+        throw new InternalError('Database error')
       }
 
-      throw Errors.InvalidToken()
+      throw new AuthenticationError('Invalid or expired token')
     }
   }
 )
@@ -176,7 +180,7 @@ authHandler.post(
       )
 
       if (!tokenInfoResponse.ok) {
-        throw Errors.InvalidCredentials()
+        throw new AuthenticationError('Invalid credentials')
       }
 
       const tokenInfo = (await tokenInfoResponse.json()) as {
@@ -189,12 +193,12 @@ authHandler.post(
 
       // Verify the token is for our app
       if (tokenInfo.aud !== c.env.GOOGLE_CLIENT_ID) {
-        throw Errors.InvalidCredentials()
+        throw new AuthenticationError('Invalid credentials')
       }
 
       // Verify the token is not expired
       if (tokenInfo.exp && parseInt(tokenInfo.exp) < Date.now() / 1000) {
-        throw Errors.InvalidCredentials()
+        throw new AuthenticationError('Invalid credentials')
       }
 
       const { email, name, sub: googleId } = tokenInfo
@@ -210,7 +214,7 @@ authHandler.post(
       // Get user details
       const user = await db.findUserById(userId)
       if (!user) {
-        throw Errors.UserNotFound()
+        throw new NotFoundError('User not found')
       }
 
       // Generate tokens
@@ -254,7 +258,7 @@ authHandler.post(
       })
     } catch (error) {
       console.error('Error with Google auth:', error)
-      throw Errors.InvalidCredentials()
+      throw new AuthenticationError('Invalid credentials')
     }
   }
 )
@@ -267,7 +271,7 @@ authHandler.post('/refresh', async c => {
   const refreshToken = getCookie(c, 'refresh-token')
 
   if (!refreshToken) {
-    throw Errors.InvalidToken()
+    throw new AuthenticationError('Invalid or expired token')
   }
 
   try {
@@ -280,7 +284,7 @@ authHandler.post('/refresh', async c => {
     const user = await db.findUserById(userId)
 
     if (!user) {
-      throw Errors.UserNotFound()
+      throw new NotFoundError('User not found')
     }
 
     // Generate new access token
@@ -304,7 +308,7 @@ authHandler.post('/refresh', async c => {
       expiresIn: 604800, // 7 days in seconds
     })
   } catch {
-    throw Errors.InvalidToken()
+    throw new AuthenticationError('Invalid or expired token')
   }
 })
 

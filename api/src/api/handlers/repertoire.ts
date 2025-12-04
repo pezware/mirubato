@@ -1,7 +1,11 @@
 import { Hono } from 'hono'
 import type { Env } from '../../index'
 import { authMiddleware, validateBody, type Variables } from '../middleware'
-import { Errors } from '../../utils/errors'
+import {
+  NotFoundError,
+  InternalError,
+  ValidationError,
+} from '@mirubato/workers-utils'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
 import {
@@ -99,7 +103,7 @@ repertoireHandler.get('/', async c => {
     })
   } catch (error) {
     console.error('Error listing repertoire:', error)
-    throw Errors.InternalError()
+    throw new InternalError('Internal server error')
   }
 })
 
@@ -135,7 +139,7 @@ repertoireHandler.get('/:scoreId/stats', async c => {
       .first()
 
     if (!result) {
-      throw Errors.NotFound('Repertoire item not found')
+      throw new NotFoundError('Repertoire item not found')
     }
 
     // Get practice sessions over time
@@ -241,10 +245,10 @@ repertoireHandler.post('/', validateBody(createRepertoireSchema), async c => {
       error instanceof Error &&
       error.message?.includes('UNIQUE constraint failed')
     ) {
-      throw Errors.InvalidInput('This piece is already in your repertoire')
+      throw new ValidationError('This piece is already in your repertoire')
     }
     console.error('Error adding to repertoire:', error)
-    throw Errors.InternalError('Failed to add to repertoire')
+    throw new InternalError('Failed to add to repertoire')
   }
 })
 
@@ -272,7 +276,7 @@ repertoireHandler.put(
         .first()
 
       if (!existing) {
-        throw Errors.NotFound('Repertoire item not found')
+        throw new NotFoundError('Repertoire item not found')
       }
 
       // Update the item
@@ -366,7 +370,7 @@ repertoireHandler.delete('/:scoreId', async c => {
       .run()
 
     if (result.meta.changes === 0) {
-      throw Errors.NotFound('Repertoire item not found')
+      throw new NotFoundError('Repertoire item not found')
     }
 
     return c.json({ message: 'Removed from repertoire' })
@@ -416,7 +420,7 @@ repertoireHandler.delete('/:scoreId/dissociate', async c => {
     }>
 
     if (!repertoireItem) {
-      throw Errors.NotFound('Repertoire item not found')
+      throw new NotFoundError('Repertoire item not found')
     }
 
     // Extract piece metadata from the first logbook entry or derive from scoreId

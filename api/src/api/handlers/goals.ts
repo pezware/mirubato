@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import type { Env } from '../../index'
 import { authMiddleware, validateBody, type Variables } from '../middleware'
-import { Errors } from '../../utils/errors'
+import { NotFoundError, InternalError } from '@mirubato/workers-utils'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
 
@@ -150,7 +150,7 @@ goalsHandler.get('/', async c => {
     })
   } catch (error) {
     console.error('Error listing goals:', error)
-    throw Errors.InternalError('Failed to list goals')
+    throw new InternalError('Failed to list goals')
   }
 })
 
@@ -181,7 +181,7 @@ goalsHandler.get('/:id', async c => {
       .first()
 
     if (!goal) {
-      throw Errors.NotFound('Goal not found')
+      throw new NotFoundError('Goal not found')
     }
 
     // Get recent practice sessions for this goal
@@ -317,7 +317,7 @@ goalsHandler.post('/', validateBody(createGoalSchema), async c => {
     )
   } catch (error) {
     console.error('Error creating goal:', error)
-    throw Errors.InternalError('Failed to create goal')
+    throw new InternalError('Failed to create goal')
   }
 })
 
@@ -339,7 +339,7 @@ goalsHandler.put('/:id', validateBody(updateGoalSchema), async c => {
       .first()
 
     if (!existing) {
-      throw Errors.NotFound('Goal not found')
+      throw new NotFoundError('Goal not found')
     }
 
     // Build update query
@@ -428,7 +428,7 @@ goalsHandler.post(
         .first()
 
       if (!goal) {
-        throw Errors.NotFound('Goal not found')
+        throw new NotFoundError('Goal not found')
       }
 
       // Update current value
@@ -503,7 +503,7 @@ goalsHandler.delete('/:id', async c => {
       .run()
 
     if (result.meta.changes === 0) {
-      throw Errors.NotFound('Goal not found')
+      throw new NotFoundError('Goal not found')
     }
 
     return c.json({ message: 'Goal deleted successfully' })
