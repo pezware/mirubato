@@ -18,9 +18,9 @@ export function normalizePieceTitle(title: string): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-    .replace(/['']/g, "'") // Normalize apostrophes
-    .replace(/[""]/g, '"') // Normalize quotes
-    .replace(/[–—]/g, '-') // Normalize dashes
+    .replace(/[\u2018\u2019]/g, "'") // Normalize smart apostrophes (left/right single quotes)
+    .replace(/[\u201C\u201D]/g, '"') // Normalize smart quotes (left/right double quotes)
+    .replace(/[\u2013\u2014]/g, '-') // Normalize en-dash and em-dash
 }
 
 /**
@@ -33,7 +33,7 @@ export function normalizeComposer(composer: string): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-    .replace(/['']/g, "'") // Normalize apostrophes
+    .replace(/[\u2018\u2019]/g, "'") // Normalize smart apostrophes (left/right single quotes)
     .replace(/\./g, '') // Remove periods (e.g., "J.S. Bach" -> "js bach")
 }
 
