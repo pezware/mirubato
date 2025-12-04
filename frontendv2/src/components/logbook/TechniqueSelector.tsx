@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '../ui'
+import { Button, Input, Checkbox } from '../ui'
 import { DEFAULT_TECHNIQUES } from '../../constants/techniques'
 import { X } from 'lucide-react'
 import { useCustomTechniques } from '../../hooks/useCustomTechniques'
@@ -59,20 +59,13 @@ export function TechniqueSelector({
       {/* Default Techniques */}
       <div className="space-y-2 mb-4">
         {DEFAULT_TECHNIQUES.map(technique => (
-          <label
+          <Checkbox
             key={technique}
-            className="flex items-center space-x-2 cursor-pointer"
-          >
-            <input
-              type="checkbox"
-              checked={selectedTechniques.includes(technique)}
-              onChange={() => handleToggleTechnique(technique)}
-              className="rounded border-gray-300 text-sage-600 focus:ring-sage-500"
-            />
-            <span className="text-sm text-gray-700">
-              {t(`logbook:entry.techniqueOptions.${technique}`)}
-            </span>
-          </label>
+            checked={selectedTechniques.includes(technique)}
+            onChange={() => handleToggleTechnique(technique)}
+            label={t(`logbook:entry.techniqueOptions.${technique}`)}
+            size="sm"
+          />
         ))}
       </div>
 
@@ -83,20 +76,13 @@ export function TechniqueSelector({
             {t('logbook:entry.techniqueOptions.customTechniques')}
           </p>
           {customTechniques.map(technique => (
-            <label
+            <Checkbox
               key={technique}
-              className="flex items-center space-x-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={selectedTechniques.includes(technique)}
-                onChange={() => handleToggleTechnique(technique)}
-                className="rounded border-gray-300 text-sage-600 focus:ring-sage-500"
-              />
-              <span className="text-sm text-gray-700">
-                {capitalizeFirst(technique)}
-              </span>
-            </label>
+              checked={selectedTechniques.includes(technique)}
+              onChange={() => handleToggleTechnique(technique)}
+              label={capitalizeFirst(technique)}
+              size="sm"
+            />
           ))}
         </div>
       )}
@@ -104,13 +90,13 @@ export function TechniqueSelector({
       {/* Custom Technique Input */}
       {showCustomInput ? (
         <div className="flex gap-2 mb-4">
-          <input
+          <Input
             type="text"
             value={customTechnique}
             onChange={e => setCustomTechnique(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleAddCustom()}
+            onKeyDown={e => e.key === 'Enter' && handleAddCustom()}
             placeholder={t('logbook:entry.techniqueOptions.customPlaceholder')}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-sage-500 focus:border-sage-500"
+            className="flex-1"
             autoFocus
           />
           <Button variant="secondary" size="sm" onClick={handleAddCustom}>
@@ -153,12 +139,14 @@ export function TechniqueSelector({
                 )
                   ? t(`logbook:entry.techniqueOptions.${technique}`)
                   : capitalizeFirst(technique)}
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => handleRemoveTechnique(technique)}
-                  className="ml-1 text-sand-600 hover:text-sand-800"
+                  className="ml-1 text-sand-600 hover:text-sand-800 p-0 h-auto"
                 >
                   <X className="w-3 h-3" />
-                </button>
+                </Button>
               </span>
             ))}
           </div>

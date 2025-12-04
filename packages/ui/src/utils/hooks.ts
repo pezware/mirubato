@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, RefObject } from 'react'
+import { useEffect, useState, useCallback, useRef, RefObject } from 'react'
 
 // =============================================================================
 // Zod 4 Compatible Types
@@ -368,3 +368,65 @@ export function useFormValidation<T>({
 
 /** Return type for useFormValidation hook */
 export type UseFormValidationReturn<T> = ReturnType<typeof useFormValidation<T>>
+
+// =============================================================================
+// Click Protection Hook
+// =============================================================================
+
+/**
+ * Simple hook for button click protection
+ * Prevents rapid clicking and provides loading state
+ *
+ * @param onClick - The click handler function
+ * @param debounceMs - Debounce delay in milliseconds (default: 300ms)
+ * @returns Object with handleClick function and isClicking state
+ *
+ * @example
+ * ```tsx
+ * const { handleClick, isClicking } = useClickProtection(async () => {
+ *   await submitForm()
+ * })
+ *
+ * return (
+ *   <button onClick={handleClick} disabled={isClicking}>
+ *     {isClicking ? 'Processing...' : 'Submit'}
+ *   </button>
+ * )
+ * ```
+ */
+export function useClickProtection(
+  onClick: () => void | Promise<void>,
+  debounceMs: number = 300
+) {
+  const [isClicking, setIsClicking] = useState(false)
+  const lastClickTime = useRef<number>(0)
+  const isClickingRef = useRef(false)
+
+  const handleClick = useCallback(async () => {
+    const now = Date.now()
+
+    // Prevent rapid clicks (use ref to avoid stale closure)
+    if (isClickingRef.current) return
+
+    // Debounce check
+    if (now - lastClickTime.current < debounceMs) return
+
+    lastClickTime.current = now
+    isClickingRef.current = true
+    setIsClicking(true)
+    try {
+      await onClick()
+    } finally {
+      isClickingRef.current = false
+      setIsClicking(false)
+    }
+  }, [onClick, debounceMs])
+
+  return {
+    handleClick,
+    isClicking,
+  }
+}
+
+/** Return type for useClickProtection hook */
+export type UseClickProtectionReturn = ReturnType<typeof useClickProtection>

@@ -18,6 +18,7 @@ import {
 } from '@tabler/icons-react'
 import { LogbookEntry } from '@/api/logbook'
 import {
+  Button,
   MusicTitle,
   MusicComposer,
   DropdownMenu,
@@ -146,20 +147,24 @@ export const EntryDetailPanel: React.FC<EntryDetailPanelProps> = ({
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {onNavigate && (
               <>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => onNavigate('prev')}
-                  className="p-1 text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0"
                   aria-label={t('common:previous')}
+                  className="flex-shrink-0"
                 >
                   <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => onNavigate('next')}
-                  className="p-1 text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0"
                   aria-label={t('common:next')}
+                  className="flex-shrink-0"
                 >
                   <ChevronRight className="w-5 h-5" />
-                </button>
+                </Button>
               </>
             )}
             {/* Display piece title if available, otherwise entry details */}
@@ -192,13 +197,14 @@ export const EntryDetailPanel: React.FC<EntryDetailPanelProps> = ({
               />
             )}
             {onClose && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 onClick={onClose}
-                className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
                 aria-label={t('common:close')}
               >
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
             )}
           </div>
         </div>

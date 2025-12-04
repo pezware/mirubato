@@ -11,6 +11,7 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import {
+  Button,
   cn,
   formatDuration,
   MusicTitle,
@@ -233,12 +234,13 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
                 </div>
               )}
               {notes && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={e => {
                     e.stopPropagation()
                     setShowNotes(!showNotes)
                   }}
-                  className="p-0.5 text-morandi-stone-500 hover:text-morandi-stone-700"
                   aria-label={showNotes ? 'Collapse notes' : 'Expand notes'}
                 >
                   {showNotes ? (
@@ -246,7 +248,7 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
                   ) : (
                     <ChevronDown size={16} />
                   )}
-                </button>
+                </Button>
               )}
             </div>
 

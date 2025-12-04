@@ -24,6 +24,7 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
+    "@mirubato/workers-utils": "workspace:*",
     "@hono/swagger-ui": "^0.5.2",
     "@hono/zod-openapi": "^0.19.10",
     "@hono/zod-validator": "^0.7.2",
