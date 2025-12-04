@@ -241,7 +241,6 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
                     e.stopPropagation()
                     setShowNotes(!showNotes)
                   }}
-                  className="p-0.5"
                   aria-label={showNotes ? 'Collapse notes' : 'Expand notes'}
                 >
                   {showNotes ? (

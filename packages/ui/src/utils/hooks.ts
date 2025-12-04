@@ -400,24 +400,27 @@ export function useClickProtection(
 ) {
   const [isClicking, setIsClicking] = useState(false)
   const lastClickTime = useRef<number>(0)
+  const isClickingRef = useRef(false)
 
   const handleClick = useCallback(async () => {
     const now = Date.now()
 
-    // Prevent rapid clicks
-    if (isClicking) return
+    // Prevent rapid clicks (use ref to avoid stale closure)
+    if (isClickingRef.current) return
 
     // Debounce check
     if (now - lastClickTime.current < debounceMs) return
 
     lastClickTime.current = now
+    isClickingRef.current = true
     setIsClicking(true)
     try {
       await onClick()
     } finally {
+      isClickingRef.current = false
       setIsClicking(false)
     }
-  }, [onClick, isClicking, debounceMs])
+  }, [onClick, debounceMs])
 
   return {
     handleClick,
