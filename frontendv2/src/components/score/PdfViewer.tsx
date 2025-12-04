@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-import { Button } from '../ui'
+import { Button, Input } from '../ui'
 
 // Configure pdf.js worker - must be set before any PDF operations
 // Using the exact version that react-pdf bundles
@@ -493,13 +493,13 @@ export default function PdfViewer({
 
               <div className="flex items-center gap-2">
                 <span className="text-sm">Page</span>
-                <input
+                <Input
                   type="number"
                   min={1}
                   max={numPages}
                   value={pageNumber}
                   onChange={e => goToPage(parseInt(e.target.value) || 1)}
-                  className="w-16 px-2 py-1 border rounded text-center text-sm"
+                  className="w-16 px-2 py-1 text-center text-sm"
                 />
                 <span className="text-sm">of {numPages}</span>
               </div>

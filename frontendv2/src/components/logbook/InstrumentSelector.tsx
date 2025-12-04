@@ -10,7 +10,7 @@ import {
   IconLayoutGrid,
 } from '@tabler/icons-react'
 import { useUserPreferences } from '../../hooks/useUserPreferences'
-import { Button } from '../ui'
+import { Button, Input, Checkbox } from '../ui'
 
 // Common orchestral instruments
 const DEFAULT_INSTRUMENTS = [
@@ -231,7 +231,7 @@ export function InstrumentSelector({
               </button>
             ) : (
               <div className="space-y-2">
-                <input
+                <Input
                   type="text"
                   value={customInstrument}
                   onChange={e => setCustomInstrument(e.target.value)}
@@ -240,21 +240,18 @@ export function InstrumentSelector({
                     'instruments.customPlaceholder',
                     'Instrument name'
                   )}
-                  className="w-full px-3 py-2 border border-stone-300 rounded focus:ring-2 focus:ring-sage-400 focus:border-transparent"
+                  className="w-full"
                   autoFocus
                 />
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={makePrimary}
-                    onChange={e => setMakePrimary(e.target.checked)}
-                    className="rounded border-stone-300 text-sage-600 focus:ring-sage-400"
-                  />
-                  {t(
+                <Checkbox
+                  checked={makePrimary}
+                  onChange={setMakePrimary}
+                  label={t(
                     'instruments.setAsPrimary',
                     'Set as my primary instrument'
                   )}
-                </label>
+                  size="sm"
+                />
                 <div className="flex gap-2">
                   <Button
                     size="sm"

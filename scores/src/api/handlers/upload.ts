@@ -251,7 +251,46 @@ export async function deleteFile(c: Context) {
     )
   }
 
-  // TODO: Check if user owns the file before deleting
+  // Check if user owns the file before deleting
+  // First, try R2 metadata check (fast path)
+  const fileHead = await env.SCORES_BUCKET.head(key)
+  if (!fileHead) {
+    return c.json(
+      {
+        success: false,
+        error: 'File not found',
+      },
+      404
+    )
+  }
+
+  const uploadedBy = fileHead.customMetadata?.uploadedBy
+  if (uploadedBy && uploadedBy !== userId && uploadedBy !== 'anonymous') {
+    return c.json(
+      {
+        success: false,
+        error: 'You do not have permission to delete this file',
+      },
+      403
+    )
+  }
+
+  // Also check database if file is linked to a score
+  const scoreResult = (await env.DB.prepare(
+    'SELECT created_by FROM scores WHERE pdf_url = ?'
+  )
+    .bind(key)
+    .first()) as { created_by?: string } | null
+
+  if (scoreResult?.created_by && scoreResult.created_by !== userId) {
+    return c.json(
+      {
+        success: false,
+        error: 'You do not have permission to delete this file',
+      },
+      403
+    )
+  }
 
   const deleted = await uploadService.deleteFile(key, env)
 
