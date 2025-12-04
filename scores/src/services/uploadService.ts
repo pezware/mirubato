@@ -218,13 +218,13 @@ export class UploadService {
   /**
    * Gets the public URL for a stored file
    */
-  private getPublicUrl(key: string, env: any): string {
-    // In development, serve through the files endpoint
-    if (env.ENVIRONMENT === 'local') {
-      return `http://localhost:8787/files/${key}`
+  private getPublicUrl(key: string, env: { SCORES_URL?: string }): string {
+    // Use environment-configured URL when available
+    if (env.SCORES_URL) {
+      return `${env.SCORES_URL}/files/${key}`
     }
 
-    // In production, you might use a CDN or direct R2 URL
+    // Fallback to relative path for production (served from same origin)
     return `/files/${key}`
   }
 

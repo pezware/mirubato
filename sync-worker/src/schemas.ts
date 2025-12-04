@@ -36,6 +36,7 @@ const MoodType = z.enum([
 
 // Piece schema for nested objects
 const PieceSchema = z.object({
+  id: z.string().optional(),
   title: z.string(),
   composer: z.string().nullable().optional(),
   measures: z.string().nullable().optional(),
@@ -399,26 +400,28 @@ export function sanitizeEntry(
 
     // Normalize score IDs if pieces are present
     if (validated.pieces && Array.isArray(validated.pieces)) {
-      validated.pieces = validated.pieces.map((piece: any) => {
-        if (!piece || typeof piece !== 'object') {
-          return piece
-        }
+      validated.pieces = validated.pieces.map(
+        (piece: z.infer<typeof PieceSchema>) => {
+          if (!piece || typeof piece !== 'object') {
+            return piece
+          }
 
-        const normalizedPiece = { ...piece }
-        if (
-          typeof normalizedPiece.id === 'string' &&
-          normalizedPiece.id.trim()
-        ) {
-          normalizedPiece.id = normalizeExistingScoreId(normalizedPiece.id)
-        } else if (normalizedPiece.title) {
-          normalizedPiece.id = generateNormalizedScoreId(
-            normalizedPiece.title,
-            normalizedPiece.composer
-          )
-        }
+          const normalizedPiece = { ...piece }
+          if (
+            typeof normalizedPiece.id === 'string' &&
+            normalizedPiece.id.trim()
+          ) {
+            normalizedPiece.id = normalizeExistingScoreId(normalizedPiece.id)
+          } else if (normalizedPiece.title) {
+            normalizedPiece.id = generateNormalizedScoreId(
+              normalizedPiece.title,
+              normalizedPiece.composer
+            )
+          }
 
-        return normalizedPiece
-      })
+          return normalizedPiece
+        }
+      )
     }
 
     // Also normalize standalone scoreId field if present
@@ -576,3 +579,10 @@ export function validateSyncEvent(
     return null
   }
 }
+
+// Type aliases for use in other files
+export type LogbookEntry = z.infer<typeof LogbookEntrySchema>
+export type RepertoireItem = z.infer<typeof RepertoireItemSchema>
+export type PracticePlan = z.infer<typeof PracticePlanSchema>
+export type PlanOccurrence = z.infer<typeof PlanOccurrenceSchema>
+export type Piece = z.infer<typeof PieceSchema>

@@ -11,7 +11,7 @@ import { CacheService } from '../../services/storage/cache-service'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
 import { auth, getUserInfo } from '../../middleware/auth'
 import { rateLimit } from '../../middleware/rate-limit'
-import { APIError } from '../../utils/errors'
+import { APIError } from '@mirubato/workers-utils'
 import { DictionaryEntry } from '../../types/dictionary'
 import { normalizeTerm } from '../../utils/validation'
 

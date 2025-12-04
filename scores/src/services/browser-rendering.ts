@@ -11,6 +11,7 @@ interface BrowserRenderingEnv extends Env {
   BROWSER: any // Browser Rendering binding
   CF_ACCOUNT_ID: string
   CF_API_TOKEN: string
+  SCORES_URL?: string
 }
 
 export class BrowserRenderingService {
@@ -258,8 +259,9 @@ export class BrowserRenderingService {
     await this.env.CACHE.put(tempKey, html, { expirationTtl: 60 })
 
     // Render to screenshot
+    const baseUrl = this.env.SCORES_URL || 'https://scores.mirubato.com'
     const screenshot = await this.env.BROWSER.screenshot({
-      url: `https://scores.mirubato.com/render/${tempKey}`,
+      url: `${baseUrl}/render/${tempKey}`,
       options: {
         viewport: { width, height },
         waitUntil: 'networkidle0',

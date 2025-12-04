@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { CloudflareAIService } from '../../../services/ai/cloudflare-ai-service'
 import type { Env } from '../../../types/env'
-import { AIServiceError } from '../../../utils/errors'
+import { ServiceError as AIServiceError } from '@mirubato/workers-utils'
 
 describe('CloudflareAIService', () => {
   let service: CloudflareAIService
