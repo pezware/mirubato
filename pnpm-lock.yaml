@@ -143,6 +143,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.7.2
         version: 0.7.2(hono@4.10.4)(zod@3.25.76)
+      '@mirubato/workers-utils':
+        specifier: workspace:*
+        version: link:../packages/workers-utils
       axios:
         specifier: ^1.12.1
         version: 1.12.1
@@ -501,6 +504,33 @@ importers:
         specifier: ^4.0.0
         version: 4.0.17
 
+  packages/workers-utils:
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20241106.0
+        version: 4.20250726.0
+      '@eslint/js':
+        specifier: ^9.25.0
+        version: 9.31.0
+      eslint:
+        specifier: ^9.25.0
+        version: 9.31.0(jiti@2.4.2)
+      globals:
+        specifier: ^16.0.0
+        version: 16.3.0
+      hono:
+        specifier: ^4.7.10
+        version: 4.10.4
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+      typescript-eslint:
+        specifier: ^8.30.1
+        version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
+      vitest:
+        specifier: ^4.0.10
+        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+
   scores:
     dependencies:
       '@cloudflare/puppeteer':
@@ -509,6 +539,9 @@ importers:
       '@google/generative-ai':
         specifier: ^0.24.1
         version: 0.24.1
+      '@mirubato/workers-utils':
+        specifier: workspace:*
+        version: link:../packages/workers-utils
       aws4fetch:
         specifier: ^1.0.20
         version: 1.0.20
