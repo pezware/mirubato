@@ -197,34 +197,47 @@ export class LogbookPage {
   }
 
   // Helper to set practice time using the TimePicker
+  // @param time - Time in HH:MM format (e.g., "14:00", "09:30")
   private async setPracticeTime(time: string) {
-    // Click the time picker trigger to open it
-    const timePicker = this.page.locator(
-      'button:has-text("AM"), button:has-text("PM")'
-    )
-    await timePicker.first().click()
+    // Validate time format
+    if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time)) {
+      throw new Error(
+        `Invalid time format: ${time}. Expected HH:MM format (e.g., "14:00")`
+      )
+    }
+
+    // Click the time picker trigger to open it (using data-testid for reliability)
+    const timePicker = this.page.locator('[data-testid="time-picker-trigger"]')
+    await timePicker.waitFor({ state: 'visible', timeout: 5000 })
+    await timePicker.click()
 
     // Wait for the time picker dropdown to appear
-    await this.page.waitForSelector('text="Select Practice Time"', {
+    await this.page.waitForSelector('[data-testid="time-picker-display"]', {
       state: 'visible',
       timeout: 3000,
     })
 
-    // Click the "click to type manually" option to enter time directly
-    const timeDisplay = this.page.locator('.text-2xl.font-light')
+    // Click the time display to enable manual entry mode
+    const timeDisplay = this.page.locator('[data-testid="time-picker-display"]')
     await timeDisplay.click()
 
-    // Find the time input and set the value
-    const timeInput = this.page.locator('input[type="time"]')
+    // Wait for the input to appear and fill it
+    const timeInput = this.page.locator(
+      'input[type="text"][placeholder="HH:MM"]'
+    )
+    await timeInput.waitFor({ state: 'visible', timeout: 2000 })
     await timeInput.fill(time)
 
-    // Confirm the time
+    // Press Enter to confirm the time input
+    await timeInput.press('Enter')
+
+    // Confirm the time by clicking the Set Time button
     const confirmButton = this.page.locator('button:has-text("Set Time")')
     await confirmButton.click()
 
     // Wait for dropdown to close
     await this.page
-      .waitForSelector('text="Select Practice Time"', {
+      .waitForSelector('[data-testid="time-picker-display"]', {
         state: 'hidden',
         timeout: 2000,
       })
