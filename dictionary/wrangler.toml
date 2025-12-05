@@ -39,17 +39,6 @@ bucket_name = "mirubato-dictionary-staging"
 binding = "CACHE"
 id = "e9c7178482e344dab8248969bb1f58e1"
 
-[[env.staging.queues.producers]]
-binding = "BATCH_QUEUE"
-queue = "dictionary-processing-staging"
-
-[[env.staging.queues.consumers]]
-queue = "dictionary-processing-staging"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 3
-dead_letter_queue = "dictionary-processing-staging-dlq"
-
 # Scheduled triggers for staging
 [env.staging.triggers]
 crons = ["0 12 * * *", "0 0 * * *"]  # Seed processing at noon UTC; Daily cleanup at midnight
@@ -77,8 +66,6 @@ bucket_name = "mirubato-dictionary-local"
 [[env.local.kv_namespaces]]
 binding = "CACHE"
 id = "local"
-
-# Note: Queues are not available in local development
 
 # Explicit production environment (for consistency)
 [env.production]
@@ -108,17 +95,6 @@ bucket_name = "mirubato-dictionary-production"
 [[env.production.kv_namespaces]]
 binding = "CACHE"
 id = "598693e0de544dd9858a724ecbc556ba"
-
-[[env.production.queues.producers]]
-binding = "BATCH_QUEUE"
-queue = "dictionary-processing"
-
-[[env.production.queues.consumers]]
-queue = "dictionary-processing"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 3
-dead_letter_queue = "dictionary-processing-dlq"
 
 # Scheduled triggers for production
 [env.production.triggers]

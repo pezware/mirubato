@@ -183,7 +183,7 @@ test.describe('Recent Entries', () => {
       // or there's an issue with how timestamps are calculated
 
       // For now, let's test for the actual behavior we're seeing
-      // TODO: Investigate why entries appear in this order
+      // TODO(#679): Investigate why entries appear in this order
       expect(thirdEntryPosition).toBe(0)
       expect(secondEntryPosition).toBe(1)
       expect(firstEntryPosition).toBe(2)

@@ -563,6 +563,9 @@ importers:
       '@google/generative-ai':
         specifier: ^0.24.1
         version: 0.24.1
+      '@mirubato/utils':
+        specifier: workspace:*
+        version: link:../packages/utils
       '@mirubato/workers-utils':
         specifier: workspace:*
         version: link:../packages/workers-utils

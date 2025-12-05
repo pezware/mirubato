@@ -335,7 +335,7 @@ export class DictionaryDatabase {
       total,
       query,
       suggestedLanguages,
-      // TODO: Add language detection logic here
+      // TODO(#674): Add language detection logic here
       detectedTermLanguage: undefined,
     }
   }

@@ -482,7 +482,7 @@ templatesHandler.post(
           `[Templates] Failed to increment adoption count after ${ADOPTION_COUNT_MAX_RETRIES} retries:`,
           err instanceof Error ? err.message : err
         )
-        // TODO: Consider adding to a dead-letter queue for later reconciliation
+        // TODO(#677): Consider adding to a dead-letter queue for later reconciliation
       })
 
       // 6. Return the new plan and occurrences

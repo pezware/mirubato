@@ -109,7 +109,7 @@ sharedCollectionsHandler.post('/:id/share', async c => {
       .bind(JSON.stringify(newShared), collectionId)
       .run()
 
-    // TODO: Send notification emails to shared users if message provided
+    // TODO(#680): Send notification emails to shared users if message provided
 
     return c.json({
       success: true,
