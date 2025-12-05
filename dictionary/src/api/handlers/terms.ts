@@ -13,7 +13,7 @@ import { auth, getUserInfo } from '../../middleware/auth'
 import { cache, invalidateCache, edgeCache } from '../../middleware/cache'
 import { rateLimit } from '../../middleware/rate-limit'
 import { normalizeTerm } from '../../utils/validation'
-import { APIError } from '../../utils/errors'
+import { APIError } from '@mirubato/workers-utils'
 import {
   DictionaryEntry,
   TermType,

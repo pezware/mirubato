@@ -10,13 +10,26 @@ import {
   sanitizePracticePlan,
   sanitizePlanOccurrence,
   ResponseEventSchema,
-  type LogbookEntrySchema,
-  type RepertoireItemSchema,
-  type PlanOccurrenceSchema,
+  LogbookEntrySchema,
+  RepertoireItemSchema,
+  PlanOccurrenceSchema,
+  type LogbookEntry,
+  type RepertoireItem,
+  type PracticePlan,
+  type PlanOccurrence,
 } from './schemas'
 import { z } from 'zod'
+import type { D1Database } from '@cloudflare/workers-types'
 
 const BULK_SYNC_CHUNK_SIZE = 250
+
+// Environment bindings for the sync worker
+export interface SyncWorkerEnv {
+  DB: D1Database
+  SYNC_COORDINATOR: DurableObjectNamespace
+  ENVIRONMENT?: string
+  LOG_LEVEL?: string
+}
 
 export interface SyncEvent {
   type:
@@ -34,16 +47,21 @@ export interface SyncEvent {
     | 'REPERTOIRE_BULK_SYNC'
     | 'SYNC_REQUEST'
     | 'PING'
+    // Response-only event types
+    | 'WELCOME'
+    | 'ERROR'
+    | 'PONG'
+    | 'SYNC_RESPONSE'
   userId?: string
   timestamp: string
-  entry?: any // LogbookEntry
-  entries?: any[] // LogbookEntry[]
+  entry?: LogbookEntry
+  entries?: LogbookEntry[]
   entryId?: string
-  piece?: any // RepertoireItem
-  pieces?: any[] // RepertoireItem[]
-  plan?: any // PracticePlan
-  occurrences?: any[] // PlanOccurrence[]
-  occurrence?: any // PlanOccurrence
+  piece?: RepertoireItem
+  pieces?: RepertoireItem[]
+  plan?: PracticePlan
+  occurrences?: PlanOccurrence[]
+  occurrence?: PlanOccurrence
   scoreId?: string
   lastSyncTime?: string
   lastSeq?: number
@@ -62,10 +80,10 @@ export interface ClientInfo {
 export class SyncCoordinator implements DurableObject {
   private clients = new Map<string, ClientInfo>()
   private storage: DurableObjectStorage
-  private env: any // Env interface from main worker
+  private env: SyncWorkerEnv
   private coordinatorUserId: string | null = null
 
-  constructor(state: DurableObjectState, env: any) {
+  constructor(state: DurableObjectState, env: SyncWorkerEnv) {
     this.storage = state.storage
     this.env = env
   }
@@ -333,7 +351,7 @@ export class SyncCoordinator implements DurableObject {
             fallbackSeconds: lastSyncTime / 1000,
             rowParser: row => {
               try {
-                const parsed = JSON.parse(row.data)
+                const parsed = JSON.parse(row.data as string)
                 return sanitizeEntry(parsed)
               } catch (error) {
                 console.error('Failed to parse logbook entry row:', error)
@@ -344,7 +362,7 @@ export class SyncCoordinator implements DurableObject {
               const timestamp = new Date().toISOString()
               this.sendToClient(clientId, {
                 type: 'ENTRY_DELETED',
-                entryId: row.entity_id,
+                entryId: row.entity_id as string,
                 timestamp,
                 seq: rowSeq,
                 lastSeq: rowSeq,
@@ -365,7 +383,7 @@ export class SyncCoordinator implements DurableObject {
             fallbackSeconds: lastSyncTime / 1000,
             rowParser: row => {
               try {
-                const parsed = JSON.parse(row.data)
+                const parsed = JSON.parse(row.data as string)
                 return sanitizeRepertoireItem(parsed)
               } catch (error) {
                 console.error('Failed to parse repertoire row:', error)
@@ -376,7 +394,7 @@ export class SyncCoordinator implements DurableObject {
               const timestamp = new Date().toISOString()
               this.sendToClient(clientId, {
                 type: 'PIECE_REMOVED',
-                scoreId: row.entity_id,
+                scoreId: row.entity_id as string,
                 timestamp,
                 seq: rowSeq,
                 lastSeq: rowSeq,
@@ -426,8 +444,8 @@ export class SyncCoordinator implements DurableObject {
     eventType: 'BULK_SYNC' | 'REPERTOIRE_BULK_SYNC'
     lastSeq: number
     fallbackSeconds: number
-    rowParser: (row: any) => T | null
-    handleDelete?: (row: any, seq: number) => void
+    rowParser: (row: Record<string, unknown>) => T | null
+    handleDelete?: (row: Record<string, unknown>, seq: number) => void
   }): Promise<{ count: number; lastSeq: number }> {
     if (!this.env.DB) {
       return { count: 0, lastSeq: options.lastSeq }
@@ -528,7 +546,7 @@ export class SyncCoordinator implements DurableObject {
         if (eventType === 'BULK_SYNC') {
           this.sendToClient(clientId, {
             type: 'BULK_SYNC',
-            entries: payload,
+            entries: payload as LogbookEntry[],
             timestamp,
             lastSeq: chunkMaxSeq,
           })
@@ -538,7 +556,7 @@ export class SyncCoordinator implements DurableObject {
         } else {
           this.sendToClient(clientId, {
             type: 'REPERTOIRE_BULK_SYNC',
-            pieces: payload,
+            pieces: payload as RepertoireItem[],
             timestamp,
             lastSeq: chunkMaxSeq,
           })
@@ -717,7 +735,7 @@ export class SyncCoordinator implements DurableObject {
     return null
   }
 
-  private async calculateChecksum(data: any): Promise<string> {
+  private async calculateChecksum(data: unknown): Promise<string> {
     // Sort object keys to ensure consistent checksums regardless of key order
     const sortObject = (obj: unknown): unknown => {
       if (obj === null || typeof obj !== 'object') return obj
@@ -956,7 +974,7 @@ export class SyncCoordinator implements DurableObject {
     try {
       const entityType = 'repertoire_item'
       let entityId: string | undefined
-      let data: any = {}
+      let data: RepertoireItem | undefined
       let isDelete = false
 
       switch (event.type) {
@@ -1037,7 +1055,8 @@ export class SyncCoordinator implements DurableObject {
             entityId,
             JSON.stringify(data),
             await this.calculateChecksum(data),
-            data.device_id || 'sync-worker',
+            (data as RepertoireItem & { device_id?: string }).device_id ||
+              'sync-worker',
             1,
             seq
           )
@@ -1270,7 +1289,7 @@ export class SyncCoordinator implements DurableObject {
     }
   }
 
-  private sendToClient(clientId: string, data: any): void {
+  private sendToClient(clientId: string, data: SyncEvent): void {
     const client = this.clients.get(clientId)
     if (!client) {
       console.warn(`⚠️ Attempt to send to unknown client: ${clientId}`)
@@ -1291,7 +1310,7 @@ export class SyncCoordinator implements DurableObject {
     }
   }
 
-  private broadcast(data: any, excludeClientId?: string): void {
+  private broadcast(data: SyncEvent, excludeClientId?: string): void {
     for (const [clientId, client] of this.clients) {
       if (clientId !== excludeClientId) {
         this.sendToClient(clientId, data)

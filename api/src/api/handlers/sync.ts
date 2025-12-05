@@ -11,7 +11,7 @@ import {
   parseRecurrenceRule,
   normalizeRecurrenceMetadata,
 } from '../../utils/validation'
-import { Errors } from '../../utils/errors'
+import { InternalError } from '@mirubato/workers-utils'
 import { withIdempotency } from '../../utils/idempotency'
 import {
   generateNormalizedScoreId,
@@ -105,7 +105,7 @@ syncHandler.post('/pull', async c => {
       timestamp: new Date().toISOString(),
     })
   } catch {
-    throw Errors.InternalError('Failed to pull sync data')
+    throw new InternalError('Failed to pull sync data')
   }
 })
 
@@ -1008,7 +1008,7 @@ syncHandler.post('/batch', validateBody(schemas.syncBatch), async c => {
       newSyncToken,
     })
   } catch {
-    throw Errors.InternalError('Failed to perform batch sync')
+    throw new InternalError('Failed to perform batch sync')
   }
 })
 
@@ -1034,6 +1034,6 @@ syncHandler.get('/status', async c => {
       entityCount: (syncData as { results: unknown[] }).results.length,
     })
   } catch {
-    throw Errors.InternalError('Failed to get sync status')
+    throw new InternalError('Failed to get sync status')
   }
 })

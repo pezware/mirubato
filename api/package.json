@@ -21,6 +21,8 @@
     "db:migrate:production": "wrangler d1 migrations apply DB"
   },
   "dependencies": {
+    "@mirubato/utils": "workspace:*",
+    "@mirubato/workers-utils": "workspace:*",
     "@hono/zod-validator": "^0.2.0",
     "@sendgrid/mail": "^8.1.0",
     "hono": "^4.10.3",

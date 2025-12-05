@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import type { Env } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
-import { createApiResponse } from '../../utils/errors'
+import { createApiResponse } from '@mirubato/workers-utils'
 import type { DictionaryEntry } from '../../types/dictionary'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'

@@ -7,7 +7,7 @@ import { cors } from 'hono/cors'
 import { timing } from 'hono/timing'
 import { swaggerUI } from '@hono/swagger-ui'
 import { Env, Variables } from './types/env'
-import { errorHandler } from './utils/errors'
+import { createErrorHandler } from '@mirubato/workers-utils'
 import { tieredRateLimit } from './middleware/rate-limit'
 import { requestId } from './middleware/request-id'
 import { structuredLogger, accessLogger } from './middleware/logging'
@@ -608,7 +608,8 @@ app.notFound(c => {
 /**
  * Global error handler
  */
-app.onError(errorHandler)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+app.onError(createErrorHandler<Env>() as any)
 
 /**
  * Export configured app

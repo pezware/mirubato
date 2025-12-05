@@ -14,14 +14,6 @@ import {
 export { rateLimit, type RateLimitOptions }
 
 /**
- * Create a rate limiter with custom configuration
- * @deprecated Use `rateLimit` from @mirubato/workers-utils directly
- */
-export function createRateLimiter(config: RateLimitOptions) {
-  return rateLimit(config)
-}
-
-/**
  * Pre-configured rate limiters for scores service
  */
 export const rateLimiters = createRateLimiters({

@@ -12,7 +12,7 @@ import { CloudflareAIService } from '../../services/ai/cloudflare-ai-service'
 import { auth, getUserInfo } from '../../middleware/auth'
 import { cache, edgeCache } from '../../middleware/cache'
 import { rateLimit } from '../../middleware/rate-limit'
-import { APIError } from '../../utils/errors'
+import { APIError } from '@mirubato/workers-utils'
 import {
   SearchQuery,
   DictionaryEntry,

@@ -16,7 +16,7 @@ import {
   SupportedLanguage,
   ExtendedLanguage,
 } from '../../types/dictionary'
-import { NotFoundError } from '../../utils/errors'
+import { NotFoundError } from '@mirubato/workers-utils'
 import { normalizeTerm } from '../../utils/validation'
 
 export class DictionaryDatabase {

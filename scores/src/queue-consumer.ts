@@ -282,11 +282,12 @@ async function downloadIMSLPPDF(
 
     // Queue for preview generation
     if (env.PDF_QUEUE) {
+      const baseUrl = env.SCORES_URL || 'https://scores.mirubato.com'
       await env.PDF_QUEUE.send({
         scoreId,
         action: 'generate-previews',
         data: {
-          pdfUrl: `https://scores.mirubato.com/api/scores/${scoreId}/download/pdf`,
+          pdfUrl: `${baseUrl}/api/scores/${scoreId}/download/pdf`,
           r2Key,
         },
       })
@@ -322,7 +323,8 @@ async function extractMetadata(
     if (env.AI) {
       // Get first page as image
       const browserService = new BrowserRenderingService(env as any)
-      const pdfUrl = `https://scores.mirubato.com/files/${data.r2Key}`
+      const baseUrl = env.SCORES_URL || 'https://scores.mirubato.com'
+      const pdfUrl = `${baseUrl}/files/${data.r2Key}`
       await browserService.pdfToImage(pdfUrl, 1)
 
       // Use AI to analyze the image

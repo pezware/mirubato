@@ -9,13 +9,13 @@ import { enhanceHandler } from '../../api/handlers/enhance'
 import { adminHandler } from '../../api/handlers/admin'
 import { analyticsHandler } from '../../api/handlers/analytics'
 import { auth } from '../../middleware/auth'
-import { errorHandler } from '../../utils/errors'
+import { createErrorHandler } from '@mirubato/workers-utils'
 
 export function createTestApp(_env: Env): Hono<{ Bindings: Env }> {
   const app = new Hono<{ Bindings: Env }>()
 
   // Error handling
-  app.onError(errorHandler)
+  app.onError(createErrorHandler<Env>())
 
   // Health check endpoints
   app.route('/health', healthHandler)

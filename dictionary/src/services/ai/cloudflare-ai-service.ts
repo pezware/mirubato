@@ -4,7 +4,7 @@
 
 import { Env } from '../../types/env'
 import { CloudflareAIResponse, AIModelUsage } from '../../types/ai'
-import { AIServiceError } from '../../utils/errors'
+import { ServiceError as AIServiceError } from '@mirubato/workers-utils'
 import { CLOUDFLARE_AI_MODELS } from '../../config/ai-models'
 
 export class CloudflareAIService {
