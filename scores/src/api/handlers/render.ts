@@ -54,7 +54,7 @@ renderHandler.get('/scores/:id/render', async c => {
       .bind(scoreId)
       .run()
 
-    // TODO: Implement actual rendering logic
+    // TODO(#678): Implement actual rendering logic
     // For now, return a placeholder response
     const renderedScore: RenderedScore = {
       format: options.format,

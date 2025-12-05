@@ -43,7 +43,6 @@ export interface Env {
   METRICS_API_KEY?: string
 
   // Optional services
-  QUEUE?: Queue // For batch processing
   DURABLE_OBJECTS?: DurableObjectNamespace // For rate limiting
 
   // Add index signature for Hono compatibility

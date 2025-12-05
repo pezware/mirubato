@@ -317,7 +317,7 @@ async function extractMetadata(
       throw new Error('PDF not found in storage')
     }
 
-    // TODO: Implement PDF text extraction
+    // TODO(#676): Implement PDF text extraction
     // For now, we'll use AI to analyze the first page image
 
     if (env.AI) {

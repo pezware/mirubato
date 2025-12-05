@@ -78,7 +78,7 @@ export default async function rollbackCommand(
       spinner.start('Restoring backup...')
 
       if (!safety.getDryRunStatus()) {
-        // TODO: Implement actual restoration logic
+        // TODO(#675): Implement actual restoration logic
         // This would involve:
         // 1. Clearing current data
         // 2. Re-inserting backup data
@@ -123,7 +123,7 @@ export default async function rollbackCommand(
 
       if (!safety.getDryRunStatus()) {
         // Restore "before" state
-        // TODO: Implement actual rollback logic
+        // TODO(#675): Implement actual rollback logic
         // This would involve:
         // 1. Restoring deleted records
         // 2. Reverting modified records to their "before" state
