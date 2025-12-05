@@ -196,12 +196,48 @@ export class LogbookPage {
     await this.page.waitForLoadState('networkidle')
   }
 
+  // Helper to set practice time using the TimePicker
+  private async setPracticeTime(time: string) {
+    // Click the time picker trigger to open it
+    const timePicker = this.page.locator(
+      'button:has-text("AM"), button:has-text("PM")'
+    )
+    await timePicker.first().click()
+
+    // Wait for the time picker dropdown to appear
+    await this.page.waitForSelector('text="Select Practice Time"', {
+      state: 'visible',
+      timeout: 3000,
+    })
+
+    // Click the "click to type manually" option to enter time directly
+    const timeDisplay = this.page.locator('.text-2xl.font-light')
+    await timeDisplay.click()
+
+    // Find the time input and set the value
+    const timeInput = this.page.locator('input[type="time"]')
+    await timeInput.fill(time)
+
+    // Confirm the time
+    const confirmButton = this.page.locator('button:has-text("Set Time")')
+    await confirmButton.click()
+
+    // Wait for dropdown to close
+    await this.page
+      .waitForSelector('text="Select Practice Time"', {
+        state: 'hidden',
+        timeout: 2000,
+      })
+      .catch(() => {})
+  }
+
   // Entry creation
   async createEntry(data: {
     duration: number
     title: string
     composer?: string
     notes?: string
+    practiceTime?: string // Optional HH:MM format (e.g., "14:30")
   }) {
     // Get initial entry count from localStorage
     const initialCount = await this.page.evaluate(() => {
@@ -215,6 +251,11 @@ export class LogbookPage {
       .catch(() => false)
     if (!isFormVisible) {
       await this.switchToNewEntryTab()
+    }
+
+    // Set practice time if provided (before other fields to ensure form is stable)
+    if (data.practiceTime) {
+      await this.setPracticeTime(data.practiceTime)
     }
 
     // Fill duration
