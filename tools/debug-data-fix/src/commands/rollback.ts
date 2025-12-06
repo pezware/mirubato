@@ -10,21 +10,21 @@ export default async function rollbackCommand(
   options: any,
   command: any
 ) {
-  const { environment, safety } = command
+  const { environment } = command
   const { list } = options
 
   const backupService = new BackupService()
 
   if (list) {
-    // List available rollback points
+    // List available backup points
     const backups = backupService.listBackups(environment.name)
 
     if (backups.length === 0) {
-      console.log(chalk.yellow('No backups available for rollback'))
+      console.log(chalk.yellow('No backups available'))
       return
     }
 
-    console.log(chalk.bold('\n🔄 Available Rollback Points:\n'))
+    console.log(chalk.bold('\n📦 Available Backups:\n'))
 
     for (const backup of backups.slice(0, 10)) {
       console.log(chalk.cyan(`ID: ${backup.id}`))
@@ -37,121 +37,91 @@ export default async function rollbackCommand(
       console.log()
     }
 
+    console.log(chalk.gray('Note: Backups are for manual inspection only.'))
+    console.log(
+      chalk.gray('Automatic restoration is not supported due to schema evolution and sync concerns.')
+    )
+
     return
   }
 
   if (!transactionId) {
-    console.error(chalk.red('❌ Transaction ID required for rollback'))
-    console.log(chalk.yellow('Use --list to see available rollback points'))
+    console.error(chalk.red('❌ Backup/Transaction ID required'))
+    console.log(chalk.yellow('Use --list to see available backups'))
     return
   }
 
-  const spinner = ora('Preparing rollback...').start()
+  const spinner = ora('Looking up backup...').start()
 
   try {
-    // Check if this is a transaction backup
-    const transactionBackupPath = path.join(
-      process.env.BACKUP_DIR || './backups',
-      'transactions',
-      `${transactionId}_*.json`
-    )
-
     const transactionFiles = await findTransactionBackups(transactionId)
 
     if (transactionFiles.length === 0) {
       // Try regular backup
       spinner.text = 'Looking for regular backup...'
-      const data = await backupService.restoreBackup(transactionId)
 
-      spinner.stop()
+      try {
+        const data = await backupService.restoreBackup(transactionId)
+        spinner.stop()
 
-      const confirmed = await safety.confirmAction(
-        'Restore from backup',
-        `This will restore ${data.length} records from backup ${transactionId}`
-      )
+        console.log(chalk.bold('\n📦 Backup Details:\n'))
+        console.log(`Backup ID: ${transactionId}`)
+        console.log(`Records: ${data.length}`)
+        console.log(
+          `\nBackup file: ${path.join(process.env.BACKUP_DIR || './backups', `${transactionId}.json`)}`
+        )
 
-      if (!confirmed) {
-        console.log(chalk.yellow('Rollback cancelled'))
+        console.log(chalk.yellow('\n⚠️  Automatic restoration is not supported.'))
+        console.log(chalk.gray('Reasons:'))
+        console.log(chalk.gray('  - Schema may have evolved since backup was created'))
+        console.log(chalk.gray('  - Connected clients would re-sync their local data'))
+        console.log(chalk.gray('  - Sequence counters would become inconsistent'))
+        console.log(
+          chalk.cyan('\nInspect the backup file manually and use the fix command if corrections are needed.')
+        )
+      } catch {
+        spinner.fail(`Backup not found: ${transactionId}`)
+        console.log(chalk.yellow('Use --list to see available backups'))
         return
       }
-
-      spinner.start('Restoring backup...')
-
-      if (!safety.getDryRunStatus()) {
-        // TODO(#675): Implement actual restoration logic
-        // This would involve:
-        // 1. Clearing current data
-        // 2. Re-inserting backup data
-        // 3. Updating checksums
-
-        logger.info('Backup restored', { backupId: transactionId })
-        spinner.succeed('Backup restored successfully')
-      } else {
-        spinner.succeed('[DRY RUN] Would restore backup')
-      }
     } else {
-      // Handle transaction rollback
+      // Show transaction details
       const transactionFile = transactionFiles[0]
-      const transactionData = JSON.parse(
-        fs.readFileSync(transactionFile, 'utf-8')
-      )
+      const transactionData = JSON.parse(fs.readFileSync(transactionFile, 'utf-8'))
 
       spinner.stop()
 
       console.log(chalk.bold('\n📝 Transaction Details:\n'))
       console.log(`Transaction ID: ${transactionData.transactionId}`)
-      console.log(
-        `Timestamp: ${new Date(transactionData.timestamp).toLocaleString()}`
-      )
+      console.log(`Timestamp: ${new Date(transactionData.timestamp).toLocaleString()}`)
       console.log(`Environment: ${transactionData.environment}`)
       console.log(`Changes:`)
       console.log(`  Added: ${transactionData.changes.added.length}`)
       console.log(`  Modified: ${transactionData.changes.modified.length}`)
       console.log(`  Deleted: ${transactionData.changes.deleted.length}`)
+      console.log(`\nTransaction file: ${transactionFile}`)
 
-      const confirmed = await safety.confirmAction(
-        'Rollback transaction',
-        'This will revert all changes made in this transaction'
+      console.log(chalk.yellow('\n⚠️  Automatic rollback is not supported.'))
+      console.log(chalk.gray('The transaction file preserves a record of what changed.'))
+      console.log(
+        chalk.cyan('Review the file and apply manual corrections via the fix command if needed.')
       )
-
-      if (!confirmed) {
-        console.log(chalk.yellow('Rollback cancelled'))
-        return
-      }
-
-      spinner.start('Rolling back transaction...')
-
-      if (!safety.getDryRunStatus()) {
-        // Restore "before" state
-        // TODO(#675): Implement actual rollback logic
-        // This would involve:
-        // 1. Restoring deleted records
-        // 2. Reverting modified records to their "before" state
-        // 3. Removing added records
-
-        logger.info('Transaction rolled back', { transactionId })
-        spinner.succeed('Transaction rolled back successfully')
-      } else {
-        spinner.succeed('[DRY RUN] Would rollback transaction')
-      }
     }
 
     // Clean up old backups
     const cleanupCount = backupService.cleanupOldBackups()
     if (cleanupCount > 0) {
-      console.log(chalk.gray(`Cleaned up ${cleanupCount} old backups`))
+      console.log(chalk.gray(`\nCleaned up ${cleanupCount} old backups`))
     }
   } catch (error) {
-    spinner.fail('Rollback failed')
-    logger.error(`Rollback error: ${error}`)
+    spinner.fail('Failed to look up backup')
+    logger.error(`Rollback command error: ${error}`)
     console.error(chalk.red(`\n❌ Error: ${error}`))
     process.exit(1)
   }
 }
 
-async function findTransactionBackups(
-  transactionId: string
-): Promise<string[]> {
+async function findTransactionBackups(transactionId: string): Promise<string[]> {
   const transactionDir = path.join(
     process.env.BACKUP_DIR || './backups',
     'transactions'

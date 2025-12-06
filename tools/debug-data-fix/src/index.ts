@@ -117,9 +117,9 @@ program
 
 program
   .command('rollback')
-  .description('Rollback previous changes')
-  .argument('[transactionId]', 'Transaction ID to rollback')
-  .option('-l, --list', 'List available rollback points')
+  .description('View backup/transaction details (automatic rollback not supported)')
+  .argument('[transactionId]', 'Backup or transaction ID to inspect')
+  .option('-l, --list', 'List available backups')
   .action(rollbackCommand)
 
 // Utility commands
