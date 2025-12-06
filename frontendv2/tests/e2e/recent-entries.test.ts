@@ -70,25 +70,27 @@ test.describe('Recent Entries', () => {
 
   test('shows multiple recent entries in order', async ({ page }) => {
     await test.step('Create multiple entries with unique timestamps', async () => {
-      // Create entries with specific durations to control their timestamps
-      // The form calculates timestamp as "now - duration minutes"
-      // We create them from oldest to newest to ensure consistent ordering
-      // Each subsequent entry will have a more recent timestamp
+      // Create entries with explicit practice times to control their timestamps
+      // Entries are created with different times to ensure proper sorting
+      // Times are spaced 2 hours apart to guarantee clear ordering
       const entries = [
         {
-          duration: 60,
-          title: 'Third Entry',
-          notes: 'Should appear last (60 min ago)',
+          duration: 30,
+          title: 'First Entry',
+          notes: 'Should appear first (most recent at 14:00)',
+          practiceTime: '14:00', // Most recent
         },
         {
           duration: 30,
           title: 'Second Entry',
-          notes: 'Should appear middle (30 min ago)',
+          notes: 'Should appear middle (12:00)',
+          practiceTime: '12:00', // Middle
         },
         {
-          duration: 10,
-          title: 'First Entry',
-          notes: 'Should appear first (10 min ago)',
+          duration: 30,
+          title: 'Third Entry',
+          notes: 'Should appear last (oldest at 10:00)',
+          practiceTime: '10:00', // Oldest
         },
       ]
 
@@ -103,7 +105,7 @@ test.describe('Recent Entries', () => {
           i + 1, // Expected count after creating this entry
           { timeout: 5000 }
         )
-        // Add a small delay between entries to ensure different timestamps
+        // Add a small delay between entries for form stability
         if (i < entries.length - 1) {
           await page.waitForTimeout(500)
         }
@@ -134,11 +136,11 @@ test.describe('Recent Entries', () => {
         const entryContent = await entryContainers.nth(i).textContent()
 
         // Determine which entry this is based on content
-        if (entryContent.includes('First Entry')) {
+        if (entryContent?.includes('First Entry')) {
           displayedEntries.push('First Entry')
-        } else if (entryContent.includes('Second Entry')) {
+        } else if (entryContent?.includes('Second Entry')) {
           displayedEntries.push('Second Entry')
-        } else if (entryContent.includes('Third Entry')) {
+        } else if (entryContent?.includes('Third Entry')) {
           displayedEntries.push('Third Entry')
         } else {
           // If we can't identify the entry, push the content for debugging
@@ -172,21 +174,14 @@ test.describe('Recent Entries', () => {
       expect(secondEntryPosition).toBeGreaterThanOrEqual(0)
       expect(thirdEntryPosition).toBeGreaterThanOrEqual(0)
 
-      // Verify they appear in reverse chronological order (newest timestamp first)
-      // Based on our durations:
-      // - First Entry: 10 min ago (newest) → should appear at position 0
-      // - Second Entry: 30 min ago (middle) → should appear at position 1
-      // - Third Entry: 60 min ago (oldest) → should appear at position 2
-
-      // But the actual displayed order is: ['Third Entry', 'Second Entry', 'First Entry']
-      // This suggests the entries are being sorted in ascending order (oldest first)
-      // or there's an issue with how timestamps are calculated
-
-      // For now, let's test for the actual behavior we're seeing
-      // TODO(#679): Investigate why entries appear in this order
-      expect(thirdEntryPosition).toBe(0)
+      // Verify entries appear in reverse chronological order (newest timestamp first)
+      // Based on our explicit practice times:
+      // - First Entry: 14:00 (newest) → should appear at position 0
+      // - Second Entry: 12:00 (middle) → should appear at position 1
+      // - Third Entry: 10:00 (oldest) → should appear at position 2
+      expect(firstEntryPosition).toBe(0)
       expect(secondEntryPosition).toBe(1)
-      expect(firstEntryPosition).toBe(2)
+      expect(thirdEntryPosition).toBe(2)
     })
   })
 })

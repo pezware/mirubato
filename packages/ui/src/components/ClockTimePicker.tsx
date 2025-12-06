@@ -240,6 +240,7 @@ export default function ClockTimePicker({
       <div
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
+        data-testid="time-picker-trigger"
         className={`flex items-center gap-2 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent cursor-pointer hover:border-morandi-stone-400 transition-colors ${className}`}
       >
         <span className="text-morandi-stone-700 flex-1">{displayTime}</span>
@@ -461,6 +462,7 @@ export default function ClockTimePicker({
             ) : (
               <div
                 onClick={handleTimeClick}
+                data-testid="time-picker-display"
                 className="text-xl sm:text-2xl font-light cursor-pointer hover:bg-gray-200 rounded px-2 sm:px-3 py-1 transition-colors flex items-center gap-1"
                 title={labels.clickToTypeManually}
               >
