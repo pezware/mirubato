@@ -65,6 +65,30 @@ export interface CloudflareAiOptions {
   systemPrompt?: string
 }
 
+// PDF text extraction types
+export interface PDFMetadata {
+  title?: string
+  author?: string
+  subject?: string
+  keywords?: string
+  creator?: string
+  producer?: string
+  creationDate?: Date
+  modificationDate?: Date
+}
+
+export interface PDFTextExtractionResult {
+  success: boolean
+  text: string
+  pageCount: number
+  pagesExtracted: number
+  metadata: PDFMetadata
+  hasEmbeddedText: boolean
+  extractionMethod: 'pdfjs' | 'puppeteer' | 'fallback'
+  error?: string
+  extractedAt: string
+}
+
 // Error types
 export class AiExtractionError extends Error {
   constructor(
@@ -74,5 +98,16 @@ export class AiExtractionError extends Error {
   ) {
     super(message)
     this.name = 'AiExtractionError'
+  }
+}
+
+export class PDFExtractionError extends Error {
+  constructor(
+    message: string,
+    public extractionMethod: 'pdfjs' | 'puppeteer' | 'fallback',
+    public originalError?: Error
+  ) {
+    super(message)
+    this.name = 'PDFExtractionError'
   }
 }

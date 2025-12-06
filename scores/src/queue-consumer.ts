@@ -8,6 +8,8 @@
  */
 
 import { BrowserRenderingService } from './services/browser-rendering'
+import { extractTextFromPdf } from './services/pdfTextExtractor'
+import { PDFTextExtractionResult } from './types/ai'
 
 interface ScoreProcessingJob {
   scoreId: string
@@ -301,7 +303,8 @@ async function downloadIMSLPPDF(
 }
 
 /**
- * Extract metadata from PDF using AI
+ * Extract metadata from PDF using text extraction and AI
+ * Implements issue #676: PDF text extraction in queue consumer
  */
 async function extractMetadata(
   scoreId: string,
@@ -317,24 +320,261 @@ async function extractMetadata(
       throw new Error('PDF not found in storage')
     }
 
-    // TODO(#676): Implement PDF text extraction
-    // For now, we'll use AI to analyze the first page image
+    const pdfArrayBuffer = await pdf.arrayBuffer()
 
-    if (env.AI) {
-      // Get first page as image
+    // Step 1: Extract text from PDF using pdfjs-dist
+    let textExtractionResult: PDFTextExtractionResult
+    try {
+      textExtractionResult = await extractTextFromPdf(pdfArrayBuffer, {
+        maxPages: 5, // Extract first 5 pages for metadata
+        includePageBreaks: false,
+        timeout: 15000,
+      })
+
+      console.warn(
+        `Text extraction ${textExtractionResult.success ? 'succeeded' : 'failed'} for score ${scoreId}. ` +
+          `Has embedded text: ${textExtractionResult.hasEmbeddedText}, ` +
+          `Pages extracted: ${textExtractionResult.pagesExtracted}/${textExtractionResult.pageCount}`
+      )
+
+      // Store extraction results in database
+      await storeTextExtractionResults(env, scoreId, textExtractionResult)
+    } catch (extractError) {
+      console.error(`Text extraction error for score ${scoreId}:`, extractError)
+      textExtractionResult = {
+        success: false,
+        text: '',
+        pageCount: 0,
+        pagesExtracted: 0,
+        metadata: {},
+        hasEmbeddedText: false,
+        extractionMethod: 'pdfjs',
+        error:
+          extractError instanceof Error
+            ? extractError.message
+            : 'Unknown extraction error',
+        extractedAt: new Date().toISOString(),
+      }
+    }
+
+    // Step 2: Use PDF metadata if available (high confidence)
+    if (
+      textExtractionResult.metadata.title ||
+      textExtractionResult.metadata.author
+    ) {
+      const updates: string[] = []
+      const params: (string | null)[] = []
+
+      if (textExtractionResult.metadata.title) {
+        updates.push('title = COALESCE(NULLIF(title, ""), ?)')
+        params.push(textExtractionResult.metadata.title)
+      }
+
+      if (textExtractionResult.metadata.author) {
+        updates.push('composer = COALESCE(NULLIF(composer, ""), ?)')
+        params.push(textExtractionResult.metadata.author)
+      }
+
+      if (updates.length > 0) {
+        params.push(scoreId)
+        await env.DB.prepare(
+          `UPDATE scores SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+        )
+          .bind(...params)
+          .run()
+
+        console.warn(`Updated score ${scoreId} with PDF metadata`)
+      }
+    }
+
+    // Step 3: Use AI for enhanced metadata extraction if available
+    if (env.AI && textExtractionResult.hasEmbeddedText) {
+      try {
+        await extractMetadataWithAI(
+          env,
+          scoreId,
+          textExtractionResult.text,
+          data.r2Key
+        )
+      } catch (aiError) {
+        console.error(
+          `AI metadata extraction failed for score ${scoreId}:`,
+          aiError
+        )
+        // Continue - text extraction still provides value
+      }
+    } else if (env.AI) {
+      // Fallback to visual analysis for PDFs without embedded text
       const browserService = new BrowserRenderingService(env as any)
       const baseUrl = env.SCORES_URL || 'https://scores.mirubato.com'
       const pdfUrl = `${baseUrl}/files/${data.r2Key}`
-      await browserService.pdfToImage(pdfUrl, 1)
 
-      // Use AI to analyze the image
-      // Note: This would require a vision model, which may not be available yet
-      console.warn('AI metadata extraction not yet implemented')
+      try {
+        await browserService.pdfToImage(pdfUrl, 1)
+        console.warn(
+          `Visual analysis fallback triggered for score ${scoreId} (no embedded text)`
+        )
+      } catch (visualError) {
+        console.error(
+          `Visual analysis failed for score ${scoreId}:`,
+          visualError
+        )
+      }
     }
 
     console.warn(`Metadata extraction completed for score ${scoreId}`)
   } catch (error) {
     console.error(`Metadata extraction failed for score ${scoreId}:`, error)
     throw error
+  }
+}
+
+/**
+ * Store text extraction results in the database
+ */
+async function storeTextExtractionResults(
+  env: Env,
+  scoreId: string,
+  result: PDFTextExtractionResult
+): Promise<void> {
+  try {
+    // Store extracted text and metadata in score_versions
+    await env.DB.prepare(
+      `UPDATE score_versions
+       SET extracted_text = ?,
+           pdf_metadata = ?,
+           text_extraction_status = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE score_id = ? AND format = 'pdf'`
+    )
+      .bind(
+        result.hasEmbeddedText ? result.text : null,
+        JSON.stringify(result.metadata),
+        result.success
+          ? result.hasEmbeddedText
+            ? 'completed'
+            : 'no_text'
+          : 'failed',
+        scoreId
+      )
+      .run()
+  } catch (error) {
+    console.error(
+      `Failed to store extraction results for score ${scoreId}:`,
+      error
+    )
+    // Non-fatal - continue processing
+  }
+}
+
+/**
+ * Use AI to extract enhanced metadata from extracted text
+ */
+async function extractMetadataWithAI(
+  env: Env,
+  scoreId: string,
+  extractedText: string,
+  _r2Key: string
+): Promise<void> {
+  if (!env.AI || !extractedText) {
+    return
+  }
+
+  try {
+    // Use Cloudflare AI to analyze the extracted text
+    const prompt = `Analyze this text extracted from sheet music and extract metadata.
+
+Text from PDF:
+"""
+${extractedText.slice(0, 2000)}
+"""
+
+Extract and return as JSON:
+{
+  "title": "piece title",
+  "composer": "composer name",
+  "opus": "opus or catalog number if present",
+  "instrument": "primary instrument",
+  "difficulty": "beginner/intermediate/advanced",
+  "stylePeriod": "baroque/classical/romantic/modern/contemporary",
+  "year": composition year as number or null,
+  "tags": ["relevant", "tags"],
+  "description": "brief description"
+}
+
+Only include fields you can determine from the text. Return valid JSON only.`
+
+    const response = await env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 500,
+      temperature: 0.1,
+    })
+
+    // Parse AI response
+    const responseText = String(
+      (response as { response?: string })?.response || ''
+    )
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+
+    if (jsonMatch) {
+      const metadata = JSON.parse(jsonMatch[0])
+
+      // Update score with AI-extracted metadata
+      const updates: string[] = []
+      const params: (string | number | null)[] = []
+
+      if (metadata.title) {
+        updates.push('title = COALESCE(NULLIF(title, ""), ?)')
+        params.push(metadata.title)
+      }
+      if (metadata.composer) {
+        updates.push('composer = COALESCE(NULLIF(composer, ""), ?)')
+        params.push(metadata.composer)
+      }
+      if (metadata.opus) {
+        updates.push('opus = COALESCE(NULLIF(opus, ""), ?)')
+        params.push(metadata.opus)
+      }
+      if (metadata.instrument) {
+        updates.push('instrument = COALESCE(NULLIF(instrument, ""), ?)')
+        params.push(metadata.instrument)
+      }
+      if (metadata.difficulty) {
+        updates.push('difficulty = COALESCE(NULLIF(difficulty, ""), ?)')
+        params.push(metadata.difficulty)
+      }
+
+      // Store additional metadata as JSON
+      if (
+        metadata.stylePeriod ||
+        metadata.year ||
+        metadata.tags ||
+        metadata.description
+      ) {
+        const additionalMetadata = {
+          stylePeriod: metadata.stylePeriod,
+          year: metadata.year,
+          tags: metadata.tags,
+          description: metadata.description,
+          aiExtractedAt: new Date().toISOString(),
+        }
+        updates.push('metadata = json_patch(COALESCE(metadata, "{}"), ?)')
+        params.push(JSON.stringify(additionalMetadata))
+      }
+
+      if (updates.length > 0) {
+        params.push(scoreId)
+        await env.DB.prepare(
+          `UPDATE scores SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+        )
+          .bind(...params)
+          .run()
+
+        console.warn(`Updated score ${scoreId} with AI-extracted metadata`)
+      }
+    }
+  } catch (error) {
+    console.error(`AI text analysis failed for score ${scoreId}:`, error)
+    // Non-fatal - text extraction still provides value
   }
 }
