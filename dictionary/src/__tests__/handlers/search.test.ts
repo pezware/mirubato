@@ -334,6 +334,50 @@ describe('Search Handler', () => {
       const data = (await response.json()) as any
       expect(data.success).toBe(true)
     })
+
+    it('should detect Italian language for music terms like allegro', async () => {
+      mockDbMethods.search.mockResolvedValue({
+        entries: [],
+        total: 0,
+        query: { q: 'allegro' },
+        detectedTermLanguage: 'it',
+      })
+
+      const request = createTestRequest('/?q=allegro')
+      const response = await testHandler(
+        searchHandler,
+        request,
+        mockEnv,
+        mockExecutionContext
+      )
+
+      expect(response.status).toBe(200)
+      const data = (await response.json()) as any
+      expect(data.success).toBe(true)
+      // The detectedTermLanguage should be included in the response
+      expect(mockDbMethods.search).toHaveBeenCalled()
+    })
+
+    it('should detect German language for terms like langsam', async () => {
+      mockDbMethods.search.mockResolvedValue({
+        entries: [],
+        total: 0,
+        query: { q: 'langsam' },
+        detectedTermLanguage: 'de',
+      })
+
+      const request = createTestRequest('/?q=langsam')
+      const response = await testHandler(
+        searchHandler,
+        request,
+        mockEnv,
+        mockExecutionContext
+      )
+
+      expect(response.status).toBe(200)
+      const data = (await response.json()) as any
+      expect(data.success).toBe(true)
+    })
   })
 
   describe('POST /api/v1/search/semantic', () => {

@@ -1,11 +1,11 @@
 {
   "backend/**/*.{ts,tsx}": [
-    "cd backend && eslint --fix",
-    "cd backend && vitest related --run --no-coverage --passWithNoTests"
+    "pnpm --filter @mirubato/backend exec eslint --fix",
+    "pnpm --filter @mirubato/backend exec vitest related --run --no-coverage --passWithNoTests"
   ],
   "frontend/**/*.{ts,tsx}": [
-    "cd frontend && eslint --fix",
-    "cd frontend && jest --bail --findRelatedTests --passWithNoTests"
+    "pnpm --filter @mirubato/frontend exec eslint --fix",
+    "pnpm --filter @mirubato/frontend exec jest --bail --findRelatedTests --passWithNoTests"
   ],
   "frontendv2/**/*.{ts,tsx}": [
     "pnpm --filter @mirubato/frontendv2 exec eslint --fix",
@@ -16,8 +16,8 @@
     "pnpm --filter @mirubato/api exec vitest related --run --no-coverage --passWithNoTests"
   ],
   "dictionary/**/*.{ts,tsx}": [
-    "cd dictionary && eslint --fix",
-    "cd dictionary && vitest related --run --no-coverage --passWithNoTests"
+    "pnpm --filter @mirubato/dictionary exec eslint --fix",
+    "pnpm --filter @mirubato/dictionary exec vitest related --run --no-coverage --passWithNoTests"
   ],
   "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html,cjs,mjs,graphql}": [
     "prettier --write"

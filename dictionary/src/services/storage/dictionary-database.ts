@@ -18,9 +18,14 @@ import {
 } from '../../types/dictionary'
 import { NotFoundError } from '@mirubato/workers-utils'
 import { normalizeTerm } from '../../utils/validation'
+import { LanguageDetector } from '../ai/language-detector'
 
 export class DictionaryDatabase {
-  constructor(private db: D1Database) {}
+  private languageDetector: LanguageDetector
+
+  constructor(private db: D1Database) {
+    this.languageDetector = new LanguageDetector()
+  }
 
   /**
    * Find dictionary entry by term and language
@@ -330,13 +335,21 @@ export class DictionaryDatabase {
       ) as SupportedLanguage[]
     }
 
+    // Detect the language of the search term
+    let detectedTermLanguage: ExtendedLanguage | undefined
+    if (query.q && query.q.trim() !== '') {
+      const detection = await this.languageDetector.detectLanguage(query.q)
+      if (detection.language && detection.confidence >= 0.7) {
+        detectedTermLanguage = detection.language
+      }
+    }
+
     return {
       entries: results.results.map(r => this.deserializeEntry(r)),
       total,
       query,
       suggestedLanguages,
-      // TODO(#674): Add language detection logic here
-      detectedTermLanguage: undefined,
+      detectedTermLanguage,
     }
   }
 
