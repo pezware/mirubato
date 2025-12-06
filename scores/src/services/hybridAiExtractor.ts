@@ -1,7 +1,12 @@
 import { Ai } from '@cloudflare/workers-types'
 import { CloudflareAiExtractor } from './cloudflareAiExtractor'
 import { extractMetadataFromPdf } from './aiMetadataExtractor'
-import { HybridAnalysisResult, ImageAnalysisRequest } from '../types/ai'
+import {
+  HybridAnalysisResult,
+  ImageAnalysisRequest,
+  PDFMetadata,
+  PDFTextExtractionResult,
+} from '../types/ai'
 
 export interface HybridAiOptions {
   preferCloudflare?: boolean // Use Cloudflare AI as primary (cost-effective)
@@ -372,5 +377,271 @@ export class HybridAiExtractor {
     } catch {
       return undefined
     }
+  }
+
+  /**
+   * Extract metadata from PDF using pre-extracted text content
+   * This method is more accurate than visual analysis when text is available
+   *
+   * @param textExtractionResult - Result from pdfTextExtractor
+   * @param imageAnalysis - Optional visual analysis result to merge
+   * @returns Combined analysis result
+   */
+  async extractFromPdfWithText(
+    textExtractionResult: PDFTextExtractionResult,
+    imageAnalysis?: HybridAnalysisResult
+  ): Promise<HybridAnalysisResult> {
+    const results: HybridAnalysisResult = {
+      confidence: 0,
+      provider: 'hybrid',
+      mergedConfidence: 0,
+      discrepancies: [],
+      tags: [],
+    }
+
+    // Start with PDF metadata (highest confidence source)
+    const pdfMetadata = textExtractionResult.metadata
+    if (pdfMetadata.title || pdfMetadata.author) {
+      results.title = pdfMetadata.title
+      results.composer = pdfMetadata.author
+      results.confidence = 0.9 // High confidence for embedded metadata
+    }
+
+    // If we have extracted text, analyze it
+    if (textExtractionResult.hasEmbeddedText && textExtractionResult.text) {
+      const textAnalysis = this.analyzeExtractedText(textExtractionResult.text)
+
+      // Merge text analysis results (prefer explicit metadata over text analysis)
+      if (!results.title && textAnalysis.title) {
+        results.title = textAnalysis.title
+      }
+      if (!results.composer && textAnalysis.composer) {
+        results.composer = textAnalysis.composer
+      }
+      if (textAnalysis.opus) {
+        results.opus = textAnalysis.opus
+      }
+      if (textAnalysis.instrument) {
+        results.instrument = textAnalysis.instrument
+      }
+      if (textAnalysis.tags && textAnalysis.tags.length > 0) {
+        results.tags = textAnalysis.tags
+      }
+
+      // Adjust confidence based on text analysis quality
+      const textConfidence = this.calculateTextAnalysisConfidence(textAnalysis)
+      results.confidence = Math.max(results.confidence, textConfidence)
+    }
+
+    // If we have visual analysis, merge it
+    if (imageAnalysis) {
+      results.cloudflareResult = imageAnalysis.cloudflareResult
+      results.geminiResult = imageAnalysis.geminiResult
+      results.visualFeatures = imageAnalysis.visualFeatures
+
+      // Fill in gaps from visual analysis
+      if (!results.title && imageAnalysis.title) {
+        results.title = imageAnalysis.title
+      }
+      if (!results.composer && imageAnalysis.composer) {
+        results.composer = imageAnalysis.composer
+      }
+      if (!results.instrument && imageAnalysis.instrument) {
+        results.instrument = imageAnalysis.instrument
+      }
+      if (!results.difficulty && imageAnalysis.difficulty) {
+        results.difficulty = imageAnalysis.difficulty
+      }
+      if (!results.stylePeriod && imageAnalysis.stylePeriod) {
+        results.stylePeriod = imageAnalysis.stylePeriod
+      }
+      if (!results.year && imageAnalysis.year) {
+        results.year = imageAnalysis.year
+      }
+      if (!results.description && imageAnalysis.description) {
+        results.description = imageAnalysis.description
+      }
+
+      // Merge tags
+      const allTags = new Set([
+        ...(results.tags || []),
+        ...(imageAnalysis.tags || []),
+      ])
+      results.tags = Array.from(allTags)
+
+      // Calculate merged confidence
+      // Weight text extraction higher (0.7) than visual (0.3) when text is available
+      if (textExtractionResult.hasEmbeddedText) {
+        results.mergedConfidence =
+          results.confidence * 0.7 + (imageAnalysis.confidence || 0) * 0.3
+      } else {
+        // When no text, use visual confidence primarily
+        results.mergedConfidence = imageAnalysis.confidence || 0
+        results.confidence = results.mergedConfidence
+      }
+
+      // Record discrepancies between text and visual analysis
+      if (
+        results.title &&
+        imageAnalysis.title &&
+        results.title !== imageAnalysis.title
+      ) {
+        results.discrepancies?.push(
+          `title: Text="${results.title}", Visual="${imageAnalysis.title}"`
+        )
+      }
+      if (
+        results.composer &&
+        imageAnalysis.composer &&
+        results.composer !== imageAnalysis.composer
+      ) {
+        results.discrepancies?.push(
+          `composer: Text="${results.composer}", Visual="${imageAnalysis.composer}"`
+        )
+      }
+    } else {
+      results.mergedConfidence = results.confidence
+    }
+
+    return results
+  }
+
+  /**
+   * Analyze extracted text to find metadata patterns
+   */
+  private analyzeExtractedText(text: string): Partial<HybridAnalysisResult> {
+    const result: Partial<HybridAnalysisResult> = {
+      tags: [],
+    }
+
+    const lines = text
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l)
+    const firstFewLines = lines.slice(0, 10).join(' ')
+
+    // Look for common patterns in sheet music
+    // Title is often on the first line or second line (after composer)
+    const titlePatterns = [
+      /^([A-Z][^,\n]{2,50})$/m, // Capitalized line
+      /(?:Title|Titel|Titre):\s*(.+)/i,
+    ]
+
+    for (const pattern of titlePatterns) {
+      const match = firstFewLines.match(pattern)
+      if (match && match[1]) {
+        result.title = match[1].trim()
+        break
+      }
+    }
+
+    // Composer patterns
+    const composerPatterns = [
+      /(?:by|von|par|composed by|music by)\s+([A-Z][a-zA-Z\s.'-]+)/i,
+      /(?:Composer|Komponist|Compositeur):\s*(.+)/i,
+      /([A-Z][a-z]+\s+(?:van\s+)?[A-Z][a-z]+)(?:\s+\(|\s*$)/,
+    ]
+
+    for (const pattern of composerPatterns) {
+      const match = text.match(pattern)
+      if (match && match[1]) {
+        result.composer = match[1].trim()
+        break
+      }
+    }
+
+    // Opus patterns
+    const opusPatterns = [
+      /Op(?:us)?\.?\s*(\d+(?:\s*,?\s*No\.?\s*\d+)?)/i,
+      /BWV\s*(\d+)/i,
+      /K(?:\.|\s)?(\d+)/i, // Mozart Köchel
+      /Hob\.\s*([IVXLC]+:\d+)/i, // Haydn
+      /D\.?\s*(\d+)/i, // Schubert Deutsch
+    ]
+
+    for (const pattern of opusPatterns) {
+      const match = text.match(pattern)
+      if (match) {
+        const prefix = pattern.source.split('\\s')[0].replace(/[()\\?]/g, '')
+        result.opus = `${prefix}${match[1]}`
+        break
+      }
+    }
+
+    // Instrument detection
+    const instrumentKeywords = {
+      piano: ['piano', 'klavier', 'pianoforte', 'keyboard'],
+      guitar: ['guitar', 'guitare', 'gitarre', 'classical guitar'],
+      violin: ['violin', 'violon', 'violine', 'fiddle'],
+      cello: ['cello', 'violoncello', 'violoncelle'],
+      flute: ['flute', 'flöte', 'flûte'],
+      voice: ['voice', 'vocal', 'soprano', 'alto', 'tenor', 'bass', 'baritone'],
+    }
+
+    const textLower = text.toLowerCase()
+    for (const [instrument, keywords] of Object.entries(instrumentKeywords)) {
+      if (keywords.some(kw => textLower.includes(kw))) {
+        result.instrument =
+          instrument.charAt(0).toUpperCase() + instrument.slice(1)
+        break
+      }
+    }
+
+    // Tag detection
+    const tagKeywords = [
+      'sonata',
+      'sonatina',
+      'concerto',
+      'symphony',
+      'etude',
+      'study',
+      'prelude',
+      'fugue',
+      'waltz',
+      'mazurka',
+      'polonaise',
+      'nocturne',
+      'ballade',
+      'scherzo',
+      'minuet',
+      'rondo',
+      'variation',
+      'fantasy',
+      'march',
+      'gavotte',
+      'sarabande',
+      'allemande',
+      'courante',
+      'gigue',
+      'aria',
+      'lied',
+      'song',
+      'hymn',
+      'chorale',
+      'mass',
+      'requiem',
+    ]
+
+    result.tags = tagKeywords.filter(tag => textLower.includes(tag))
+
+    return result
+  }
+
+  /**
+   * Calculate confidence score based on text analysis results
+   */
+  private calculateTextAnalysisConfidence(
+    analysis: Partial<HybridAnalysisResult>
+  ): number {
+    let confidence = 0
+
+    if (analysis.title) confidence += 0.3
+    if (analysis.composer) confidence += 0.25
+    if (analysis.opus) confidence += 0.15
+    if (analysis.instrument) confidence += 0.15
+    if (analysis.tags && analysis.tags.length > 0) confidence += 0.1
+    if (analysis.stylePeriod) confidence += 0.05
+
+    return Math.min(confidence, 1)
   }
 }
