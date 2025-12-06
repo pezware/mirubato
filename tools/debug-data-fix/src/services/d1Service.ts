@@ -156,20 +156,9 @@ export class D1Service {
     }))
   }
 
-  async beginTransaction(): Promise<void> {
-    await this.query('BEGIN TRANSACTION')
-    logger.info('Started database transaction')
-  }
-
-  async commitTransaction(): Promise<void> {
-    await this.query('COMMIT')
-    logger.info('Committed database transaction')
-  }
-
-  async rollbackTransaction(): Promise<void> {
-    await this.query('ROLLBACK')
-    logger.warn('Rolled back database transaction')
-  }
+  // Note: Transaction methods removed. The wrangler CLI executes each query
+  // as a separate connection, so BEGIN/COMMIT/ROLLBACK don't work across calls.
+  // Each query() call is atomic but multi-query transactions are not supported.
 
   async getUsers(): Promise<Array<{ id: string; email: string }>> {
     const sql = `SELECT id, email FROM users ORDER BY created_at DESC`
