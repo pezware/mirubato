@@ -47,85 +47,14 @@ export async function extractTextFromPdf(
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   try {
-    // Convert to Uint8Array if needed
-    const data =
-      pdfData instanceof ArrayBuffer ? new Uint8Array(pdfData) : pdfData
-
-    // Load the PDF document
-    // Using specific options for Workers compatibility
-    const loadingTask = pdfjs.getDocument({
-      data,
-      useWorkerFetch: false,
-      isEvalSupported: false,
-      useSystemFonts: false,
-      // Disable range requests (not needed for in-memory data)
-      disableRange: true,
-      disableStream: true,
-    })
-
-    // Apply timeout
-    const pdf = await Promise.race([
-      loadingTask.promise,
+    // Wrap the entire extraction in a timeout to protect against slow page extraction
+    const extractionPromise = performExtraction(pdfData, opts)
+    const result = await Promise.race([
+      extractionPromise,
       createTimeout(opts.timeout),
     ])
 
-    if (!pdf) {
-      throw new PDFExtractionError(
-        'PDF loading timed out',
-        'pdfjs',
-        new Error('Timeout')
-      )
-    }
-
-    const pageCount = pdf.numPages
-    const pagesToExtract = Math.min(pageCount, opts.maxPages)
-
-    // Extract metadata
-    const metadata = await extractPdfMetadata(pdf)
-
-    // Extract text from pages
-    const textParts: string[] = []
-    let totalChars = 0
-
-    for (let pageNum = 1; pageNum <= pagesToExtract; pageNum++) {
-      const page = await pdf.getPage(pageNum)
-      const textContent = await page.getTextContent()
-
-      // Combine text items into a single string for this page
-      const pageText = textContent.items
-        .map(item => {
-          // Type guard for TextItem (has 'str' property)
-          if ('str' in item) {
-            return item.str
-          }
-          return ''
-        })
-        .join(' ')
-        .trim()
-
-      if (pageText) {
-        textParts.push(pageText)
-        totalChars += pageText.length
-      }
-
-      if (opts.includePageBreaks && pageNum < pagesToExtract) {
-        textParts.push('\n--- Page Break ---\n')
-      }
-    }
-
-    const extractedText = textParts.join('\n').trim()
-    const hasEmbeddedText = totalChars > 50 // Minimum threshold for meaningful text
-
-    return {
-      success: true,
-      text: extractedText,
-      pageCount,
-      pagesExtracted: pagesToExtract,
-      metadata,
-      hasEmbeddedText,
-      extractionMethod: 'pdfjs',
-      extractedAt: new Date().toISOString(),
-    }
+    return result
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error during extraction'
@@ -141,6 +70,91 @@ export async function extractTextFromPdf(
       error: errorMessage,
       extractedAt: new Date().toISOString(),
     }
+  }
+}
+
+/**
+ * Internal function that performs the actual PDF extraction
+ * Separated to allow timeout wrapper in extractTextFromPdf
+ */
+async function performExtraction(
+  pdfData: ArrayBuffer | Uint8Array,
+  opts: Required<PDFTextExtractorOptions>
+): Promise<PDFTextExtractionResult> {
+  // Convert to Uint8Array if needed
+  const data =
+    pdfData instanceof ArrayBuffer ? new Uint8Array(pdfData) : pdfData
+
+  // Load the PDF document
+  // Using specific options for Workers compatibility
+  const loadingTask = pdfjs.getDocument({
+    data,
+    useWorkerFetch: false,
+    isEvalSupported: false,
+    useSystemFonts: false,
+    // Disable range requests (not needed for in-memory data)
+    disableRange: true,
+    disableStream: true,
+  })
+
+  const pdf = await loadingTask.promise
+
+  if (!pdf) {
+    throw new PDFExtractionError(
+      'PDF loading failed',
+      'pdfjs',
+      new Error('No PDF document returned')
+    )
+  }
+
+  const pageCount = pdf.numPages
+  const pagesToExtract = Math.min(pageCount, opts.maxPages)
+
+  // Extract metadata
+  const metadata = await extractPdfMetadata(pdf)
+
+  // Extract text from pages
+  const textParts: string[] = []
+  let totalChars = 0
+
+  for (let pageNum = 1; pageNum <= pagesToExtract; pageNum++) {
+    const page = await pdf.getPage(pageNum)
+    const textContent = await page.getTextContent()
+
+    // Combine text items into a single string for this page
+    const pageText = textContent.items
+      .map(item => {
+        // Type guard for TextItem (has 'str' property)
+        if ('str' in item) {
+          return item.str
+        }
+        return ''
+      })
+      .join(' ')
+      .trim()
+
+    if (pageText) {
+      textParts.push(pageText)
+      totalChars += pageText.length
+    }
+
+    if (opts.includePageBreaks && pageNum < pagesToExtract) {
+      textParts.push('\n--- Page Break ---\n')
+    }
+  }
+
+  const extractedText = textParts.join('\n').trim()
+  const hasEmbeddedText = totalChars > 50 // Minimum threshold for meaningful text
+
+  return {
+    success: true,
+    text: extractedText,
+    pageCount,
+    pagesExtracted: pagesToExtract,
+    metadata,
+    hasEmbeddedText,
+    extractionMethod: 'pdfjs',
+    extractedAt: new Date().toISOString(),
   }
 }
 

@@ -331,13 +331,20 @@ async function extractMetadata(
         timeout: 15000,
       })
 
-      console.warn(
-        `Text extraction ${textExtractionResult.success ? 'succeeded' : 'failed'} for score ${scoreId}. ` +
-          `Has embedded text: ${textExtractionResult.hasEmbeddedText}, ` +
-          `Pages extracted: ${textExtractionResult.pagesExtracted}/${textExtractionResult.pageCount}`
-      )
+      // Handle soft failure (function returned success: false)
+      if (!textExtractionResult.success) {
+        console.warn(
+          `Text extraction soft failure for score ${scoreId}: ${textExtractionResult.error || 'Unknown error'}`
+        )
+      } else {
+        console.warn(
+          `Text extraction succeeded for score ${scoreId}. ` +
+            `Has embedded text: ${textExtractionResult.hasEmbeddedText}, ` +
+            `Pages extracted: ${textExtractionResult.pagesExtracted}/${textExtractionResult.pageCount}`
+        )
+      }
 
-      // Store extraction results in database
+      // Store extraction results in database (even for failures, to track status)
       await storeTextExtractionResults(env, scoreId, textExtractionResult)
     } catch (extractError) {
       console.error(`Text extraction error for score ${scoreId}:`, extractError)
@@ -517,7 +524,16 @@ Only include fields you can determine from the text. Return valid JSON only.`
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
 
     if (jsonMatch) {
-      const metadata = JSON.parse(jsonMatch[0])
+      let metadata: Record<string, unknown>
+      try {
+        metadata = JSON.parse(jsonMatch[0])
+      } catch (parseError) {
+        console.error(
+          `Failed to parse AI JSON response for score ${scoreId}:`,
+          parseError
+        )
+        return
+      }
 
       // Update score with AI-extracted metadata
       const updates: string[] = []
@@ -525,23 +541,37 @@ Only include fields you can determine from the text. Return valid JSON only.`
 
       if (metadata.title) {
         updates.push('title = COALESCE(NULLIF(title, ""), ?)')
-        params.push(metadata.title)
+        params.push(String(metadata.title))
       }
       if (metadata.composer) {
         updates.push('composer = COALESCE(NULLIF(composer, ""), ?)')
-        params.push(metadata.composer)
+        params.push(String(metadata.composer))
       }
       if (metadata.opus) {
         updates.push('opus = COALESCE(NULLIF(opus, ""), ?)')
-        params.push(metadata.opus)
+        params.push(String(metadata.opus))
       }
+
+      // Validate and normalize instrument (must be PIANO, GUITAR, or BOTH)
       if (metadata.instrument) {
-        updates.push('instrument = COALESCE(NULLIF(instrument, ""), ?)')
-        params.push(metadata.instrument)
+        const normalizedInstrument = normalizeInstrument(
+          String(metadata.instrument)
+        )
+        if (normalizedInstrument) {
+          updates.push('instrument = COALESCE(NULLIF(instrument, ""), ?)')
+          params.push(normalizedInstrument)
+        }
       }
+
+      // Validate and normalize difficulty (must be BEGINNER, INTERMEDIATE, or ADVANCED)
       if (metadata.difficulty) {
-        updates.push('difficulty = COALESCE(NULLIF(difficulty, ""), ?)')
-        params.push(metadata.difficulty)
+        const normalizedDifficulty = normalizeDifficulty(
+          String(metadata.difficulty)
+        )
+        if (normalizedDifficulty) {
+          updates.push('difficulty = COALESCE(NULLIF(difficulty, ""), ?)')
+          params.push(normalizedDifficulty)
+        }
       }
 
       // Store additional metadata as JSON
@@ -577,4 +607,73 @@ Only include fields you can determine from the text. Return valid JSON only.`
     console.error(`AI text analysis failed for score ${scoreId}:`, error)
     // Non-fatal - text extraction still provides value
   }
+}
+
+/**
+ * Normalize instrument value to match database constraints
+ * @returns 'PIANO' | 'GUITAR' | 'BOTH' | null
+ */
+function normalizeInstrument(value: string): string | null {
+  const lower = value.toLowerCase().trim()
+
+  // Direct matches
+  if (lower === 'piano' || lower === 'keyboard' || lower === 'pianoforte') {
+    return 'PIANO'
+  }
+  if (lower === 'guitar' || lower === 'classical guitar') {
+    return 'GUITAR'
+  }
+  if (lower === 'both') {
+    return 'BOTH'
+  }
+
+  // Keyword detection
+  const hasPiano = /piano|keyboard|klavier/.test(lower)
+  const hasGuitar = /guitar|guitare|gitarre/.test(lower)
+
+  if (hasPiano && hasGuitar) {
+    return 'BOTH'
+  }
+  if (hasPiano) {
+    return 'PIANO'
+  }
+  if (hasGuitar) {
+    return 'GUITAR'
+  }
+
+  // Other instruments not supported by schema - return null
+  return null
+}
+
+/**
+ * Normalize difficulty value to match database constraints
+ * @returns 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null
+ */
+function normalizeDifficulty(value: string): string | null {
+  const lower = value.toLowerCase().trim()
+
+  // Direct matches and synonyms
+  if (
+    lower === 'beginner' ||
+    lower === 'easy' ||
+    lower === 'elementary' ||
+    lower === 'novice'
+  ) {
+    return 'BEGINNER'
+  }
+  if (lower === 'intermediate' || lower === 'medium' || lower === 'moderate') {
+    return 'INTERMEDIATE'
+  }
+  if (
+    lower === 'advanced' ||
+    lower === 'hard' ||
+    lower === 'difficult' ||
+    lower === 'expert' ||
+    lower === 'professional'
+  ) {
+    return 'ADVANCED'
+  }
+
+  // Not a recognized difficulty level
+  return null
 }

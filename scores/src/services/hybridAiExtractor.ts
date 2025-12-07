@@ -4,7 +4,6 @@ import { extractMetadataFromPdf } from './aiMetadataExtractor'
 import {
   HybridAnalysisResult,
   ImageAnalysisRequest,
-  PDFMetadata,
   PDFTextExtractionResult,
 } from '../types/ai'
 
@@ -568,61 +567,25 @@ export class HybridAiExtractor {
       }
     }
 
-    // Instrument detection
-    const instrumentKeywords = {
-      piano: ['piano', 'klavier', 'pianoforte', 'keyboard'],
-      guitar: ['guitar', 'guitare', 'gitarre', 'classical guitar'],
-      violin: ['violin', 'violon', 'violine', 'fiddle'],
-      cello: ['cello', 'violoncello', 'violoncelle'],
-      flute: ['flute', 'flöte', 'flûte'],
-      voice: ['voice', 'vocal', 'soprano', 'alto', 'tenor', 'bass', 'baritone'],
-    }
-
+    // Instrument detection - only piano and guitar are supported by schema
     const textLower = text.toLowerCase()
-    for (const [instrument, keywords] of Object.entries(instrumentKeywords)) {
-      if (keywords.some(kw => textLower.includes(kw))) {
-        result.instrument =
-          instrument.charAt(0).toUpperCase() + instrument.slice(1)
-        break
-      }
+    const hasPiano = /piano|klavier|pianoforte|keyboard/.test(textLower)
+    const hasGuitar = /guitar|guitare|gitarre/.test(textLower)
+
+    if (hasPiano && hasGuitar) {
+      result.instrument = 'BOTH'
+    } else if (hasPiano) {
+      result.instrument = 'PIANO'
+    } else if (hasGuitar) {
+      result.instrument = 'GUITAR'
     }
+    // Note: violin, cello, flute, voice etc. are not supported by schema
 
-    // Tag detection
-    const tagKeywords = [
-      'sonata',
-      'sonatina',
-      'concerto',
-      'symphony',
-      'etude',
-      'study',
-      'prelude',
-      'fugue',
-      'waltz',
-      'mazurka',
-      'polonaise',
-      'nocturne',
-      'ballade',
-      'scherzo',
-      'minuet',
-      'rondo',
-      'variation',
-      'fantasy',
-      'march',
-      'gavotte',
-      'sarabande',
-      'allemande',
-      'courante',
-      'gigue',
-      'aria',
-      'lied',
-      'song',
-      'hymn',
-      'chorale',
-      'mass',
-      'requiem',
-    ]
-
-    result.tags = tagKeywords.filter(tag => textLower.includes(tag))
+    // Tag detection using single regex for better performance
+    const tagPattern =
+      /\b(sonata|sonatina|concerto|symphony|etude|study|prelude|fugue|waltz|mazurka|polonaise|nocturne|ballade|scherzo|minuet|rondo|variation|fantasy|march|gavotte|sarabande|allemande|courante|gigue|aria|lied|song|hymn|chorale|mass|requiem)\b/gi
+    const matches = textLower.match(tagPattern)
+    result.tags = matches ? [...new Set(matches.map(m => m.toLowerCase()))] : []
 
     return result
   }
