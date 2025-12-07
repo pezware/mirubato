@@ -39,7 +39,9 @@ export default async function rollbackCommand(
 
     console.log(chalk.gray('Note: Backups are for manual inspection only.'))
     console.log(
-      chalk.gray('Automatic restoration is not supported due to schema evolution and sync concerns.')
+      chalk.gray(
+        'Automatic restoration is not supported due to schema evolution and sync concerns.'
+      )
     )
 
     return
@@ -71,13 +73,23 @@ export default async function rollbackCommand(
           `\nBackup file: ${path.join(process.env.BACKUP_DIR || './backups', `${transactionId}.json`)}`
         )
 
-        console.log(chalk.yellow('\n⚠️  Automatic restoration is not supported.'))
-        console.log(chalk.gray('Reasons:'))
-        console.log(chalk.gray('  - Schema may have evolved since backup was created'))
-        console.log(chalk.gray('  - Connected clients would re-sync their local data'))
-        console.log(chalk.gray('  - Sequence counters would become inconsistent'))
         console.log(
-          chalk.cyan('\nInspect the backup file manually and use the fix command if corrections are needed.')
+          chalk.yellow('\n⚠️  Automatic restoration is not supported.')
+        )
+        console.log(chalk.gray('Reasons:'))
+        console.log(
+          chalk.gray('  - Schema may have evolved since backup was created')
+        )
+        console.log(
+          chalk.gray('  - Connected clients would re-sync their local data')
+        )
+        console.log(
+          chalk.gray('  - Sequence counters would become inconsistent')
+        )
+        console.log(
+          chalk.cyan(
+            '\nInspect the backup file manually and use the fix command if corrections are needed.'
+          )
         )
       } catch {
         spinner.fail(`Backup not found: ${transactionId}`)
@@ -87,13 +99,17 @@ export default async function rollbackCommand(
     } else {
       // Show transaction details
       const transactionFile = transactionFiles[0]
-      const transactionData = JSON.parse(fs.readFileSync(transactionFile, 'utf-8'))
+      const transactionData = JSON.parse(
+        fs.readFileSync(transactionFile, 'utf-8')
+      )
 
       spinner.stop()
 
       console.log(chalk.bold('\n📝 Transaction Details:\n'))
       console.log(`Transaction ID: ${transactionData.transactionId}`)
-      console.log(`Timestamp: ${new Date(transactionData.timestamp).toLocaleString()}`)
+      console.log(
+        `Timestamp: ${new Date(transactionData.timestamp).toLocaleString()}`
+      )
       console.log(`Environment: ${transactionData.environment}`)
       console.log(`Changes:`)
       console.log(`  Added: ${transactionData.changes.added.length}`)
@@ -102,9 +118,13 @@ export default async function rollbackCommand(
       console.log(`\nTransaction file: ${transactionFile}`)
 
       console.log(chalk.yellow('\n⚠️  Automatic rollback is not supported.'))
-      console.log(chalk.gray('The transaction file preserves a record of what changed.'))
       console.log(
-        chalk.cyan('Review the file and apply manual corrections via the fix command if needed.')
+        chalk.gray('The transaction file preserves a record of what changed.')
+      )
+      console.log(
+        chalk.cyan(
+          'Review the file and apply manual corrections via the fix command if needed.'
+        )
       )
     }
 
@@ -121,7 +141,9 @@ export default async function rollbackCommand(
   }
 }
 
-async function findTransactionBackups(transactionId: string): Promise<string[]> {
+async function findTransactionBackups(
+  transactionId: string
+): Promise<string[]> {
   const transactionDir = path.join(
     process.env.BACKUP_DIR || './backups',
     'transactions'

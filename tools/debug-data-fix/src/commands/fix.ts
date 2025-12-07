@@ -99,8 +99,14 @@ export default async function fixCommand(
 
     // Note: Automatic rollback is not possible - each wrangler CLI call is a separate connection.
     // The transaction ID and backup files can be used for manual recovery if needed.
-    console.log(chalk.yellow(`\n⚠️  Transaction ID for manual recovery: ${transactionId}`))
-    console.log(chalk.gray('Check the backup files in the backups directory for recovery options.'))
+    console.log(
+      chalk.yellow(`\n⚠️  Transaction ID for manual recovery: ${transactionId}`)
+    )
+    console.log(
+      chalk.gray(
+        'Check the backup files in the backups directory for recovery options.'
+      )
+    )
 
     process.exit(1)
   }

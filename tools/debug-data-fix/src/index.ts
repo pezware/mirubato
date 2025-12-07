@@ -117,7 +117,9 @@ program
 
 program
   .command('rollback')
-  .description('View backup/transaction details (automatic rollback not supported)')
+  .description(
+    'View backup/transaction details (automatic rollback not supported)'
+  )
   .argument('[transactionId]', 'Backup or transaction ID to inspect')
   .option('-l, --list', 'List available backups')
   .action(rollbackCommand)
