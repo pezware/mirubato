@@ -218,16 +218,28 @@ function MiniHeatmap({
     weeks.push(currentWeek)
   }
 
-  // Larger cells for better visibility
+  // Larger cells for better visibility - spread across full width
   const cellSize = isStory ? 9 : 7
   const gap = 2
 
   return (
-    <div style={{ display: 'flex', gap: `${gap}px`, flexWrap: 'wrap' }}>
+    <div
+      style={{
+        display: 'flex',
+        gap: `${gap}px`,
+        width: '100%',
+        justifyContent: 'center',
+      }}
+    >
       {weeks.map((week, weekIndex) => (
         <div
           key={weekIndex}
-          style={{ display: 'flex', flexDirection: 'column', gap: `${gap}px` }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: `${gap}px`,
+            flex: '0 0 auto',
+          }}
         >
           {week.map((dayData, dayIndex) => {
             if (dayData.date.getFullYear() === 1970) {
@@ -275,8 +287,6 @@ function BreakdownChart({
         barHeight: isStory ? 80 : 50,
         barWidth: isStory ? 52 : 40,
         gap: isStory ? 8 : 6,
-        showAllLabels: true,
-        labelInterval: 1,
       }
     } else if (barCount <= 30) {
       // Last 30 days - medium bars
@@ -284,8 +294,6 @@ function BreakdownChart({
         barHeight: isStory ? 70 : 45,
         barWidth: isStory ? 12 : 10,
         gap: 2,
-        showAllLabels: false,
-        labelInterval: 5, // Show every 5th label
       }
     } else {
       // Last 365 days (52 weeks) - thin bars
@@ -293,14 +301,11 @@ function BreakdownChart({
         barHeight: isStory ? 60 : 40,
         barWidth: isStory ? 7 : 5,
         gap: 1,
-        showAllLabels: false,
-        labelInterval: 4, // Show monthly labels (every ~4 weeks)
       }
     }
   }
 
-  const { barHeight, barWidth, gap, showAllLabels, labelInterval } =
-    getBarDimensions()
+  const { barHeight, barWidth, gap } = getBarDimensions()
 
   return (
     <div
@@ -319,7 +324,8 @@ function BreakdownChart({
             ? Math.max((item.minutes / maxMinutes) * barHeight, 2)
             : 2
         const hasData = item.minutes > 0
-        const showLabel = showAllLabels || index % labelInterval === 0
+        // Show label only if it exists (non-empty string)
+        const hasLabel = item.label && item.label.trim().length > 0
 
         return (
           <div
@@ -341,7 +347,7 @@ function BreakdownChart({
                 borderRadius: Math.min(barWidth / 3, 3),
               }}
             />
-            {showLabel && (
+            {hasLabel && (
               <span
                 style={{
                   fontSize: barCount > 30 ? 7 : barCount > 7 ? 8 : 9,

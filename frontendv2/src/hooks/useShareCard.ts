@@ -23,6 +23,21 @@ import {
   differenceInDays,
 } from 'date-fns'
 import { formatDuration, formatDurationLong } from '../utils/dateUtils'
+import { getCanonicalComposerName } from '../utils/composerCanonicalizer'
+
+/**
+ * Normalizes a piece title for deduplication matching
+ * Handles case variations, extra whitespace, and common formatting differences
+ */
+function normalizeTitleForMatching(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/['']/g, "'") // Normalize apostrophes
+    .replace(/[""]/g, '"') // Normalize quotes
+    .replace(/[–—]/g, '-') // Normalize dashes
+}
 
 export interface ShareCardPiece {
   title: string
@@ -224,7 +239,11 @@ export function useShareCard(): UseShareCardReturn {
     })
 
     // Aggregate pieces with their durations and collect notes
-    const pieceMap = new Map<string, ShareCardPiece>()
+    // Use normalized keys for deduplication but preserve best display names
+    const pieceMap = new Map<
+      string,
+      ShareCardPiece & { normalizedTitle: string; normalizedComposer: string }
+    >()
     const periodNotes: string[] = []
     let periodTotalMinutes = 0
     const events: ShareCardEvent[] = []
@@ -262,20 +281,46 @@ export function useShareCard(): UseShareCardReturn {
       if (entry.type === 'status_change') return
 
       entry.pieces?.forEach(piece => {
-        const key = `${piece.title}|${piece.composer || ''}`
+        // Normalize for deduplication key
+        const normalizedTitle = normalizeTitleForMatching(piece.title || '')
+        const normalizedComposer = getCanonicalComposerName(piece.composer)
+          .toLowerCase()
+          .trim()
+        const key = `${normalizedTitle}|${normalizedComposer}`
+
         const existing = pieceMap.get(key)
+        const durationPerPiece =
+          (entry.duration || 0) / (entry.pieces?.length || 1)
 
         if (existing) {
-          const durationPerPiece =
-            (entry.duration || 0) / (entry.pieces?.length || 1)
           existing.duration += durationPerPiece
+          // Prefer properly capitalized versions (longer or has more uppercase)
+          const existingTitleScore =
+            existing.title.length +
+            (existing.title.match(/[A-Z]/g)?.length || 0)
+          const newTitleScore =
+            (piece.title?.length || 0) +
+            (piece.title?.match(/[A-Z]/g)?.length || 0)
+          if (newTitleScore > existingTitleScore && piece.title) {
+            existing.title = piece.title
+          }
+          // Use canonical composer name if available
+          const canonicalComposer = getCanonicalComposerName(piece.composer)
+          if (canonicalComposer && !existing.composer) {
+            existing.composer = canonicalComposer
+          } else if (
+            canonicalComposer &&
+            canonicalComposer.length > (existing.composer?.length || 0)
+          ) {
+            existing.composer = canonicalComposer
+          }
         } else {
-          const durationPerPiece =
-            (entry.duration || 0) / (entry.pieces?.length || 1)
           pieceMap.set(key, {
-            title: piece.title,
-            composer: piece.composer || null,
+            title: piece.title || '',
+            composer: getCanonicalComposerName(piece.composer) || null,
             duration: durationPerPiece,
+            normalizedTitle,
+            normalizedComposer,
           })
         }
       })
@@ -305,6 +350,7 @@ export function useShareCard(): UseShareCardReturn {
           { start: periodStart, end: periodEnd },
           { weekStartsOn: 1 }
         )
+        let lastMonth = -1
         breakdownData = weeks.map(weekStart => {
           const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 })
           const weekEntries = periodEntries.filter(entry => {
@@ -319,10 +365,18 @@ export function useShareCard(): UseShareCardReturn {
             0
           )
 
+          // Only show month abbreviation when month changes
+          const currentMonth = weekStart.getMonth()
+          let label = ''
+          if (currentMonth !== lastMonth) {
+            label = format(weekStart, 'MMM')
+            lastMonth = currentMonth
+          }
+
           return {
             date: weekStart,
             dateStr: format(weekStart, 'yyyy-ww'),
-            label: format(weekStart, 'MMM d'),
+            label,
             minutes: weekMinutes,
           }
         })
@@ -338,7 +392,8 @@ export function useShareCard(): UseShareCardReturn {
         // Daily breakdown for week, last7days, last30days
         breakdownType = 'daily'
         const days = eachDayOfInterval({ start: periodStart, end: periodEnd })
-        breakdownData = days.map(day => {
+        let lastMonth30 = -1
+        breakdownData = days.map((day, index) => {
           const dayStart = startOfDay(day)
           const dayEnd = endOfDay(day)
           const dayEntries = periodEntries.filter(entry => {
@@ -358,8 +413,14 @@ export function useShareCard(): UseShareCardReturn {
           if (viewMode === 'week' || viewMode === 'last7days') {
             label = format(day, 'EEE') // Mon, Tue, etc.
           } else {
-            // last30days - show date
-            label = format(day, 'd') // Just the day number
+            // last30days - show month abbreviation only when month changes
+            const currentMonth = day.getMonth()
+            if (currentMonth !== lastMonth30 || index === 0) {
+              label = format(day, 'MMM')
+              lastMonth30 = currentMonth
+            } else {
+              label = '' // Empty for other days to reduce overlap
+            }
           }
 
           return {
@@ -434,9 +495,9 @@ export function useShareCard(): UseShareCardReturn {
       viewMode,
       periodDate: targetDate,
       periodLabel,
-      periodPieces: Array.from(pieceMap.values()).sort(
-        (a, b) => b.duration - a.duration
-      ),
+      periodPieces: Array.from(pieceMap.values())
+        .map(({ title, composer, duration }) => ({ title, composer, duration }))
+        .sort((a, b) => b.duration - a.duration),
       periodTotalMinutes,
       periodTotalFormatted: formatDuration(periodTotalMinutes),
       periodNotes,
