@@ -24,67 +24,7 @@ import {
 } from 'date-fns'
 import { formatDuration, formatDurationLong } from '../utils/dateUtils'
 import { getCanonicalComposerName } from '../utils/composerCanonicalizer'
-
-/**
- * Normalizes a piece title for deduplication matching
- * Handles case variations, extra whitespace, and common formatting differences
- */
-function normalizeTitleForMatching(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-    .replace(/['']/g, "'") // Normalize apostrophes
-    .replace(/[""]/g, '"') // Normalize quotes
-    .replace(/[–—]/g, '-') // Normalize dashes
-}
-
-/**
- * Capitalizes the first letter of each word in a title
- * Preserves already-capitalized words and handles common patterns
- */
-function toTitleCase(title: string): string {
-  if (!title) return title
-
-  // Words that should stay lowercase (unless first word)
-  const lowercaseWords = new Set([
-    'a',
-    'an',
-    'the',
-    'and',
-    'but',
-    'or',
-    'for',
-    'nor',
-    'in',
-    'on',
-    'at',
-    'to',
-    'by',
-    'of',
-  ])
-
-  return title
-    .split(' ')
-    .map((word, index) => {
-      if (!word) return word
-
-      // Keep words that are already properly capitalized (e.g., "BWV", "Op.")
-      if (word.match(/^[A-Z]{2,}/) || word.match(/^[A-Z][a-z]*\./)) {
-        return word
-      }
-
-      // Lowercase words stay lowercase unless first word
-      const lowerWord = word.toLowerCase()
-      if (index > 0 && lowercaseWords.has(lowerWord)) {
-        return lowerWord
-      }
-
-      // Capitalize first letter
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    })
-    .join(' ')
-}
+import { generateNormalizedScoreId } from '../utils/scoreIdNormalizer'
 
 export interface ShareCardPiece {
   title: string
@@ -286,11 +226,8 @@ export function useShareCard(): UseShareCardReturn {
     })
 
     // Aggregate pieces with their durations and collect notes
-    // Use normalized keys for deduplication but preserve best display names
-    const pieceMap = new Map<
-      string,
-      ShareCardPiece & { normalizedTitle: string; normalizedComposer: string }
-    >()
+    // Use generateNormalizedScoreId for deduplication (same as repertoire view)
+    const pieceMap = new Map<string, ShareCardPiece>()
     const periodNotes: string[] = []
     let periodTotalMinutes = 0
     const events: ShareCardEvent[] = []
@@ -328,20 +265,22 @@ export function useShareCard(): UseShareCardReturn {
       if (entry.type === 'status_change') return
 
       entry.pieces?.forEach(piece => {
-        // Normalize for deduplication key
-        const normalizedTitle = normalizeTitleForMatching(piece.title || '')
-        const normalizedComposer = getCanonicalComposerName(piece.composer)
-          .toLowerCase()
-          .trim()
-        const key = `${normalizedTitle}|${normalizedComposer}`
+        // Use the same normalization as repertoire view for consistent deduplication
+        const canonicalComposer = getCanonicalComposerName(piece.composer)
+        const key = generateNormalizedScoreId(
+          piece.title || '',
+          canonicalComposer || undefined
+        )
 
         const existing = pieceMap.get(key)
         const durationPerPiece =
           (entry.duration || 0) / (entry.pieces?.length || 1)
 
         if (existing) {
+          // Sum duration across all matching entries
           existing.duration += durationPerPiece
-          // Prefer properly capitalized versions (longer or has more uppercase)
+
+          // Prefer better-capitalized title (more uppercase letters = likely properly formatted)
           const existingTitleScore =
             existing.title.length +
             (existing.title.match(/[A-Z]/g)?.length || 0)
@@ -349,13 +288,11 @@ export function useShareCard(): UseShareCardReturn {
             (piece.title?.length || 0) +
             (piece.title?.match(/[A-Z]/g)?.length || 0)
           if (newTitleScore > existingTitleScore && piece.title) {
-            existing.title = toTitleCase(piece.title)
+            existing.title = piece.title
           }
-          // Use canonical composer name if available
-          const canonicalComposer = getCanonicalComposerName(piece.composer)
-          if (canonicalComposer && !existing.composer) {
-            existing.composer = canonicalComposer
-          } else if (
+
+          // Prefer longer/canonical composer name
+          if (
             canonicalComposer &&
             canonicalComposer.length > (existing.composer?.length || 0)
           ) {
@@ -363,11 +300,9 @@ export function useShareCard(): UseShareCardReturn {
           }
         } else {
           pieceMap.set(key, {
-            title: toTitleCase(piece.title || ''),
-            composer: getCanonicalComposerName(piece.composer) || null,
+            title: piece.title || '',
+            composer: canonicalComposer || null,
             duration: durationPerPiece,
-            normalizedTitle,
-            normalizedComposer,
           })
         }
       })
@@ -493,7 +428,7 @@ export function useShareCard(): UseShareCardReturn {
       }
     }
 
-    // Calculate total stats
+    // Calculate total stats using consistent normalization
     let totalMinutes = 0
     const allPieces = new Set<string>()
 
@@ -501,7 +436,13 @@ export function useShareCard(): UseShareCardReturn {
       if (entry.type !== 'status_change') {
         totalMinutes += entry.duration || 0
         entry.pieces?.forEach(piece => {
-          allPieces.add(`${piece.title}|${piece.composer || ''}`)
+          // Use same normalization as period pieces for accurate count
+          const canonicalComposer = getCanonicalComposerName(piece.composer)
+          const normalizedId = generateNormalizedScoreId(
+            piece.title || '',
+            canonicalComposer || undefined
+          )
+          allPieces.add(normalizedId)
         })
       }
     })
@@ -542,9 +483,9 @@ export function useShareCard(): UseShareCardReturn {
       viewMode,
       periodDate: targetDate,
       periodLabel,
-      periodPieces: Array.from(pieceMap.values())
-        .map(({ title, composer, duration }) => ({ title, composer, duration }))
-        .sort((a, b) => b.duration - a.duration),
+      periodPieces: Array.from(pieceMap.values()).sort(
+        (a, b) => b.duration - a.duration
+      ),
       periodTotalMinutes,
       periodTotalFormatted: formatDuration(periodTotalMinutes),
       periodNotes,
