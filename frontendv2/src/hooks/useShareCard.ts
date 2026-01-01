@@ -14,10 +14,13 @@ import {
   subWeeks,
   addDays,
   addWeeks,
+  addMonths,
   eachDayOfInterval,
+  eachWeekOfInterval,
   startOfMonth,
   endOfMonth,
   isSameDay,
+  differenceInDays,
 } from 'date-fns'
 import { formatDuration, formatDurationLong } from '../utils/dateUtils'
 
@@ -43,9 +46,23 @@ export interface DailyPracticeData {
   minutes: number
 }
 
+export type ShareCardViewMode =
+  | 'day'
+  | 'week'
+  | 'last7days'
+  | 'last30days'
+  | 'last365days'
+
+export interface BreakdownDataItem {
+  date: Date
+  dateStr: string // yyyy-MM-dd or week identifier
+  label: string // e.g., "Mon", "Dec 25", "Week 1", "Jan"
+  minutes: number
+}
+
 export interface ShareCardData {
   // View mode
-  viewMode: 'day' | 'week'
+  viewMode: ShareCardViewMode
 
   // Current period info
   periodDate: Date
@@ -57,11 +74,16 @@ export interface ShareCardData {
   periodTotalFormatted: string
   periodNotes: string[]
 
-  // Weekly specific data
+  // Weekly specific data (kept for backward compatibility)
   weeklyDailyData: DailyPracticeData[] // 7 days of data for bar chart
   weeklySessionCount: number
   weeklyConsistency: number // percentage of days practiced
   weeklyEvents: ShareCardEvent[] // status changes
+
+  // Unified breakdown data for all multi-day modes
+  breakdownData: BreakdownDataItem[] // variable length based on mode
+  breakdownType: 'daily' | 'weekly' // granularity of breakdown
+  periodDays: number // total days in the period
 
   // Total stats (all time)
   totalMinutes: number
@@ -83,7 +105,7 @@ export interface ShareCardData {
 }
 
 export interface UseShareCardReturn extends ShareCardData {
-  setViewMode: (mode: 'day' | 'week') => void
+  setViewMode: (mode: ShareCardViewMode) => void
   goBack: () => void
   goForward: () => void
   goToToday: () => void
@@ -94,7 +116,7 @@ export function useShareCard(): UseShareCardReturn {
   const { user } = useAuthStore()
   const { preferences } = useUserPreferences()
 
-  const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
+  const [viewMode, setViewMode] = useState<ShareCardViewMode>('day')
   const [periodOffset, setPeriodOffset] = useState(0)
 
   const goBack = useCallback(() => {
@@ -134,8 +156,8 @@ export function useShareCard(): UseShareCardReturn {
       } else {
         periodLabel = format(targetDate, 'MMMM d, yyyy')
       }
-    } else {
-      // Week mode
+    } else if (viewMode === 'week') {
+      // Calendar week mode (Mon-Sun)
       targetDate =
         periodOffset === 0 ? today : subWeeks(today, Math.abs(periodOffset))
       if (periodOffset < 0) {
@@ -154,6 +176,45 @@ export function useShareCard(): UseShareCardReturn {
       } else {
         periodLabel = `${startLabel} - ${endLabel}`
       }
+    } else if (viewMode === 'last7days') {
+      // Rolling 7-day period - offset shifts by days
+      const endDate =
+        periodOffset === 0 ? today : subDays(today, Math.abs(periodOffset))
+      periodEnd = endOfDay(
+        periodOffset < 0 ? addDays(today, periodOffset) : endDate
+      )
+      periodStart = startOfDay(subDays(periodEnd, 6))
+      targetDate = periodEnd
+
+      const startLabel = format(periodStart, 'MMM d')
+      const endLabel = format(periodEnd, 'MMM d, yyyy')
+      periodLabel = `${startLabel} - ${endLabel}`
+    } else if (viewMode === 'last30days') {
+      // Rolling 30-day period - offset shifts by weeks
+      const weeksBack = Math.abs(periodOffset) * 7
+      const endDate = periodOffset === 0 ? today : subDays(today, weeksBack)
+      periodEnd = endOfDay(
+        periodOffset < 0 ? addDays(today, periodOffset * 7) : endDate
+      )
+      periodStart = startOfDay(subDays(periodEnd, 29))
+      targetDate = periodEnd
+
+      const startLabel = format(periodStart, 'MMM d')
+      const endLabel = format(periodEnd, 'MMM d, yyyy')
+      periodLabel = `${startLabel} - ${endLabel}`
+    } else {
+      // last365days - offset shifts by months
+      const endDate =
+        periodOffset === 0 ? today : subMonths(today, Math.abs(periodOffset))
+      periodEnd = endOfDay(
+        periodOffset < 0 ? addMonths(today, periodOffset) : endDate
+      )
+      periodStart = startOfDay(subDays(periodEnd, 364))
+      targetDate = periodEnd
+
+      const startLabel = format(periodStart, 'MMM d, yyyy')
+      const endLabel = format(periodEnd, 'MMM d, yyyy')
+      periodLabel = `${startLabel} - ${endLabel}`
     }
 
     // Filter entries for the period
@@ -220,42 +281,108 @@ export function useShareCard(): UseShareCardReturn {
       })
     })
 
-    // Calculate weekly specific data
+    // Calculate breakdown data for multi-day modes
     let weeklyDailyData: DailyPracticeData[] = []
     let weeklySessionCount = 0
     let weeklyConsistency = 0
+    let breakdownData: BreakdownDataItem[] = []
+    let breakdownType: 'daily' | 'weekly' = 'daily'
+    let periodDays = 1
 
-    if (viewMode === 'week') {
-      const weekDays = eachDayOfInterval({ start: periodStart, end: periodEnd })
-      weeklyDailyData = weekDays.map(day => {
-        const dayStart = startOfDay(day)
-        const dayEnd = endOfDay(day)
-        const dayEntries = periodEntries.filter(entry => {
-          const entryDate = new Date(entry.timestamp)
-          return (
-            isWithinInterval(entryDate, { start: dayStart, end: dayEnd }) &&
-            entry.type !== 'status_change'
-          )
-        })
-        const dayMinutes = dayEntries.reduce(
-          (sum, e) => sum + (e.duration || 0),
-          0
-        )
+    const isMultiDayMode = viewMode !== 'day'
 
-        return {
-          date: day,
-          dateStr: format(day, 'yyyy-MM-dd'),
-          dayLabel: format(day, 'EEE'),
-          minutes: dayMinutes,
-        }
-      })
-
+    if (isMultiDayMode) {
+      periodDays = differenceInDays(periodEnd, periodStart) + 1
       const practiceEntries = periodEntries.filter(
         e => e.type !== 'status_change'
       )
       weeklySessionCount = practiceEntries.length
-      const daysWithPractice = weeklyDailyData.filter(d => d.minutes > 0).length
-      weeklyConsistency = Math.round((daysWithPractice / 7) * 100)
+
+      if (viewMode === 'last365days') {
+        // Group into weekly summaries for readability (52 bars)
+        breakdownType = 'weekly'
+        const weeks = eachWeekOfInterval(
+          { start: periodStart, end: periodEnd },
+          { weekStartsOn: 1 }
+        )
+        breakdownData = weeks.map(weekStart => {
+          const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 })
+          const weekEntries = periodEntries.filter(entry => {
+            const entryDate = new Date(entry.timestamp)
+            return (
+              isWithinInterval(entryDate, { start: weekStart, end: weekEnd }) &&
+              entry.type !== 'status_change'
+            )
+          })
+          const weekMinutes = weekEntries.reduce(
+            (sum, e) => sum + (e.duration || 0),
+            0
+          )
+
+          return {
+            date: weekStart,
+            dateStr: format(weekStart, 'yyyy-ww'),
+            label: format(weekStart, 'MMM d'),
+            minutes: weekMinutes,
+          }
+        })
+
+        // Consistency: weeks with practice / total weeks
+        const weeksWithPractice = breakdownData.filter(
+          w => w.minutes > 0
+        ).length
+        weeklyConsistency = Math.round(
+          (weeksWithPractice / breakdownData.length) * 100
+        )
+      } else {
+        // Daily breakdown for week, last7days, last30days
+        breakdownType = 'daily'
+        const days = eachDayOfInterval({ start: periodStart, end: periodEnd })
+        breakdownData = days.map(day => {
+          const dayStart = startOfDay(day)
+          const dayEnd = endOfDay(day)
+          const dayEntries = periodEntries.filter(entry => {
+            const entryDate = new Date(entry.timestamp)
+            return (
+              isWithinInterval(entryDate, { start: dayStart, end: dayEnd }) &&
+              entry.type !== 'status_change'
+            )
+          })
+          const dayMinutes = dayEntries.reduce(
+            (sum, e) => sum + (e.duration || 0),
+            0
+          )
+
+          // Determine label based on mode
+          let label: string
+          if (viewMode === 'week' || viewMode === 'last7days') {
+            label = format(day, 'EEE') // Mon, Tue, etc.
+          } else {
+            // last30days - show date
+            label = format(day, 'd') // Just the day number
+          }
+
+          return {
+            date: day,
+            dateStr: format(day, 'yyyy-MM-dd'),
+            label,
+            minutes: dayMinutes,
+          }
+        })
+
+        const daysWithPractice = breakdownData.filter(d => d.minutes > 0).length
+        weeklyConsistency = Math.round((daysWithPractice / periodDays) * 100)
+      }
+
+      // Keep weeklyDailyData for backward compatibility (week mode)
+      if (viewMode === 'week') {
+        weeklyDailyData = breakdownData.map(d => ({
+          date: d.date,
+          dateStr: d.dateStr,
+          dayLabel: d.label,
+          minutes: d.minutes,
+        }))
+      }
     }
 
     // Calculate total stats
@@ -319,6 +446,9 @@ export function useShareCard(): UseShareCardReturn {
       weeklyEvents: events.sort(
         (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
       ),
+      breakdownData,
+      breakdownType,
+      periodDays,
       totalMinutes,
       totalFormatted: formatDurationLong(totalMinutes),
       totalEntries: entries.filter(e => e.type !== 'status_change').length,
@@ -334,7 +464,7 @@ export function useShareCard(): UseShareCardReturn {
 
   return {
     ...data,
-    setViewMode: (mode: 'day' | 'week') => {
+    setViewMode: (mode: ShareCardViewMode) => {
       setViewMode(mode)
       setPeriodOffset(0) // Reset offset when switching modes
     },

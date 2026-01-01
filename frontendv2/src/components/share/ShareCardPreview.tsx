@@ -8,7 +8,10 @@ import {
   endOfMonth,
   eachDayOfInterval,
 } from 'date-fns'
-import { type UseShareCardReturn } from '../../hooks/useShareCard'
+import {
+  type UseShareCardReturn,
+  type BreakdownDataItem,
+} from '../../hooks/useShareCard'
 import { formatDuration } from '../../utils/dateUtils'
 
 export type CardVariant = 'story' | 'square'
@@ -253,19 +256,51 @@ function MiniHeatmap({
   )
 }
 
-// Weekly Bar Chart Component
-function WeeklyBarChart({
+// Adaptive Bar Chart Component - handles variable data lengths
+function BreakdownChart({
   data,
   isStory,
 }: {
-  data: { dayLabel: string; minutes: number }[]
+  data: BreakdownDataItem[]
   isStory: boolean
 }) {
   const maxMinutes = Math.max(...data.map(d => d.minutes), 1)
-  // Improved proportions - wider bars, better height
-  const barHeight = isStory ? 80 : 50
-  const barWidth = isStory ? 52 : 40
-  const gap = isStory ? 8 : 6
+  const barCount = data.length
+
+  // Adaptive sizing based on data length
+  const getBarDimensions = () => {
+    if (barCount <= 7) {
+      // Weekly / Last 7 days - wide bars
+      return {
+        barHeight: isStory ? 80 : 50,
+        barWidth: isStory ? 52 : 40,
+        gap: isStory ? 8 : 6,
+        showAllLabels: true,
+        labelInterval: 1,
+      }
+    } else if (barCount <= 30) {
+      // Last 30 days - medium bars
+      return {
+        barHeight: isStory ? 70 : 45,
+        barWidth: isStory ? 12 : 10,
+        gap: 2,
+        showAllLabels: false,
+        labelInterval: 5, // Show every 5th label
+      }
+    } else {
+      // Last 365 days (52 weeks) - thin bars
+      return {
+        barHeight: isStory ? 60 : 40,
+        barWidth: isStory ? 7 : 5,
+        gap: 1,
+        showAllLabels: false,
+        labelInterval: 4, // Show monthly labels (every ~4 weeks)
+      }
+    }
+  }
+
+  const { barHeight, barWidth, gap, showAllLabels, labelInterval } =
+    getBarDimensions()
 
   return (
     <div
@@ -275,14 +310,16 @@ function WeeklyBarChart({
         justifyContent: 'center',
         gap: `${gap}px`,
         height: barHeight + 20,
+        overflow: 'hidden',
       }}
     >
-      {data.map((day, index) => {
+      {data.map((item, index) => {
         const height =
-          day.minutes > 0
-            ? Math.max((day.minutes / maxMinutes) * barHeight, 4)
-            : 4
-        const hasData = day.minutes > 0
+          item.minutes > 0
+            ? Math.max((item.minutes / maxMinutes) * barHeight, 2)
+            : 2
+        const hasData = item.minutes > 0
+        const showLabel = showAllLabels || index % labelInterval === 0
 
         return (
           <div
@@ -291,7 +328,7 @@ function WeeklyBarChart({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: 3,
+              gap: 2,
             }}
           >
             <div
@@ -301,19 +338,22 @@ function WeeklyBarChart({
                 backgroundColor: hasData
                   ? colors.chart.bar
                   : colors.chart.barEmpty,
-                borderRadius: 3,
+                borderRadius: Math.min(barWidth / 3, 3),
               }}
             />
-            <span
-              style={{
-                fontSize: 9,
-                color: hasData ? colors.text.secondary : colors.text.tertiary,
-                fontWeight: hasData ? 500 : 400,
-                fontFamily: 'Inter, system-ui, sans-serif',
-              }}
-            >
-              {day.dayLabel}
-            </span>
+            {showLabel && (
+              <span
+                style={{
+                  fontSize: barCount > 30 ? 7 : barCount > 7 ? 8 : 9,
+                  color: hasData ? colors.text.secondary : colors.text.tertiary,
+                  fontWeight: hasData ? 500 : 400,
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {item.label}
+              </span>
+            )}
           </div>
         )
       })}
@@ -355,7 +395,26 @@ export const ShareCardPreview = forwardRef<
 
     const isStory = variant === 'story'
     const isWeekly = data.viewMode === 'week'
+    const isMultiDayMode = data.viewMode !== 'day'
     const cardWidth = 540
+
+    // Get practice header label based on view mode
+    const getPracticeLabel = () => {
+      switch (data.viewMode) {
+        case 'day':
+          return t('share:todaysPractice', "Today's Practice")
+        case 'week':
+          return t('share:weeklyPractice', 'Weekly Practice')
+        case 'last7days':
+          return t('share:last7daysPractice', 'Last 7 Days Practice')
+        case 'last30days':
+          return t('share:last30daysPractice', 'Last 30 Days Practice')
+        case 'last365days':
+          return t('share:last365daysPractice', 'Last Year Practice')
+        default:
+          return t('share:todaysPractice', "Today's Practice")
+      }
+    }
 
     // Determine content to show
     const hasNotes = showNotes && data.periodNotes.length > 0
@@ -452,9 +511,7 @@ export const ShareCardPreview = forwardRef<
               marginBottom: 4,
             }}
           >
-            {isWeekly
-              ? t('share:weeklyPractice', 'Weekly Practice')
-              : t('share:todaysPractice', "Today's Practice")}
+            {getPracticeLabel()}
           </div>
           <div
             style={{
@@ -475,8 +532,8 @@ export const ShareCardPreview = forwardRef<
             {data.periodLabel.replace(/ \(.*\)$/, '')}
           </div>
 
-          {/* Weekly Stats Row */}
-          {isWeekly && (
+          {/* Multi-day Stats Row */}
+          {isMultiDayMode && (
             <div
               style={{
                 display: 'flex',
@@ -557,10 +614,10 @@ export const ShareCardPreview = forwardRef<
           )}
         </div>
 
-        {/* Weekly Bar Chart - no header, chart is self-explanatory */}
-        {isWeekly && data.weeklyDailyData.length > 0 && (
+        {/* Breakdown Bar Chart - for all multi-day modes */}
+        {isMultiDayMode && data.breakdownData.length > 0 && (
           <div style={getSectionStyle(isStory)}>
-            <WeeklyBarChart data={data.weeklyDailyData} isStory={isStory} />
+            <BreakdownChart data={data.breakdownData} isStory={isStory} />
           </div>
         )}
 
@@ -602,7 +659,7 @@ export const ShareCardPreview = forwardRef<
                       </div>
                     )}
                   </div>
-                  {isWeekly && (
+                  {isMultiDayMode && (
                     <div
                       style={{
                         fontSize: 10,
