@@ -280,13 +280,22 @@ export function useShareCard(): UseShareCardReturn {
           // Sum duration across all matching entries
           existing.duration += durationPerPiece
 
-          // Prefer better-capitalized title (more uppercase letters = likely properly formatted)
-          const existingTitleScore =
-            existing.title.length +
-            (existing.title.match(/[A-Z]/g)?.length || 0)
-          const newTitleScore =
-            (piece.title?.length || 0) +
-            (piece.title?.match(/[A-Z]/g)?.length || 0)
+          // Prefer better-capitalized title by comparing ratio of properly capitalized words
+          const scoreTitleCapitalization = (title: string): number => {
+            const trimmed = title.trim()
+            if (!trimmed) return 0
+            const words = trimmed.split(/\s+/)
+            if (!words.length) return 0
+            // Count words that start with uppercase (excluding short prepositions)
+            const capitalizedWords = words.filter(
+              word => word.length > 0 && /^[A-Z]/.test(word[0])
+            ).length
+            return capitalizedWords / words.length
+          }
+          const existingTitleScore = scoreTitleCapitalization(existing.title)
+          const newTitleScore = piece.title
+            ? scoreTitleCapitalization(piece.title)
+            : 0
           if (newTitleScore > existingTitleScore && piece.title) {
             existing.title = piece.title
           }
