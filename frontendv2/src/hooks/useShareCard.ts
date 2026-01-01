@@ -23,6 +23,8 @@ import {
   differenceInDays,
 } from 'date-fns'
 import { formatDuration, formatDurationLong } from '../utils/dateUtils'
+import { getCanonicalComposerName } from '../utils/composerCanonicalizer'
+import { generateNormalizedScoreId } from '../utils/scoreIdNormalizer'
 
 export interface ShareCardPiece {
   title: string
@@ -224,6 +226,7 @@ export function useShareCard(): UseShareCardReturn {
     })
 
     // Aggregate pieces with their durations and collect notes
+    // Use generateNormalizedScoreId for deduplication (same as repertoire view)
     const pieceMap = new Map<string, ShareCardPiece>()
     const periodNotes: string[] = []
     let periodTotalMinutes = 0
@@ -262,19 +265,52 @@ export function useShareCard(): UseShareCardReturn {
       if (entry.type === 'status_change') return
 
       entry.pieces?.forEach(piece => {
-        const key = `${piece.title}|${piece.composer || ''}`
+        // Use the same normalization as repertoire view for consistent deduplication
+        const canonicalComposer = getCanonicalComposerName(piece.composer)
+        const key = generateNormalizedScoreId(
+          piece.title || '',
+          canonicalComposer || undefined
+        )
+
         const existing = pieceMap.get(key)
+        const durationPerPiece =
+          (entry.duration || 0) / (entry.pieces?.length || 1)
 
         if (existing) {
-          const durationPerPiece =
-            (entry.duration || 0) / (entry.pieces?.length || 1)
+          // Sum duration across all matching entries
           existing.duration += durationPerPiece
+
+          // Prefer better-capitalized title by comparing ratio of properly capitalized words
+          const scoreTitleCapitalization = (title: string): number => {
+            const trimmed = title.trim()
+            if (!trimmed) return 0
+            const words = trimmed.split(/\s+/)
+            if (!words.length) return 0
+            // Count words that start with uppercase (excluding short prepositions)
+            const capitalizedWords = words.filter(
+              word => word.length > 0 && /^[A-Z]/.test(word[0])
+            ).length
+            return capitalizedWords / words.length
+          }
+          const existingTitleScore = scoreTitleCapitalization(existing.title)
+          const newTitleScore = piece.title
+            ? scoreTitleCapitalization(piece.title)
+            : 0
+          if (newTitleScore > existingTitleScore && piece.title) {
+            existing.title = piece.title
+          }
+
+          // Prefer longer/canonical composer name
+          if (
+            canonicalComposer &&
+            canonicalComposer.length > (existing.composer?.length || 0)
+          ) {
+            existing.composer = canonicalComposer
+          }
         } else {
-          const durationPerPiece =
-            (entry.duration || 0) / (entry.pieces?.length || 1)
           pieceMap.set(key, {
-            title: piece.title,
-            composer: piece.composer || null,
+            title: piece.title || '',
+            composer: canonicalComposer || null,
             duration: durationPerPiece,
           })
         }
@@ -305,6 +341,7 @@ export function useShareCard(): UseShareCardReturn {
           { start: periodStart, end: periodEnd },
           { weekStartsOn: 1 }
         )
+        let lastMonth = -1
         breakdownData = weeks.map(weekStart => {
           const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 })
           const weekEntries = periodEntries.filter(entry => {
@@ -319,10 +356,18 @@ export function useShareCard(): UseShareCardReturn {
             0
           )
 
+          // Only show month abbreviation when month changes
+          const currentMonth = weekStart.getMonth()
+          let label = ''
+          if (currentMonth !== lastMonth) {
+            label = format(weekStart, 'MMM')
+            lastMonth = currentMonth
+          }
+
           return {
             date: weekStart,
             dateStr: format(weekStart, 'yyyy-ww'),
-            label: format(weekStart, 'MMM d'),
+            label,
             minutes: weekMinutes,
           }
         })
@@ -338,7 +383,8 @@ export function useShareCard(): UseShareCardReturn {
         // Daily breakdown for week, last7days, last30days
         breakdownType = 'daily'
         const days = eachDayOfInterval({ start: periodStart, end: periodEnd })
-        breakdownData = days.map(day => {
+        let lastMonth30 = -1
+        breakdownData = days.map((day, index) => {
           const dayStart = startOfDay(day)
           const dayEnd = endOfDay(day)
           const dayEntries = periodEntries.filter(entry => {
@@ -358,8 +404,14 @@ export function useShareCard(): UseShareCardReturn {
           if (viewMode === 'week' || viewMode === 'last7days') {
             label = format(day, 'EEE') // Mon, Tue, etc.
           } else {
-            // last30days - show date
-            label = format(day, 'd') // Just the day number
+            // last30days - show month abbreviation only when month changes
+            const currentMonth = day.getMonth()
+            if (currentMonth !== lastMonth30 || index === 0) {
+              label = format(day, 'MMM')
+              lastMonth30 = currentMonth
+            } else {
+              label = '' // Empty for other days to reduce overlap
+            }
           }
 
           return {
@@ -385,7 +437,7 @@ export function useShareCard(): UseShareCardReturn {
       }
     }
 
-    // Calculate total stats
+    // Calculate total stats using consistent normalization
     let totalMinutes = 0
     const allPieces = new Set<string>()
 
@@ -393,7 +445,13 @@ export function useShareCard(): UseShareCardReturn {
       if (entry.type !== 'status_change') {
         totalMinutes += entry.duration || 0
         entry.pieces?.forEach(piece => {
-          allPieces.add(`${piece.title}|${piece.composer || ''}`)
+          // Use same normalization as period pieces for accurate count
+          const canonicalComposer = getCanonicalComposerName(piece.composer)
+          const normalizedId = generateNormalizedScoreId(
+            piece.title || '',
+            canonicalComposer || undefined
+          )
+          allPieces.add(normalizedId)
         })
       }
     })
