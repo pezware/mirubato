@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { Modal, ModalFooter, Button, SegmentedControl } from '../ui'
 import { ShareCardPreview, type CardVariant } from './ShareCardPreview'
-import { useShareCard } from '../../hooks/useShareCard'
+import { useShareCard, type ShareCardViewMode } from '../../hooks/useShareCard'
 
 interface ShareCardModalProps {
   isOpen: boolean
@@ -88,6 +88,9 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
   const viewModeOptions = [
     { value: 'day', label: t('share:daily', 'Daily') },
     { value: 'week', label: t('share:weekly', 'Weekly') },
+    { value: 'last7days', label: t('share:last7days', 'Last 7 Days') },
+    { value: 'last30days', label: t('share:last30days', 'Last 30 Days') },
+    { value: 'last365days', label: t('share:last365days', 'Last Year') },
   ]
 
   const variantOptions = [
@@ -265,7 +268,7 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
             options={viewModeOptions}
             value={shareCardData.viewMode}
             onChange={value =>
-              shareCardData.setViewMode(value as 'day' | 'week')
+              shareCardData.setViewMode(value as ShareCardViewMode)
             }
             size="sm"
             ariaLabel={t('share:viewMode', 'View mode selection')}
@@ -351,15 +354,30 @@ export function ShareCardModal({ isOpen, onClose }: ShareCardModalProps) {
             {!shareCardData.hasData && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                 <p className="text-sm text-amber-800">
-                  {shareCardData.viewMode === 'week'
+                  {shareCardData.viewMode === 'day'
                     ? t(
-                        'share:noWeeklyDataNotice',
-                        'No practice data for this week.'
-                      )
-                    : t(
                         'share:noDataNotice',
                         'No practice data for today. Add an entry to share your progress!'
-                      )}
+                      )
+                    : shareCardData.viewMode === 'week'
+                      ? t(
+                          'share:noWeeklyDataNotice',
+                          'No practice data for this week.'
+                        )
+                      : shareCardData.viewMode === 'last7days'
+                        ? t(
+                            'share:noLast7daysDataNotice',
+                            'No practice data in the last 7 days.'
+                          )
+                        : shareCardData.viewMode === 'last30days'
+                          ? t(
+                              'share:noLast30daysDataNotice',
+                              'No practice data in the last 30 days.'
+                            )
+                          : t(
+                              'share:noLast365daysDataNotice',
+                              'No practice data in the last year.'
+                            )}
                 </p>
               </div>
             )}
