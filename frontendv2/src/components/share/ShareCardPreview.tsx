@@ -307,37 +307,38 @@ function BreakdownChart({
 
   const { barHeight, barWidth, gap } = getBarDimensions()
 
+  // Calculate label height based on font size
+  const labelHeight = barCount > 30 ? 10 : barCount > 7 ? 12 : 14
+  const labelGap = 6 // Space between bars and labels
+
   return (
     <div
       style={{
         display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        gap: `${gap}px`,
-        height: barHeight + 20,
-        overflow: 'hidden',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}
     >
-      {data.map((item, index) => {
-        const height =
-          item.minutes > 0
-            ? Math.max((item.minutes / maxMinutes) * barHeight, 2)
-            : 2
-        const hasData = item.minutes > 0
-        // Show label only if it exists (non-empty string)
-        const hasLabel = item.label && item.label.trim().length > 0
+      {/* Bars container */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          gap: `${gap}px`,
+          height: barHeight,
+        }}
+      >
+        {data.map((item, index) => {
+          const height =
+            item.minutes > 0
+              ? Math.max((item.minutes / maxMinutes) * barHeight, 2)
+              : 2
+          const hasData = item.minutes > 0
 
-        return (
-          <div
-            key={index}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 2,
-            }}
-          >
+          return (
             <div
+              key={index}
               style={{
                 width: barWidth,
                 height: height,
@@ -347,22 +348,51 @@ function BreakdownChart({
                 borderRadius: Math.min(barWidth / 3, 3),
               }}
             />
-            {hasLabel && (
-              <span
-                style={{
-                  fontSize: barCount > 30 ? 7 : barCount > 7 ? 8 : 9,
-                  color: hasData ? colors.text.secondary : colors.text.tertiary,
-                  fontWeight: hasData ? 500 : 400,
-                  fontFamily: 'Inter, system-ui, sans-serif',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {item.label}
-              </span>
-            )}
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
+      {/* Labels container - separate row below bars */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: `${gap}px`,
+          marginTop: labelGap,
+          height: labelHeight,
+        }}
+      >
+        {data.map((item, index) => {
+          const hasData = item.minutes > 0
+          const hasLabel = item.label && item.label.trim().length > 0
+
+          return (
+            <div
+              key={index}
+              style={{
+                width: barWidth,
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              {hasLabel && (
+                <span
+                  style={{
+                    fontSize: barCount > 30 ? 7 : barCount > 7 ? 8 : 9,
+                    color: hasData
+                      ? colors.text.secondary
+                      : colors.text.tertiary,
+                    fontWeight: hasData ? 500 : 400,
+                    fontFamily: 'Inter, system-ui, sans-serif',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {item.label}
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

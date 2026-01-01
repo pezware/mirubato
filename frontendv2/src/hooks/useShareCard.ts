@@ -39,6 +39,53 @@ function normalizeTitleForMatching(title: string): string {
     .replace(/[–—]/g, '-') // Normalize dashes
 }
 
+/**
+ * Capitalizes the first letter of each word in a title
+ * Preserves already-capitalized words and handles common patterns
+ */
+function toTitleCase(title: string): string {
+  if (!title) return title
+
+  // Words that should stay lowercase (unless first word)
+  const lowercaseWords = new Set([
+    'a',
+    'an',
+    'the',
+    'and',
+    'but',
+    'or',
+    'for',
+    'nor',
+    'in',
+    'on',
+    'at',
+    'to',
+    'by',
+    'of',
+  ])
+
+  return title
+    .split(' ')
+    .map((word, index) => {
+      if (!word) return word
+
+      // Keep words that are already properly capitalized (e.g., "BWV", "Op.")
+      if (word.match(/^[A-Z]{2,}/) || word.match(/^[A-Z][a-z]*\./)) {
+        return word
+      }
+
+      // Lowercase words stay lowercase unless first word
+      const lowerWord = word.toLowerCase()
+      if (index > 0 && lowercaseWords.has(lowerWord)) {
+        return lowerWord
+      }
+
+      // Capitalize first letter
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    })
+    .join(' ')
+}
+
 export interface ShareCardPiece {
   title: string
   composer: string | null
@@ -302,7 +349,7 @@ export function useShareCard(): UseShareCardReturn {
             (piece.title?.length || 0) +
             (piece.title?.match(/[A-Z]/g)?.length || 0)
           if (newTitleScore > existingTitleScore && piece.title) {
-            existing.title = piece.title
+            existing.title = toTitleCase(piece.title)
           }
           // Use canonical composer name if available
           const canonicalComposer = getCanonicalComposerName(piece.composer)
@@ -316,7 +363,7 @@ export function useShareCard(): UseShareCardReturn {
           }
         } else {
           pieceMap.set(key, {
-            title: piece.title || '',
+            title: toTitleCase(piece.title || ''),
             composer: getCanonicalComposerName(piece.composer) || null,
             duration: durationPerPiece,
             normalizedTitle,
