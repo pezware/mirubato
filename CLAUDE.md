@@ -139,7 +139,7 @@ For detailed architecture documentation, see:
 - [ ] Pull latest from main: `git pull origin main`
 - [ ] Create feature branch: `git checkout -b feature/your-feature`
 - [ ] Install dependencies: `pnpm install`
-- [ ] Start services: `./start-scorebook.sh`
+- [ ] Start services: `pnpm run dev:scorebook`
 - [ ] Check health endpoints
 
 ### Development Flow
@@ -173,7 +173,7 @@ For detailed architecture documentation, see:
 | Scores     | http://scores-mirubato.localhost:9788     | 9788 | /health      |
 | Dictionary | http://dictionary-mirubato.localhost:9799 | 9799 | /health      |
 
-**Note**: The `./start-scorebook.sh` script automatically starts API and Scores services first, seeds test data, then starts the frontend.
+**Note**: `pnpm run dev:scorebook` automatically starts the API and Scores workers (with test PDFs seeded) and then launches the frontend.
 
 ---
 
@@ -508,7 +508,7 @@ function Component() {
 
 ```
 Need to...
-├── Start development → ./start-scorebook.sh
+├── Start development → pnpm run dev:scorebook
 ├── Run tests → pnpm test
 ├── Deploy to staging → wrangler deploy --env staging
 ├── Deploy to production → wrangler deploy
