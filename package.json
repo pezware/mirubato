@@ -15,6 +15,7 @@
     "dev": "pnpm --filter @mirubato/frontendv2 run dev",
     "dev:api": "pnpm --filter @mirubato/api run dev",
     "dev:sync": "pnpm --filter @mirubato/sync-worker run dev",
+    "dev:scorebook": "bash -lc 'set -euo pipefail; cleanup() { echo; echo \"Stopping Mirubato scorebook services...\"; kill $(jobs -p) 2>/dev/null || true; }; trap cleanup EXIT INT TERM; echo \"Starting Mirubato scorebook services...\"; echo; (cd api && wrangler dev --port 9797 --env local --local-protocol http) & (cd scores && wrangler dev --port 9788 --env local --local-protocol http) & sleep 5; (cd scores && pnpm run upload:real-pdfs); (cd frontendv2 && pnpm run dev) & wait'",
     "build": "pnpm -r run build",
     "build:frontend": "pnpm --filter @mirubato/frontendv2 run build",
     "build:api": "pnpm --filter @mirubato/api run build",
