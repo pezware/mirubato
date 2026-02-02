@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ResizableSplitView } from './ResizableSplitView'
 
@@ -11,14 +11,7 @@ describe('ResizableSplitView', () => {
       value: 1200,
     })
 
-    // Mock localStorage
-    const store: Record<string, string> = {}
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(
-      key => store[key] || null
-    )
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key, value) => {
-      store[key] = value
-    })
+    // No localStorage mocking needed — tests use real jsdom localStorage
   })
 
   const defaultChildren: [React.ReactNode, React.ReactNode] = [
@@ -164,7 +157,36 @@ describe('ResizableSplitView', () => {
   })
 
   describe('localStorage persistence', () => {
+    // jsdom doesn't always provide a functional localStorage,
+    // so we stub it with a real in-memory implementation for these tests
+    function stubLocalStorage() {
+      const store: Record<string, string> = {}
+      const mock = {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+          store[key] = String(value)
+        },
+        removeItem: (key: string) => {
+          delete store[key]
+        },
+        clear: () => {
+          Object.keys(store).forEach(key => delete store[key])
+        },
+        get length() {
+          return Object.keys(store).length
+        },
+        key: (index: number) => Object.keys(store)[index] ?? null,
+      }
+      vi.stubGlobal('localStorage', mock)
+      return mock
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
     it('should save ratio to localStorage', () => {
+      stubLocalStorage()
       const { container } = render(
         <ResizableSplitView storageKey="test-split">
           {defaultChildren}
@@ -174,22 +196,25 @@ describe('ResizableSplitView', () => {
       const splitter = container.querySelector('.cursor-col-resize')
       fireEvent.doubleClick(splitter!)
 
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        'splitView-test-split',
-        expect.any(String)
-      )
+      const saved = localStorage.getItem('splitView-test-split')
+      expect(saved).not.toBeNull()
+      expect(parseFloat(saved!)).toBeGreaterThan(0)
+      expect(parseFloat(saved!)).toBeLessThanOrEqual(1)
     })
 
     it('should load ratio from localStorage', () => {
-      vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('0.4')
+      stubLocalStorage()
+      localStorage.setItem('splitView-test-split', '0.4')
 
-      render(
+      const { container } = render(
         <ResizableSplitView storageKey="test-split" defaultRatio={0.5}>
           {defaultChildren}
         </ResizableSplitView>
       )
 
-      expect(localStorage.getItem).toHaveBeenCalledWith('splitView-test-split')
+      // Component should use the stored ratio (40%) instead of defaultRatio (50%)
+      const leftPanel = container.querySelector('.overflow-y-auto')
+      expect(leftPanel).toHaveStyle({ width: '40%' })
     })
   })
 

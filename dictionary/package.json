@@ -24,14 +24,14 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
-    "@mirubato/workers-utils": "workspace:*",
     "@hono/swagger-ui": "^0.5.2",
     "@hono/zod-openapi": "^0.19.10",
     "@hono/zod-validator": "^0.7.2",
+    "@mirubato/workers-utils": "workspace:*",
     "axios": "^1.12.1",
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.3",
-    "hono": "^4.11.4",
+    "hono": "^4.11.7",
     "jose": "^5.10.0",
     "nanoid": "^5.1.5",
     "zod": "^3.25.76"
@@ -48,7 +48,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1",
     "vitest": "^4.0.10",
-    "wrangler": "^4.26.0"
+    "wrangler": "^4.61.1"
   },
   "engines": {
     "node": ">=18"
