@@ -36,7 +36,11 @@ export function auth(options: AuthOptions = {}) {
 
     try {
       // Verify JWT token - let it fail naturally if JWT_SECRET is undefined
-      const payload = (await verify(token, c.env.JWT_SECRET as string)) as any
+      const payload = (await verify(
+        token,
+        c.env.JWT_SECRET as string,
+        'HS256'
+      )) as any
 
       // Check if token is expired
       if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {

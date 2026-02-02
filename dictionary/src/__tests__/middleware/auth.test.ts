@@ -52,7 +52,7 @@ describe('Auth Middleware', () => {
 
       await auth()(mockContext as Context, mockNext)
 
-      expect(verify).toHaveBeenCalledWith('valid-token', 'test-secret')
+      expect(verify).toHaveBeenCalledWith('valid-token', 'test-secret', 'HS256')
       expect(mockContext.set).toHaveBeenCalledWith('userId', 'user123')
       expect(mockContext.set).toHaveBeenCalledWith(
         'userEmail',

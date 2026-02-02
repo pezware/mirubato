@@ -26,9 +26,9 @@
     "translate:missing": "node scripts/translate-missing.cjs"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
     "@mirubato/ui": "workspace:*",
     "@mirubato/utils": "workspace:*",
-    "@headlessui/react": "^2.2.4",
     "@tabler/icons-react": "3.34.1",
     "@types/react-router-dom": "^5.3.3",
     "@types/uuid": "^10.0.0",
@@ -51,7 +51,7 @@
     "react-i18next": "^15.5.3",
     "react-image-crop": "^11.0.10",
     "react-pdf": "^10.0.1",
-    "react-router-dom": "^7.6.1",
+    "react-router-dom": "^7.13.0",
     "swr": "^2.2.0",
     "tone": "^14.7.77",
     "uuid": "^11.1.0",
