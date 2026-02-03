@@ -17,7 +17,7 @@ export function useScoreSearch({
   const [isSearching, setIsSearching] = useState(false)
   const [results, setResults] = useState<Score[]>([])
   const [error, setError] = useState<string | null>(null)
-  const debounceTimer = useRef<NodeJS.Timeout>()
+  const debounceTimer = useRef<NodeJS.Timeout>(undefined)
 
   // Debounce the query
   useEffect(() => {
