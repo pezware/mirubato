@@ -369,5 +369,5 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     updateSettings,
   }
 
-  return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>
+  return <TimerContext value={value}>{children}</TimerContext>
 }

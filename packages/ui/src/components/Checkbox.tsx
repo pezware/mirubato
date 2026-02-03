@@ -1,4 +1,4 @@
-import { forwardRef, InputHTMLAttributes, useId } from 'react'
+import { type InputHTMLAttributes, type Ref, useId } from 'react'
 import { cn } from '../utils/cn'
 
 export interface CheckboxProps
@@ -16,6 +16,7 @@ export interface CheckboxProps
   description?: string
   /** Size variant */
   size?: 'sm' | 'md' | 'lg'
+  ref?: Ref<HTMLInputElement>
 }
 
 const sizeClasses = {
@@ -30,86 +31,80 @@ const labelSizeClasses = {
   lg: 'text-base',
 }
 
-const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  (
-    {
-      checked,
-      onChange,
-      label,
-      description,
-      size = 'md',
-      disabled,
-      className,
-      id: providedId,
-      ...props
-    },
-    ref
-  ) => {
-    const generatedId = useId()
-    const id = providedId || generatedId
+function Checkbox({
+  checked,
+  onChange,
+  label,
+  description,
+  size = 'md',
+  disabled,
+  className,
+  id: providedId,
+  ref,
+  ...props
+}: CheckboxProps) {
+  const generatedId = useId()
+  const id = providedId || generatedId
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.checked)
-    }
-
-    const checkbox = (
-      <input
-        ref={ref}
-        type="checkbox"
-        id={id}
-        checked={checked}
-        onChange={handleChange}
-        disabled={disabled}
-        className={cn(
-          sizeClasses[size],
-          'rounded border-gray-300',
-          'text-morandi-sage-600',
-          'focus:ring-morandi-sage-500 focus:ring-2 focus:ring-offset-2',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
-          'transition-colors duration-200',
-          className
-        )}
-        {...props}
-      />
-    )
-
-    if (!label && !description) {
-      return checkbox
-    }
-
-    return (
-      <div className="flex items-start gap-2">
-        <div className="flex h-5 items-center">{checkbox}</div>
-        <div className="flex flex-col">
-          {label && (
-            <label
-              htmlFor={id}
-              className={cn(
-                labelSizeClasses[size],
-                'font-medium text-gray-700 dark:text-gray-300',
-                disabled && 'opacity-50 cursor-not-allowed',
-                !disabled && 'cursor-pointer'
-              )}
-            >
-              {label}
-            </label>
-          )}
-          {description && (
-            <span
-              className={cn(
-                'text-xs text-gray-500 dark:text-gray-400',
-                disabled && 'opacity-50'
-              )}
-            >
-              {description}
-            </span>
-          )}
-        </div>
-      </div>
-    )
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.checked)
   }
-)
 
-Checkbox.displayName = 'Checkbox'
+  const checkbox = (
+    <input
+      ref={ref}
+      type="checkbox"
+      id={id}
+      checked={checked}
+      onChange={handleChange}
+      disabled={disabled}
+      className={cn(
+        sizeClasses[size],
+        'rounded border-gray-300',
+        'text-morandi-sage-600',
+        'focus:ring-morandi-sage-500 focus:ring-2 focus:ring-offset-2',
+        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'transition-colors duration-200',
+        className
+      )}
+      {...props}
+    />
+  )
+
+  if (!label && !description) {
+    return checkbox
+  }
+
+  return (
+    <div className="flex items-start gap-2">
+      <div className="flex h-5 items-center">{checkbox}</div>
+      <div className="flex flex-col">
+        {label && (
+          <label
+            htmlFor={id}
+            className={cn(
+              labelSizeClasses[size],
+              'font-medium text-gray-700 dark:text-gray-300',
+              disabled && 'opacity-50 cursor-not-allowed',
+              !disabled && 'cursor-pointer'
+            )}
+          >
+            {label}
+          </label>
+        )}
+        {description && (
+          <span
+            className={cn(
+              'text-xs text-gray-500 dark:text-gray-400',
+              disabled && 'opacity-50'
+            )}
+          >
+            {description}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default Checkbox

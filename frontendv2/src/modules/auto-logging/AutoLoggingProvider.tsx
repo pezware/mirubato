@@ -250,11 +250,7 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
     elapsedTime,
   }
 
-  return (
-    <AutoLoggingContext.Provider value={value}>
-      {children}
-    </AutoLoggingContext.Provider>
-  )
+  return <AutoLoggingContext value={value}>{children}</AutoLoggingContext>
 }
 
 export default AutoLoggingProvider

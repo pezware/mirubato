@@ -25,7 +25,7 @@ export function useAutocomplete({
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [isOffline, setIsOffline] = useState(!isOnline())
-  const debounceTimer = useRef<NodeJS.Timeout>()
+  const debounceTimer = useRef<NodeJS.Timeout>(undefined)
   const { entries } = useLogbookStore()
 
   // Debounce the query
