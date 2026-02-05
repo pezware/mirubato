@@ -8,6 +8,8 @@ overrides:
   glob: ^11.1.0
   esbuild@0.18.20: ^0.25.0
   js-yaml: ^4.1.1
+  '@isaacs/brace-expansion': '>=5.0.1'
+  undici: '>=7.18.2'
 
 importers:
   .:
@@ -2952,10 +2954,10 @@ packages:
       }
     engines: { node: 20 || >=22 }
 
-  '@isaacs/brace-expansion@5.0.0':
+  '@isaacs/brace-expansion@5.0.1':
     resolution:
       {
-        integrity: sha512-ZT55BDLV0yv0RBm2czMiZ+SqCGO7AvmOM3G/w2xhVPH+te0aKgFjmBvGlL1dH+ql2tgGO3MVrbb3jCKyvpgnxA==,
+        integrity: sha512-WMz71T1JS624nWj2n2fnYAuPovhv7EUhk69R6i9dsVyzxt5eM3bjwvgk9L+APE1TRscGysAVMANkB0jh0LQZrQ==,
       }
     engines: { node: 20 || >=22 }
 
@@ -7761,13 +7763,6 @@ packages:
         integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==,
       }
 
-  undici@7.12.0:
-    resolution:
-      {
-        integrity: sha512-GrKEsc3ughskmGA9jevVlIOPMiiAHJ4OFUtaAH+NhfTUSiZ1wMPIQqQvAJUrJspFXJt3EBWgpAeoHEDVT1IBug==,
-      }
-    engines: { node: '>=20.18.1' }
-
   undici@7.18.2:
     resolution:
       {
@@ -9381,7 +9376,7 @@ snapshots:
 
   '@isaacs/balanced-match@4.0.1': {}
 
-  '@isaacs/brace-expansion@5.0.0':
+  '@isaacs/brace-expansion@5.0.1':
     dependencies:
       '@isaacs/balanced-match': 4.0.1
 
@@ -11362,7 +11357,7 @@ snapshots:
       glob-to-regexp: 0.4.1
       sharp: 0.33.5
       stoppable: 1.1.0
-      undici: 7.12.0
+      undici: 7.18.2
       workerd: 1.20250712.0
       ws: 8.18.0
       youch: 4.1.0-beta.10
@@ -11385,7 +11380,7 @@ snapshots:
 
   minimatch@10.1.1:
     dependencies:
-      '@isaacs/brace-expansion': 5.0.0
+      '@isaacs/brace-expansion': 5.0.1
 
   minimatch@3.1.2:
     dependencies:
@@ -12192,8 +12187,6 @@ snapshots:
   undici-types@6.21.0: {}
 
   undici-types@7.8.0: {}
-
-  undici@7.12.0: {}
 
   undici@7.18.2: {}
 
