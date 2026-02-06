@@ -177,7 +177,9 @@ describe('HomePage', () => {
         expect(mockLogin).toHaveBeenCalledWith('test@example.com')
       })
 
-      expect(screen.getByText('Check Your Email')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('Check Your Email')).toBeInTheDocument()
+      })
     })
 
     it('should handle login errors', async () => {
