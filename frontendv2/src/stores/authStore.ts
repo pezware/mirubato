@@ -412,106 +412,91 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.removeItem('mirubato:lastSyncTime')
       localStorage.removeItem('mirubato:lastSeq')
 
-      // Set to online mode and sync logbook after successful Google login
+      // Switch to online mode immediately (synchronous, non-blocking)
       try {
-        // Defensive store access with proper error handling
         const logbookStore = useLogbookStore.getState()
-        if (!logbookStore) {
-          throw new Error('Logbook store not initialized')
+        if (logbookStore?.setLocalMode) {
+          logbookStore.setLocalMode(false)
         }
-
-        const { setLocalMode } = logbookStore
-        if (!setLocalMode) {
-          throw new Error('Logbook store setLocalMode method not available')
-        }
-
-        // Get repertoire store using deferred import (non-blocking)
-        let repertoireStore: RepertoireStoreType | null = null
-        try {
-          repertoireStore = await getRepertoireStore()
-        } catch (error) {
-          console.warn(
-            'Failed to get repertoire store during Google login:',
-            error
-          )
-          // Continue without repertoire sync - auth is still successful
-        }
-
-        if (!repertoireStore) {
-          console.warn('Repertoire store not available during Google login')
-        }
-
-        setLocalMode(false) // Switch to online mode when authenticated
-
-        // Also switch planning store to online mode
         const planningStore = usePlanningStore.getState()
         if (planningStore?.setLocalMode) {
           planningStore.setLocalMode(false)
         }
-
-        // Push local entries to server before WebSocket sync
-        // This ensures local-first data is preserved
-        if (logbookStore.pushLocalEntriesToServer) {
-          try {
-            const pushResult = await logbookStore.pushLocalEntriesToServer()
-            console.log(
-              `📤 Pushed ${pushResult.pushed} local entries to server (${pushResult.failed} failed)`
-            )
-          } catch (error) {
-            console.warn('Failed to push local entries to server:', error)
-            // Continue - this shouldn't block authentication
-          }
-        }
-
-        // Initialize WebSocket sync for authenticated users
-        // WebSocket will handle logbook sync via SYNC_REQUEST on connection
-        await logbookStore.initializeWebSocketSync()
-
-        // Sync other data stores (repertoire and preferences)
-        const syncOperations = []
-
-        if (repertoireStore) {
-          // Clean up any duplicate repertoire items first
-          if (repertoireStore.cleanupDuplicates) {
-            syncOperations.push(
-              repertoireStore.cleanupDuplicates().catch((error: unknown) => {
-                console.warn('Repertoire cleanup failed during login:', error)
-                // Don't throw - continue with other operations
-              })
-            )
-          }
-
-          if (repertoireStore.syncLocalData) {
-            syncOperations.push(
-              repertoireStore.syncLocalData().catch((error: unknown) => {
-                console.warn('Repertoire sync failed during login:', error)
-                // Don't throw - continue with other operations
-              })
-            )
-          }
-        }
-
-        const authStore = useAuthStore.getState()
-        if (authStore?.syncUserPreferences) {
-          syncOperations.push(
-            authStore.syncUserPreferences().catch((error: unknown) => {
-              console.warn('User preferences sync failed during login:', error)
-              // Don't throw - continue with other operations
-            })
-          )
-        }
-
-        // Execute all sync operations
-        await Promise.allSettled(syncOperations)
-
-        // Clear backups after successful auth and sync
-        clearDataBackups()
-      } catch (syncError) {
-        console.error('Store sync error after Google login:', syncError)
-        // Continue - login was successful even if sync failed
-        // The user is now authenticated, but sync failed - they can retry manually
-        // Don't clear backups yet in case sync failed due to data corruption
+      } catch (modeError) {
+        console.warn('Failed to switch to online mode:', modeError)
       }
+
+      // Run sync operations in the background without blocking the UI.
+      // This allows the login modal to close immediately while data syncs.
+      void (async () => {
+        try {
+          const logbookStore = useLogbookStore.getState()
+          if (!logbookStore) return
+
+          let repertoireStore: RepertoireStoreType | null = null
+          try {
+            repertoireStore = await getRepertoireStore()
+          } catch (error) {
+            console.warn(
+              'Failed to get repertoire store during Google login:',
+              error
+            )
+          }
+
+          // Push local entries to server before WebSocket sync
+          if (logbookStore.pushLocalEntriesToServer) {
+            try {
+              const pushResult = await logbookStore.pushLocalEntriesToServer()
+              console.log(
+                `📤 Pushed ${pushResult.pushed} local entries to server (${pushResult.failed} failed)`
+              )
+            } catch (error) {
+              console.warn('Failed to push local entries to server:', error)
+            }
+          }
+
+          // Initialize WebSocket sync for authenticated users
+          await logbookStore.initializeWebSocketSync()
+
+          // Sync other data stores (repertoire and preferences)
+          const syncOperations = []
+
+          if (repertoireStore) {
+            if (repertoireStore.cleanupDuplicates) {
+              syncOperations.push(
+                repertoireStore.cleanupDuplicates().catch((error: unknown) => {
+                  console.warn('Repertoire cleanup failed during login:', error)
+                })
+              )
+            }
+
+            if (repertoireStore.syncLocalData) {
+              syncOperations.push(
+                repertoireStore.syncLocalData().catch((error: unknown) => {
+                  console.warn('Repertoire sync failed during login:', error)
+                })
+              )
+            }
+          }
+
+          const authStore = useAuthStore.getState()
+          if (authStore?.syncUserPreferences) {
+            syncOperations.push(
+              authStore.syncUserPreferences().catch((error: unknown) => {
+                console.warn(
+                  'User preferences sync failed during login:',
+                  error
+                )
+              })
+            )
+          }
+
+          await Promise.allSettled(syncOperations)
+          clearDataBackups()
+        } catch (syncError) {
+          console.error('Background sync error after Google login:', syncError)
+        }
+      })()
     } catch (error: unknown) {
       let errorMessage = 'Google login failed'
       const err = error as Error & {

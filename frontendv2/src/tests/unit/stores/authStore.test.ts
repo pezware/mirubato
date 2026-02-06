@@ -246,8 +246,10 @@ describe('authStore', () => {
       expect(useAuthStore.getState().isLoading).toBe(false)
       expect(useAuthStore.getState().error).toBeNull()
 
-      // Verify WebSocket sync initialization was triggered
-      expect(mockInitializeWebSocketSync).toHaveBeenCalled()
+      // WebSocket sync runs in the background after googleLogin returns
+      await vi.waitFor(() => {
+        expect(mockInitializeWebSocketSync).toHaveBeenCalled()
+      })
     })
 
     it('should set local mode to false when authenticated via Google', async () => {
