@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useUserPreferences } from '../../hooks/useUserPreferences'
 import { Modal, Button, Input, Select, cn } from '../ui'
 import { scoreService } from '../../services/scoreService'
 import type { Score } from '../../services/scoreService'
@@ -129,6 +130,11 @@ export default function ImportScoreModal({
   onSuccess,
 }: ImportScoreModalProps) {
   const { t } = useTranslation(['scorebook', 'common'])
+  const { getPrimaryInstrument } = useUserPreferences()
+
+  // Map user's primary instrument to score instrument type
+  const defaultScoreInstrument: ExtractedMetadata['instrument'] =
+    getPrimaryInstrument() === 'guitar' ? 'guitar' : 'piano'
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState<WizardStep>('upload')
@@ -149,7 +155,7 @@ export default function ImportScoreModal({
   const [metadata, setMetadata] = useState<ExtractedMetadata>({
     title: '',
     composer: '',
-    instrument: 'piano',
+    instrument: defaultScoreInstrument,
     difficulty: 'intermediate',
   })
   const [isEditingMetadata, setIsEditingMetadata] = useState(false)
@@ -248,7 +254,7 @@ export default function ImportScoreModal({
     setMetadata({
       title: '',
       composer: '',
-      instrument: 'piano',
+      instrument: defaultScoreInstrument,
       difficulty: 'intermediate',
     })
     setIsEditingMetadata(false)
@@ -436,7 +442,7 @@ export default function ImportScoreModal({
           title: importedScore.title || metadata.title,
           composer: importedScore.composer || '',
           opus: importedScore.opus || undefined,
-          instrument: importedScore.instrument || 'piano',
+          instrument: importedScore.instrument || defaultScoreInstrument,
           difficulty: importedScore.difficulty || 'intermediate',
           key_signature: importedScore.key_signature || undefined,
           time_signature: importedScore.time_signature || undefined,
