@@ -134,7 +134,7 @@ export default function ImportScoreModal({
 
   // Map user's primary instrument to score instrument type
   const defaultScoreInstrument: ExtractedMetadata['instrument'] =
-    getPrimaryInstrument() === 'guitar' ? 'guitar' : 'piano'
+    getPrimaryInstrument().toLowerCase() === 'guitar' ? 'guitar' : 'piano'
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState<WizardStep>('upload')
