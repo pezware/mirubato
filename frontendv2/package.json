@@ -12,7 +12,6 @@
     "test": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=1536 --expose-gc' vitest",
     "test:unit": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=1536 --expose-gc' vitest run --passWithNoTests",
     "test:e2e": "playwright test",
-    "test:screenshots": "playwright test --config=playwright-screenshots.config.ts",
     "test:coverage": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=1536 --expose-gc' vitest --coverage",
     "test:memory": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=1024 --expose-gc' vitest run --reporter=verbose",
     "type-check": "tsc --noEmit",
