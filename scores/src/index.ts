@@ -399,7 +399,10 @@ export default {
 
         // Handle new format messages
         if (body.type === 'process-new-score' && body.r2Key) {
-          await processPdfScore(body as any, env)
+          await processPdfScore(
+            body as Parameters<typeof processPdfScore>[0],
+            env
+          )
         } else {
           // Skip legacy format messages
         }

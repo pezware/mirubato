@@ -1,15 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { DatabaseHelpers, sanitizeForD1 } from '../utils/database'
+import type { D1Database } from '@cloudflare/workers-types'
 
 describe('D1 Type Error Prevention', () => {
-  let mockDb: any
+  let mockDb: { prepare: ReturnType<typeof vi.fn> }
   let dbHelpers: DatabaseHelpers
 
   beforeEach(() => {
     mockDb = {
       prepare: vi.fn(),
     }
-    dbHelpers = new DatabaseHelpers(mockDb)
+    dbHelpers = new DatabaseHelpers(mockDb as unknown as D1Database)
   })
 
   describe('sanitizeForD1', () => {
@@ -270,7 +271,7 @@ describe('D1 Type Error Prevention', () => {
       // Check that no undefined values were passed to D1
       const bindCalls = mockBind.mock.calls
       bindCalls.forEach(call => {
-        call.forEach((arg: any) => {
+        call.forEach((arg: unknown) => {
           if (typeof arg === 'string') {
             try {
               const parsed = JSON.parse(arg)

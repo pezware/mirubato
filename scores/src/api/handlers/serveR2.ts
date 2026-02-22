@@ -14,7 +14,7 @@ export async function serveR2File(c: Context) {
   }
 
   try {
-    const env = c.env as any
+    const env = c.env as Env
     const key = `test-data/${filename}`
 
     // Get the file from R2 (works with both Miniflare and production)

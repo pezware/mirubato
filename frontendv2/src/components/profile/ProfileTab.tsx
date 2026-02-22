@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { User, Clock, Music, Target, Calendar, Check } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, Input, Button } from '../ui'
@@ -16,7 +16,7 @@ export function ProfileTab() {
   const { preferences, updatePreferences } = useUserPreferences()
 
   // Get the effective display name - localStorage takes priority, then server, then email
-  const getEffectiveDisplayName = () => {
+  const getEffectiveDisplayName = useCallback(() => {
     // Priority: 1. Local preferences (user's choice), 2. Server displayName, 3. Email prefix
     if (preferences.displayName) {
       return preferences.displayName
@@ -25,7 +25,7 @@ export function ProfileTab() {
       return user.displayName
     }
     return ''
-  }
+  }, [preferences.displayName, isAuthenticated, user?.displayName])
 
   // Username state - initialize from effective display name
   const [displayName, setDisplayName] = useState(getEffectiveDisplayName)
@@ -38,7 +38,7 @@ export function ProfileTab() {
     if (effectiveName && !isEditing) {
       setDisplayName(effectiveName)
     }
-  }, [preferences.displayName, user?.displayName, isAuthenticated, isEditing])
+  }, [getEffectiveDisplayName, isEditing])
 
   const getUserInitials = () => {
     const name = displayName || user?.email || ''

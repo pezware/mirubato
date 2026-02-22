@@ -25,7 +25,9 @@ scoresHandler.get('/', async c => {
       const authHeader = c.req.header('Authorization')
       if (authHeader?.startsWith('Bearer ')) {
         const { getUserIdFromAuth } = await import('../../utils/auth')
-        userId = await getUserIdFromAuth(c as any)
+        userId = await getUserIdFromAuth(
+          c as unknown as Parameters<typeof getUserIdFromAuth>[0]
+        )
       }
     } catch {
       // Continue without auth
@@ -34,7 +36,7 @@ scoresHandler.get('/', async c => {
     // Build query
     let query = 'SELECT * FROM scores'
     const conditions: string[] = []
-    const params: any[] = []
+    const params: unknown[] = []
 
     // Add visibility filter
     if (userId) {
@@ -84,18 +86,18 @@ scoresHandler.get('/', async c => {
       .all()
 
     // Parse JSON fields
-    const scores = results.map((row: any) => ({
+    const scores = results.map(row => ({
       ...row,
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      metadata: row.metadata ? JSON.parse(row.metadata) : {},
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      tags: row.tags ? JSON.parse(row.tags as string) : [],
+      metadata: row.metadata ? JSON.parse(row.metadata as string) : {},
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
     }))
 
     const response: ApiResponse<PaginatedResponse<Score>> = {
       success: true,
       data: {
-        items: scores,
+        items: scores as Score[],
         total,
         limit,
         offset,
@@ -123,7 +125,9 @@ scoresHandler.get('/user/library', async c => {
     }
 
     const { getUserIdFromAuth } = await import('../../utils/auth')
-    const userId = await getUserIdFromAuth(c as any)
+    const userId = await getUserIdFromAuth(
+      c as unknown as Parameters<typeof getUserIdFromAuth>[0]
+    )
     if (!userId) {
       throw new HTTPException(401, { message: 'Invalid authentication' })
     }
@@ -198,7 +202,9 @@ scoresHandler.get('/:id', async c => {
         const authHeader = c.req.header('Authorization')
         if (authHeader?.startsWith('Bearer ')) {
           const { getUserIdFromAuth } = await import('../../utils/auth')
-          userId = await getUserIdFromAuth(c as any)
+          userId = await getUserIdFromAuth(
+            c as unknown as Parameters<typeof getUserIdFromAuth>[0]
+          )
         }
       } catch {
         // Continue without auth
@@ -386,7 +392,7 @@ scoresHandler.put('/:id', authMiddleware, async c => {
 
     // Build update query
     const updates: string[] = []
-    const params: any[] = []
+    const params: unknown[] = []
 
     Object.entries(validatedData).forEach(([key, value]) => {
       if (key === 'tags' || key === 'metadata') {
@@ -651,7 +657,9 @@ scoresHandler.get('/:id/pages/:pageNumber', async c => {
         const authHeader = c.req.header('Authorization')
         if (authHeader?.startsWith('Bearer ')) {
           const { getUserIdFromAuth } = await import('../../utils/auth')
-          userId = await getUserIdFromAuth(c as any)
+          userId = await getUserIdFromAuth(
+            c as unknown as Parameters<typeof getUserIdFromAuth>[0]
+          )
         }
       } catch {
         // Continue without auth

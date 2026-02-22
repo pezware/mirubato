@@ -2,6 +2,7 @@
  * Validation middleware using Zod schemas
  */
 
+import type { Context } from 'hono'
 import { createMiddleware } from 'hono/factory'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
@@ -181,20 +182,20 @@ export const dictionarySchemas = {
 /**
  * Get validated body from request
  */
-export function getValidatedBody<T>(c: any): T {
-  return c.req.bodyCache as T
+export function getValidatedBody<T>(c: Context): T {
+  return (c.req as unknown as { bodyCache: T }).bodyCache
 }
 
 /**
  * Get validated query from context
  */
-export function getValidatedQuery<T>(c: any): T {
-  return c.get('validatedQuery') as T
+export function getValidatedQuery<T>(c: Context): T {
+  return c.get('validatedQuery' as never) as T
 }
 
 /**
  * Get validated params from context
  */
-export function getValidatedParams<T>(c: any): T {
-  return c.get('validatedParams') as T
+export function getValidatedParams<T>(c: Context): T {
+  return c.get('validatedParams' as never) as T
 }

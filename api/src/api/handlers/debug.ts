@@ -87,13 +87,13 @@ debugHandler.get('/migrate', async c => {
       message: 'Migrations completed',
       tables: tables.results.map(t => t.name),
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Migration error:', error)
     return c.json(
       {
         success: false,
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       },
       500
     )
@@ -110,34 +110,35 @@ debugHandler.get('/db-status', async c => {
       "SELECT name FROM sqlite_master WHERE type='table'"
     ).all()
 
-    const results: any = {
+    const results: Record<string, unknown> = {
       tables: tables.results.map(t => t.name),
-      tableDetails: {},
+      tableDetails: {} as Record<string, unknown>,
     }
 
     // Get details for each table
+    const tableDetails = results.tableDetails as Record<string, unknown>
     for (const table of tables.results) {
       const tableName = table.name as string
       try {
         const count = await c.env.DB.prepare(
           `SELECT COUNT(*) as count FROM ${tableName}`
         ).first()
-        results.tableDetails[tableName] = {
+        tableDetails[tableName] = {
           rowCount: count?.count || 0,
         }
       } catch {
-        results.tableDetails[tableName] = {
+        tableDetails[tableName] = {
           error: 'Could not get count',
         }
       }
     }
 
     return c.json(results)
-  } catch (error: any) {
+  } catch (error: unknown) {
     return c.json(
       {
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       },
       500
     )

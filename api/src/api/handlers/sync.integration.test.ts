@@ -68,8 +68,8 @@ describe.skip('Sync API Integration Tests', () => {
 
       expect(pullResponse1.status).toBe(200)
       const pullData1 = (await pullResponse1.json()) as {
-        entries: any[]
-        goals: any[]
+        entries: unknown[]
+        goals: unknown[]
       }
       expect(pullData1.entries).toEqual([])
       expect(pullData1.goals).toEqual([])
@@ -111,7 +111,7 @@ describe.skip('Sync API Integration Tests', () => {
       const pushData = (await pushResponse.json()) as {
         success: boolean
         syncToken: string
-        conflicts: any[]
+        conflicts: unknown[]
       }
       expect(pushData.success).toBe(true)
       expect(pushData.syncToken).toBeTruthy()
@@ -130,7 +130,9 @@ describe.skip('Sync API Integration Tests', () => {
       )
 
       expect(pullResponse2.status).toBe(200)
-      const pullData2 = (await pullResponse2.json()) as { entries: any[] }
+      const pullData2 = (await pullResponse2.json()) as {
+        entries: Record<string, unknown>[]
+      }
       expect(pullData2.entries).toHaveLength(1)
       expect(pullData2.entries[0].id).toBe(testEntry.id)
       expect(pullData2.entries[0].notes).toBe('Great practice session!')

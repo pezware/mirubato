@@ -4,6 +4,7 @@
  */
 
 import { TermType } from '../../types/dictionary'
+import type { Env } from '../../types/env'
 import { CloudflareAIService } from './cloudflare-ai-service'
 import { CLOUDFLARE_AI_MODELS } from '../../config/ai-models'
 
@@ -34,7 +35,7 @@ const TERM_TYPE_DESCRIPTIONS: Record<TermType, string> = {
 export class TermClassifier {
   private aiService: CloudflareAIService
 
-  constructor(private env: any) {
+  constructor(private env: Env) {
     this.aiService = new CloudflareAIService(env)
   }
 

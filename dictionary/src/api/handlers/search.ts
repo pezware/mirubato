@@ -18,6 +18,7 @@ import {
   DictionaryEntry,
   SearchAnalytics,
   SearchFilters,
+  TermType,
 } from '../../types/dictionary'
 
 export const searchHandler = new Hono<{ Bindings: Env }>()
@@ -74,7 +75,7 @@ const searchQuerySchema = z.object({
     .transform(val => {
       // If it's a comma-separated string, take the first value
       if (val && typeof val === 'string' && val.includes(',')) {
-        return val.split(',')[0] as any
+        return val.split(',')[0] as TermType
       }
       return val
     }),
@@ -165,7 +166,7 @@ searchHandler.get(
       const searchQuery: SearchQuery = {
         ...query,
         filters,
-        type: query.type, // type is part of SearchQuery, not filters
+        type: query.type as TermType | undefined, // type is part of SearchQuery, not filters
       }
       const searchResult = await db.search(searchQuery)
 

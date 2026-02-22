@@ -99,12 +99,19 @@ vi.mock('../../utils/database', () => ({
 
 vi.mock('../middleware', () => ({
   authMiddleware: (c: unknown, next: () => Promise<void>) => {
-    ;(c as any).set('userId', 'user_123')
+    ;(c as { set: (key: string, value: unknown) => void }).set(
+      'userId',
+      'user_123'
+    )
     return next()
   },
   validateBody: () => async (c: unknown, next: () => Promise<void>) => {
-    const body = await (c as any).req.json()
-    ;(c as any).set('validatedBody', body)
+    const context = c as {
+      req: { json: () => Promise<unknown> }
+      set: (key: string, value: unknown) => void
+    }
+    const body = await context.req.json()
+    context.set('validatedBody', body)
     return next()
   },
 }))
@@ -179,10 +186,15 @@ describe('templatesHandler', () => {
     const res = await app.fetch(req, createEnv())
 
     expect(res.status).toBe(200)
-    const payload = (await res.json()) as any
+    const payload = (await res.json()) as Record<
+      string,
+      Record<string, unknown>
+    >
 
     expect(payload?.plan?.sourceTemplateId).toBe(templateFromDb.id)
-    expect(payload?.plan?.metadata?.adoptedFrom).toBe(templateFromDb.id)
+    expect(
+      (payload?.plan?.metadata as Record<string, unknown>)?.adoptedFrom
+    ).toBe(templateFromDb.id)
 
     const savedPlan = mockDbHelpersInstance.upsertSyncData.mock.calls[0][0]
       .data as { sourceTemplateId?: string }
@@ -219,7 +231,10 @@ describe('templatesHandler', () => {
     const res = await app.fetch(req, createEnv())
 
     expect(res.status).toBe(200)
-    const payload = (await res.json()) as any
+    const payload = (await res.json()) as Record<
+      string,
+      Array<Record<string, unknown>>
+    >
 
     expect(payload.occurrences[0].segments).toMatchObject([
       {
@@ -272,7 +287,10 @@ describe('templatesHandler', () => {
     const res = await app.fetch(req, createEnv())
 
     expect(res.status).toBe(200)
-    const payload = (await res.json()) as any
+    const payload = (await res.json()) as Record<
+      string,
+      Array<Record<string, unknown>>
+    >
 
     expect(payload.occurrences[0].segments).toMatchObject([
       {

@@ -471,7 +471,7 @@ templatesHandler.post(
           checksum: templateChecksum,
           deviceId,
         })
-        console.log(
+        console.warn(
           `[Templates] Adoption count incremented for template ${templateId}`
         )
       }

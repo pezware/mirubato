@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import app from '../index'
 
 // Mock environment bindings
-let mockEnv: any
+let mockEnv: Record<string, unknown> | undefined
 
 describe('Scores API', () => {
   beforeEach(() => {
@@ -38,14 +38,14 @@ describe('Scores API', () => {
 
   afterEach(() => {
     // Clear mock environment
-    mockEnv = null
+    mockEnv = undefined
   })
   it('should return health check', async () => {
     const response = await app.fetch(
       new Request('http://localhost/health'),
       mockEnv
     )
-    const json = (await response.json()) as any
+    const json = (await response.json()) as Record<string, unknown>
 
     // In test environment, some services may not be fully healthy
     // The JWT validation in particular may fail without proper jose mocking
@@ -80,7 +80,7 @@ describe('Scores API', () => {
       new Request('http://localhost/non-existent'),
       mockEnv
     )
-    const json = (await response.json()) as any
+    const json = (await response.json()) as Record<string, unknown>
 
     expect(response.status).toBe(404)
     expect(json.success).toBe(false)
