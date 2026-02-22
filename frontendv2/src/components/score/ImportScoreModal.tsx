@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useUserPreferences } from '../../hooks/useUserPreferences'
 import { Modal, Button, Input, Select, cn } from '../ui'
@@ -234,14 +234,7 @@ export default function ImportScoreModal({
     }
   }, [isOpen, currentStep])
 
-  // Reset state when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      resetState()
-    }
-  }, [isOpen])
-
-  const resetState = () => {
+  const resetState = useCallback(() => {
     setCurrentStep('upload')
     setImportType('pdf')
     setPdfFile(null)
@@ -261,7 +254,14 @@ export default function ImportScoreModal({
     setSelectedCollections(new Set())
     setError(null)
     setTempScoreId(null)
-  }
+  }, [defaultScoreInstrument])
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      resetState()
+    }
+  }, [isOpen, resetState])
 
   const loadUserCollections = async () => {
     setIsLoadingCollections(true)

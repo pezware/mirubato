@@ -3,6 +3,7 @@
  */
 
 import { Context } from 'hono'
+import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { HTTPException } from 'hono/http-exception'
 import { ApiResponse } from '../types/api'
 
@@ -77,7 +78,7 @@ export class APIError extends DictionaryError {
 
 export const errorHandler = (err: Error, c: Context): Response => {
   // Log error details based on LOG_LEVEL
-  const env = c.env as any
+  const env = c.env as Record<string, unknown>
   if (env.LOG_LEVEL === 'debug' || env.ENVIRONMENT !== 'production') {
     console.error('Error details:', {
       name: err.name,
@@ -121,22 +122,22 @@ export const errorHandler = (err: Error, c: Context): Response => {
       c.header('Retry-After', err.details.retry_after.toString())
     }
 
-    return c.json(response, err.statusCode as any)
+    return c.json(response, err.statusCode as ContentfulStatusCode)
   }
 
   // Handle Zod validation errors
   if (err.name === 'ZodError') {
-    const zodError = err as any
+    const zodError = err as Error & { errors?: unknown[] }
     const response: ApiResponse<never> = {
       status: 'error',
       error: {
         code: 'VALIDATION_ERROR',
         message: 'Invalid request data',
-        details: zodError.errors || [],
+        details: { errors: zodError.errors || [] },
         timestamp: new Date().toISOString(),
       },
     }
-    return c.json(response, 400 as any)
+    return c.json(response, 400 as ContentfulStatusCode)
   }
 
   // Generic error response
@@ -149,7 +150,7 @@ export const errorHandler = (err: Error, c: Context): Response => {
     },
   }
 
-  return c.json(response, 500 as any)
+  return c.json(response, 500 as ContentfulStatusCode)
 }
 
 /**

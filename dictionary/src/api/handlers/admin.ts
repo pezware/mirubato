@@ -1076,11 +1076,11 @@ adminHandler.put(
 
       if (action === 'approve') {
         // Parse the generated content
-        let entry = item.generated_content
+        let entry = item.generated_content as DictionaryEntry
 
         // Apply modifications if provided
         if (modifications) {
-          entry = { ...entry, ...modifications }
+          entry = { ...entry, ...(modifications as Partial<DictionaryEntry>) }
         }
 
         // Save to dictionary

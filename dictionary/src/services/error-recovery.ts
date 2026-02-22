@@ -68,11 +68,11 @@ export class ErrorRecoveryService {
       const failedItems = await this.getFailedItems(limit)
 
       if (failedItems.length === 0) {
-        console.log('No failed items to recover')
+        console.warn('No failed items to recover')
         return result
       }
 
-      console.log(`Processing ${failedItems.length} failed items for recovery`)
+      console.warn(`Processing ${failedItems.length} failed items for recovery`)
 
       for (const item of failedItems) {
         const analysis = this.analyzeFailure(item)
@@ -102,7 +102,7 @@ export class ErrorRecoveryService {
       // Clean up old DLQ items
       await this.cleanupDeadLetterQueue()
 
-      console.log(
+      console.warn(
         `Recovery complete: ${result.retry_scheduled} scheduled for retry, ${result.moved_to_dlq} moved to DLQ`
       )
     } catch (error) {
@@ -245,7 +245,7 @@ export class ErrorRecoveryService {
       .bind(item.id)
       .run()
 
-    console.log(
+    console.warn(
       `Scheduled ${item.term} for retry (attempt ${item.attempts + 1})`
     )
   }
@@ -277,7 +277,7 @@ export class ErrorRecoveryService {
       .bind(retryTime.toISOString(), item.id)
       .run()
 
-    console.log(
+    console.warn(
       `Scheduled ${item.term} for retry after ${retryTime.toISOString()}`
     )
   }
@@ -317,7 +317,7 @@ export class ErrorRecoveryService {
       .bind(item.id)
       .run()
 
-    console.log(
+    console.warn(
       `Moved ${item.term} to dead letter queue after ${item.attempts} attempts`
     )
   }
@@ -338,7 +338,7 @@ export class ErrorRecoveryService {
       .run()
 
     if (result.meta.changes > 0) {
-      console.log(
+      console.warn(
         `Cleaned up ${result.meta.changes} old items from dead letter queue`
       )
     }

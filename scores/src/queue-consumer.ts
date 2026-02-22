@@ -7,59 +7,86 @@
  * - Metadata extraction
  */
 
-import { BrowserRenderingService } from './services/browser-rendering'
+import {
+  BrowserRenderingService,
+  type BrowserRenderingEnv,
+} from './services/browser-rendering'
 import { extractTextFromPdf } from './services/pdfTextExtractor'
 import { PDFTextExtractionResult } from './types/ai'
 
-interface ScoreProcessingJob {
+interface GeneratePreviewsJob {
   scoreId: string
-  action:
-    | 'generate-previews'
-    | 'import-imslp'
-    | 'download-imslp-pdf'
-    | 'extract-metadata'
-  data: any
+  action: 'generate-previews'
+  data: { pdfUrl: string; r2Key: string }
 }
+
+interface ImportImslpJob {
+  scoreId: string
+  action: 'import-imslp'
+  data: { url: string }
+}
+
+interface DownloadImslpPdfJob {
+  scoreId: string
+  action: 'download-imslp-pdf'
+  data: { imslpUrl: string; pdfLinks: Array<{ href?: string }> }
+}
+
+interface ExtractMetadataJob {
+  scoreId: string
+  action: 'extract-metadata'
+  data: { r2Key: string }
+}
+
+type ScoreProcessingJob =
+  | GeneratePreviewsJob
+  | ImportImslpJob
+  | DownloadImslpPdfJob
+  | ExtractMetadataJob
 
 export default {
   async queue(
     batch: MessageBatch<ScoreProcessingJob>,
     env: Env
   ): Promise<void> {
-    const browserService = new BrowserRenderingService(env as any)
+    const browserService = new BrowserRenderingService(
+      env as unknown as BrowserRenderingEnv
+    )
 
     for (const message of batch.messages) {
-      const { scoreId, action, data } = message.body
+      const job = message.body
 
       try {
-        console.warn(`Processing job: ${action} for score ${scoreId}`)
+        console.warn(`Processing job: ${job.action} for score ${job.scoreId}`)
 
-        switch (action) {
+        switch (job.action) {
           case 'generate-previews':
-            await generatePreviews(scoreId, data, env, browserService)
+            await generatePreviews(job.scoreId, job.data, env, browserService)
             break
 
           case 'import-imslp':
-            await importFromIMSLP(scoreId, data, env, browserService)
+            await importFromIMSLP(job.scoreId, job.data, env, browserService)
             break
 
           case 'download-imslp-pdf':
-            await downloadIMSLPPDF(scoreId, data, env)
+            await downloadIMSLPPDF(job.scoreId, job.data, env)
             break
 
           case 'extract-metadata':
-            await extractMetadata(scoreId, data, env)
+            await extractMetadata(job.scoreId, job.data, env)
             break
 
           default:
-            console.error(`Unknown action: ${action}`)
+            console.error(
+              `Unknown action: ${(job as { action: string }).action}`
+            )
         }
 
         // Acknowledge successful processing
         message.ack()
       } catch (error) {
         console.error(
-          `Failed to process job ${action} for score ${scoreId}:`,
+          `Failed to process job ${job.action} for score ${job.scoreId}:`,
           error
         )
 
@@ -224,7 +251,7 @@ async function importFromIMSLP(
  */
 async function downloadIMSLPPDF(
   scoreId: string,
-  data: { imslpUrl: string; pdfLinks: any[] },
+  data: { imslpUrl: string; pdfLinks: Array<{ href?: string }> },
   env: Env
 ): Promise<void> {
   console.warn(`Downloading PDF for score ${scoreId}`)
@@ -412,7 +439,9 @@ async function extractMetadata(
       }
     } else if (env.AI) {
       // Fallback to visual analysis for PDFs without embedded text
-      const browserService = new BrowserRenderingService(env as any)
+      const browserService = new BrowserRenderingService(
+        env as unknown as BrowserRenderingEnv
+      )
       const baseUrl = env.SCORES_URL || 'https://scores.mirubato.com'
       const pdfUrl = `${baseUrl}/files/${data.r2Key}`
 

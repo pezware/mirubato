@@ -87,7 +87,7 @@ pdfRendererV2Handler.get(
       const pdfUrl = await getPdfUrl(params.scoreId, c.env)
 
       // Render the page
-      const image = await renderPage(c.env.BROWSER, pdfUrl, params)
+      const image = await renderPage(c.env.BROWSER!, pdfUrl, params)
 
       // Store pre-rendered version for next time
       c.executionCtx.waitUntil(
@@ -161,7 +161,7 @@ async function getPdfUrl(scoreId: string, env: Env): Promise<string> {
  * Uses exponential backoff to handle transient browser rendering failures
  */
 async function renderPage(
-  browserBinding: Env['BROWSER'],
+  browserBinding: NonNullable<Env['BROWSER']>,
   pdfUrl: string,
   params: z.infer<typeof renderParamsSchema>
 ): Promise<ArrayBuffer> {
@@ -204,7 +204,7 @@ async function renderPage(
  * Single render attempt - isolated for retry logic
  */
 async function renderPageAttempt(
-  browserBinding: Env['BROWSER'],
+  browserBinding: NonNullable<Env['BROWSER']>,
   pdfUrl: string,
   params: z.infer<typeof renderParamsSchema>
 ): Promise<ArrayBuffer> {
@@ -382,7 +382,7 @@ pdfRendererV2Handler.get('/thumbnail/:scoreId', async c => {
       quality: THUMBNAIL_CONFIG.QUALITY,
     }
 
-    const image = await renderPage(c.env.BROWSER, pdfUrl, params)
+    const image = await renderPage(c.env.BROWSER!, pdfUrl, params)
 
     // Store for next time (async, don't wait)
     c.executionCtx.waitUntil(

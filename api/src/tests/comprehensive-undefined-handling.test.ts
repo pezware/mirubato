@@ -1,15 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { DatabaseHelpers, sanitizeForD1 } from '../utils/database'
+import type { D1Database } from '@cloudflare/workers-types'
 
 describe('Comprehensive Undefined Value Handling', () => {
-  let mockDb: any
+  let mockDb: { prepare: ReturnType<typeof vi.fn> }
   let dbHelpers: DatabaseHelpers
 
   beforeEach(() => {
     mockDb = {
       prepare: vi.fn(),
     }
-    dbHelpers = new DatabaseHelpers(mockDb)
+    dbHelpers = new DatabaseHelpers(mockDb as unknown as D1Database)
   })
 
   describe('sanitizeForD1 comprehensive tests', () => {
@@ -221,7 +222,7 @@ describe('Comprehensive Undefined Value Handling', () => {
         const parsedData = JSON.parse(jsonData)
 
         // All piece composers should be null (not undefined)
-        parsedData.pieces.forEach((piece: any) => {
+        parsedData.pieces.forEach((piece: Record<string, unknown>) => {
           expect(piece.composer).toBe(null)
           expect(piece.composer).not.toBe(undefined)
         })
@@ -338,8 +339,8 @@ describe('Comprehensive Undefined Value Handling', () => {
 
     it('should handle circular references safely', () => {
       // This would cause infinite recursion if not handled properly
-      const parent: any = { name: 'parent' }
-      const child: any = { name: 'child', parent }
+      const parent: Record<string, unknown> = { name: 'parent' }
+      const child: Record<string, unknown> = { name: 'child', parent }
       parent.child = child
 
       // Should not throw an error

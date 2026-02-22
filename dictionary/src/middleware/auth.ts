@@ -6,7 +6,9 @@
 import { Context, Next } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { verify } from 'hono/jwt'
-import { Env } from '../types/env'
+import { Env, Variables } from '../types/env'
+
+type AppContext = Context<{ Bindings: Env; Variables: Variables }>
 
 export interface AuthOptions {
   optional?: boolean // Allow unauthenticated access
@@ -18,7 +20,7 @@ export interface AuthOptions {
  * JWT authentication middleware
  */
 export function auth(options: AuthOptions = {}) {
-  return async (c: Context<{ Bindings: Env }>, next: Next) => {
+  return async (c: AppContext, next: Next) => {
     const authHeader = c.req.header('Authorization')
 
     if (!authHeader) {
@@ -40,19 +42,21 @@ export function auth(options: AuthOptions = {}) {
         token,
         c.env.JWT_SECRET as string,
         'HS256'
-      )) as any
+      )) as Record<string, unknown>
 
       // Check if token is expired
-      if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+      const exp = payload.exp as number | undefined
+      if (exp && exp < Math.floor(Date.now() / 1000)) {
         throw new HTTPException(401, { message: 'Token expired' })
       }
 
       // Check roles if specified
       if (options.roles && options.roles.length > 0) {
-        const userRoles = payload.roles || []
+        const userRoles = (payload.roles as string[]) || []
 
         // For compatibility with main API tokens, check email domain for admin role
-        const email = payload.email || payload.user?.email
+        const userObj = payload.user as Record<string, unknown> | undefined
+        const email = (payload.email as string) || (userObj?.email as string)
         if (options.roles.includes('admin') && email) {
           // Allow @mirubato.com emails or specific test email
           const isAdminEmail =
@@ -76,7 +80,7 @@ export function auth(options: AuthOptions = {}) {
 
       // Check scopes if specified
       if (options.scopes && options.scopes.length > 0) {
-        const userScopes = payload.scopes || []
+        const userScopes = (payload.scopes as string[]) || []
         const hasAllScopes = options.scopes.every((scope: string) =>
           userScopes.includes(scope)
         )
@@ -89,12 +93,12 @@ export function auth(options: AuthOptions = {}) {
       }
 
       // Set user context
-      c.set('userId' as any, payload.sub || payload.user_id)
-      c.set('userEmail' as any, payload.email)
-      c.set('userRoles' as any, payload.roles || [])
-      c.set('userScopes' as any, payload.scopes || [])
-      c.set('userTier' as any, payload.tier || 'free')
-      c.set('jwtPayload' as any, payload)
+      c.set('userId', (payload.sub || payload.user_id) as string)
+      c.set('userEmail', payload.email as string)
+      c.set('userRoles', (payload.roles as string[]) || [])
+      c.set('userScopes', (payload.scopes as string[]) || [])
+      c.set('userTier', (payload.tier as string) || 'free')
+      c.set('jwtPayload', payload)
 
       await next()
     } catch (error) {
@@ -124,9 +128,15 @@ export function requirePermission(
   action: string,
   getResourceId?: (c: Context) => string
 ) {
-  return async (c: Context<{ Bindings: Env }>, next: Next) => {
-    const userId = c.get('userId' as any)
-    const userRoles = c.get('userRoles' as any) || []
+  return async (c: AppContext, next: Next) => {
+    const userId = c.get('userId')
+    const userRoles = c.get('userRoles') || []
+
+    if (!userId) {
+      throw new HTTPException(401, {
+        message: 'Authentication required',
+      })
+    }
 
     // Admins have all permissions
     if (userRoles.includes('admin')) {
@@ -159,9 +169,9 @@ export function requirePermission(
 export function requireOwnership(
   getResourceOwnerId: (c: Context) => Promise<string | null>
 ) {
-  return async (c: Context<{ Bindings: Env }>, next: Next) => {
-    const userId = c.get('userId' as any)
-    const userRoles = c.get('userRoles' as any) || []
+  return async (c: AppContext, next: Next) => {
+    const userId = c.get('userId')
+    const userRoles = c.get('userRoles') || []
 
     // Admins can access any resource
     if (userRoles.includes('admin')) {
@@ -184,7 +194,7 @@ export function requireOwnership(
  * Service-to-service authentication
  */
 export function serviceAuth(allowedServices: string[]) {
-  return async (c: Context<{ Bindings: Env }>, next: Next) => {
+  return async (c: AppContext, next: Next) => {
     const serviceHeader = c.req.header('X-Service-Name')
     const serviceToken = c.req.header('X-Service-Token')
 
@@ -216,7 +226,7 @@ export function serviceAuth(allowedServices: string[]) {
       })
     }
 
-    c.set('serviceName' as any, serviceHeader)
+    c.set('serviceName', serviceHeader)
     await next()
   }
 }
@@ -224,15 +234,15 @@ export function serviceAuth(allowedServices: string[]) {
 /**
  * Extract user info from auth context
  */
-export function getUserInfo(c: Context): {
+export function getUserInfo(c: AppContext): {
   userId?: string
   email?: string
   authenticated: boolean
   method?: 'jwt' | 'service'
 } {
-  const userId = c.get('userId' as any)
-  const email = c.get('userEmail' as any)
-  const serviceName = c.get('serviceName' as any)
+  const userId = c.get('userId')
+  const email = c.get('userEmail')
+  const serviceName = c.get('serviceName')
 
   if (userId) {
     return {

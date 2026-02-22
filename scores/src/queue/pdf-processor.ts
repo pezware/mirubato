@@ -134,7 +134,7 @@ async function analyzePdf(
   env: Env,
   pdfUrl: string
 ): Promise<{ pageCount: number }> {
-  const browser = await launch(env.BROWSER, { keep_alive: 60000 }) // 60 seconds
+  const browser = await launch(env.BROWSER!, { keep_alive: 60000 }) // 60 seconds
 
   try {
     const page = await browser.newPage()
@@ -202,7 +202,7 @@ async function renderAndStoreThumbnail(
   scoreId: string,
   pdfUrl: string
 ): Promise<void> {
-  const browser = await launch(env.BROWSER, { keep_alive: 60000 }) // 1 minute
+  const browser = await launch(env.BROWSER!, { keep_alive: 60000 }) // 1 minute
 
   try {
     const page = await browser.newPage()
@@ -295,7 +295,7 @@ async function renderAndStorePage(
   pdfUrl: string,
   pageNumber: number
 ): Promise<void> {
-  const browser = await launch(env.BROWSER, { keep_alive: 120000 }) // 2 minutes
+  const browser = await launch(env.BROWSER!, { keep_alive: 120000 }) // 2 minutes
 
   try {
     const page = await browser.newPage()
@@ -376,7 +376,11 @@ async function renderAndStorePage(
           String.fromCharCode(...new Uint8Array(screenshotBuffer))
         )
 
-        const aiExtractor = new CloudflareAiExtractor(env.AI as any)
+        const aiExtractor = new CloudflareAiExtractor(
+          env.AI as unknown as ConstructorParameters<
+            typeof CloudflareAiExtractor
+          >[0]
+        )
         const analysisRequest: ImageAnalysisRequest = {
           imageData: base64Image,
           mimeType: 'image/webp',

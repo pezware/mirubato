@@ -146,7 +146,7 @@ export function addCacheHeaders(
 export async function cacheResponse(
   request: Request,
   response: Response,
-  _c?: any
+  _c?: unknown
 ): Promise<void> {
   try {
     // Only cache if conditions are met
@@ -172,7 +172,7 @@ export async function cacheResponse(
  */
 export async function getCachedResponse(
   request: Request,
-  _c?: any
+  _c?: unknown
 ): Promise<Response | null> {
   try {
     // Only check cache for GET requests
@@ -209,7 +209,10 @@ export async function getCachedResponse(
 /**
  * Purge cache for a specific URL pattern
  */
-export async function purgeCache(pattern: string, c?: any): Promise<void> {
+export async function purgeCache(
+  pattern: string,
+  c: { req: { url: string } }
+): Promise<void> {
   try {
     const cache = await caches.open('v1')
 

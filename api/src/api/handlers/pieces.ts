@@ -44,10 +44,10 @@ piecesHandler.put('/update-name', authMiddleware, async c => {
 
     const results = await stmt.all()
     let updatedCount = 0
-    console.log(
+    console.warn(
       `[Pieces] Found ${results.results?.length || 0} logbook entries to check`
     )
-    console.log(`[Pieces] Looking for pieces matching:`, oldPiece)
+    console.warn(`[Pieces] Looking for pieces matching:`, oldPiece)
 
     // Update each matching entry
     for (const row of results.results || []) {
@@ -57,13 +57,13 @@ piecesHandler.put('/update-name', authMiddleware, async c => {
 
         // Update pieces array
         if (data.pieces && Array.isArray(data.pieces)) {
-          data.pieces = data.pieces.map((piece: any) => {
+          data.pieces = data.pieces.map((piece: Record<string, unknown>) => {
             if (
               piece.title === oldPiece.title &&
               (piece.composer || '') === (oldPiece.composer || '')
             ) {
               wasUpdated = true
-              console.log(
+              console.warn(
                 `[Pieces] Updating piece in entry ${row.id}: "${oldPiece.title}" → "${newPiece.title}"`
               )
               return {
@@ -89,7 +89,7 @@ piecesHandler.put('/update-name', authMiddleware, async c => {
         if (data.scoreId === oldScoreId) {
           data.scoreId = newScoreId
           wasUpdated = true
-          console.log(
+          console.warn(
             `[Pieces] Updating scoreId in entry ${row.id}: "${oldScoreId}" → "${newScoreId}"`
           )
         }

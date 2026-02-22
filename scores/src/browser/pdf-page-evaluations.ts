@@ -8,14 +8,16 @@
  * Check if a render error occurred
  */
 export function checkRenderError(): string | undefined {
-  return (window as any).renderError
+  return (window as unknown as { renderError?: string }).renderError
 }
 
 /**
  * Check if rendering is complete
  */
 export function checkRenderComplete(): boolean {
-  return (window as any).renderComplete === true
+  return (
+    (window as unknown as { renderComplete?: boolean }).renderComplete === true
+  )
 }
 
 /**
@@ -47,5 +49,8 @@ export function getErrorElementText(): string | null {
  * Check if PDF.js library is loaded
  */
 export function isPdfJsLoaded(): boolean {
-  return typeof (window as any).pdfjsLib !== 'undefined'
+  return (
+    typeof (window as unknown as { pdfjsLib?: unknown }).pdfjsLib !==
+    'undefined'
+  )
 }

@@ -8,6 +8,7 @@ import {
   DictionaryEntry,
   TermType,
   Definition,
+  Pronunciation,
   References,
   QualityScore,
   EntryMetadata,
@@ -67,7 +68,7 @@ export class DictionaryGenerator {
 
       try {
         classifiedType = await this.termClassifier.classifyTerm(options.term)
-        console.log(
+        console.warn(
           `AI classified term "${options.term}" as type: ${classifiedType}`
         )
       } catch (classificationError) {
@@ -79,7 +80,7 @@ export class DictionaryGenerator {
         classifiedType = this.termClassifier.fallbackClassification(
           options.term
         )
-        console.log(
+        console.warn(
           `Pattern-based classification for "${options.term}": ${classifiedType}`
         )
       }
@@ -258,9 +259,13 @@ export class DictionaryGenerator {
     if (!response.response) return null
 
     try {
-      const parsed = this.aiService.parseJSONResponse(
-        response.response
-      ) as any as any
+      const parsed = this.aiService.parseJSONResponse<{
+        concise?: string
+        detailed?: string
+        etymology?: string
+        pronunciation?: Pronunciation
+        usage_example?: string
+      }>(response.response)
 
       // Validate the structure
       if (!parsed.concise || !parsed.detailed) {
@@ -312,7 +317,12 @@ export class DictionaryGenerator {
     if (!response.response) return references
 
     try {
-      const parsed = this.aiService.parseJSONResponse(response.response) as any
+      const parsed = this.aiService.parseJSONResponse<{
+        wikipedia_search?: string
+        youtube_search?: string
+        book_keywords?: string[]
+        academic_keywords?: string[]
+      }>(response.response)
 
       // Generate Wikipedia reference using improved URL generation
       if (parsed.wikipedia_search) {
@@ -551,7 +561,10 @@ Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
   private async enhanceDefinition(
     entry: DictionaryEntry
   ): Promise<Definition | null> {
-    const prompt = PROMPT_TEMPLATES.enhancement(entry, ['definition'])
+    const prompt = PROMPT_TEMPLATES.enhancement(
+      entry as unknown as Record<string, unknown>,
+      ['definition']
+    )
 
     const model = selectModel('enhancement')
     const response = await this.aiService.generateStructuredContent(
@@ -566,7 +579,9 @@ Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
     if (!response.response) return null
 
     try {
-      const parsed = this.aiService.parseJSONResponse(response.response) as any
+      const parsed = this.aiService.parseJSONResponse<{
+        definition?: Definition
+      }>(response.response)
       return parsed.definition || null
     } catch (error) {
       console.error('Failed to parse enhanced definition:', error)
@@ -580,7 +595,10 @@ Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
   private async enhanceReferences(
     entry: DictionaryEntry
   ): Promise<References | null> {
-    const prompt = PROMPT_TEMPLATES.enhancement(entry, ['references'])
+    const prompt = PROMPT_TEMPLATES.enhancement(
+      entry as unknown as Record<string, unknown>,
+      ['references']
+    )
 
     const model = selectModel('enhancement')
     const response = await this.aiService.generateStructuredContent(
@@ -595,7 +613,9 @@ Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
     if (!response.response) return null
 
     try {
-      const parsed = this.aiService.parseJSONResponse(response.response) as any
+      const parsed = this.aiService.parseJSONResponse<{
+        references?: References
+      }>(response.response)
       return parsed.references || null
     } catch (error) {
       console.error('Failed to parse enhanced references:', error)
@@ -612,7 +632,9 @@ Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
     suggestions: string[]
   }> {
     try {
-      const prompt = PROMPT_TEMPLATES.qualityCheck(entry)
+      const prompt = PROMPT_TEMPLATES.qualityCheck(
+        entry as unknown as Record<string, unknown>
+      )
       const model = selectModel('quality', true) // Use fast model
 
       const response = await this.aiService.generateStructuredContent(
@@ -632,7 +654,11 @@ Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
         }
       }
 
-      const parsed = this.aiService.parseJSONResponse(response.response) as any
+      const parsed = this.aiService.parseJSONResponse<{
+        score?: number
+        issues?: string[]
+        suggestions?: string[]
+      }>(response.response)
 
       return {
         score: parsed.score || 0,
@@ -654,7 +680,7 @@ Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
    */
   private async generateRelatedTerms(
     entry: DictionaryEntry
-  ): Promise<any[] | null> {
+  ): Promise<string[] | null> {
     const prompt = PROMPT_TEMPLATES.relatedTerms(
       entry.term,
       entry.definition.detailed
@@ -673,7 +699,9 @@ Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
     if (!response.response) return null
 
     try {
-      const parsed = this.aiService.parseJSONResponse(response.response) as any
+      const parsed = this.aiService.parseJSONResponse<{
+        related_terms?: string[]
+      }>(response.response)
       return parsed.related_terms || null
     } catch (error) {
       console.error('Failed to parse related terms:', error)
@@ -792,7 +820,11 @@ export class QualityValidator {
     }
 
     try {
-      const parsed = aiService.parseJSONResponse(response.response) as any
+      const parsed = aiService.parseJSONResponse<{
+        score?: number
+        issues?: string[]
+        suggestions?: string[]
+      }>(response.response)
       return {
         score: parsed.score || 50,
         issues: parsed.issues || [],

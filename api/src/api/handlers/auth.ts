@@ -50,7 +50,7 @@ authHandler.post(
       } catch (emailError) {
         // In staging, if email fails, still return success but log the link
         if (c.env.ENVIRONMENT === 'staging') {
-          console.log('Email send failed in staging, magic link:', magicLink)
+          console.warn('Email send failed in staging, magic link:', magicLink)
           return c.json({
             success: true,
             message: 'Magic link sent to your email (check logs in staging)',
@@ -142,15 +142,17 @@ authHandler.post(
         refreshToken,
         expiresIn: 2592000, // 30 days in seconds
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error verifying magic link:', error)
 
       // Handle specific error cases
-      if (error.message?.includes('JWT expired')) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      if (errorMessage?.includes('JWT expired')) {
         throw new AuthenticationError('Token has expired')
-      } else if (error.message?.includes('invalid signature')) {
+      } else if (errorMessage?.includes('invalid signature')) {
         throw new AuthenticationError('Invalid or expired token')
-      } else if (error.message?.includes('D1_TYPE_ERROR')) {
+      } else if (errorMessage?.includes('D1_TYPE_ERROR')) {
         // This shouldn't happen anymore, but log it clearly
         console.error('Database type error:', error)
         throw new InternalError('Database error')

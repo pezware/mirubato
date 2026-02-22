@@ -76,7 +76,7 @@ healthHandler.get('/health', async c => {
   const allHealthy = Object.values(checks).every(check => {
     if (typeof check === 'object' && 'cloudflare' in check) {
       // For AI checks, just ensure Cloudflare AI is configured
-      return check.cloudflare.status === 'configured'
+      return (check as AIServiceHealth).cloudflare.status === 'configured'
     }
     return check.status === 'healthy' || check.status === 'configured'
   })
@@ -579,13 +579,17 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
       name: 'Llama 3.1 8B',
       test: async () => {
         if (!env.AI) throw new Error('AI not configured')
-        const response = (await env.AI.run(
-          '@cf/meta/llama-3.1-8b-instruct' as any,
-          {
-            prompt: 'Test',
-            max_tokens: 10,
-          } as any
-        )) as any
+        const response = (await (
+          env.AI as {
+            run: (
+              model: string,
+              params: Record<string, unknown>
+            ) => Promise<unknown>
+          }
+        ).run('@cf/meta/llama-3.1-8b-instruct', {
+          prompt: 'Test',
+          max_tokens: 10,
+        })) as Record<string, unknown>
         if (!response.response) throw new Error('No response')
       },
     },
@@ -595,13 +599,17 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
       name: 'Llama 3.2 3B',
       test: async () => {
         if (!env.AI) throw new Error('AI not configured')
-        const response = (await env.AI.run(
-          '@cf/meta/llama-3.2-3b-instruct' as any,
-          {
-            prompt: 'Test',
-            max_tokens: 10,
-          } as any
-        )) as any
+        const response = (await (
+          env.AI as {
+            run: (
+              model: string,
+              params: Record<string, unknown>
+            ) => Promise<unknown>
+          }
+        ).run('@cf/meta/llama-3.2-3b-instruct', {
+          prompt: 'Test',
+          max_tokens: 10,
+        })) as Record<string, unknown>
         if (!response.response) throw new Error('No response')
       },
     },
@@ -611,13 +619,17 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
       name: 'Llama 3.3 70B',
       test: async () => {
         if (!env.AI) throw new Error('AI not configured')
-        const response = (await env.AI.run(
-          '@cf/meta/llama-3.3-70b-instruct-fp8-fast' as any,
-          {
-            prompt: 'Test',
-            max_tokens: 10,
-          } as any
-        )) as any
+        const response = (await (
+          env.AI as {
+            run: (
+              model: string,
+              params: Record<string, unknown>
+            ) => Promise<unknown>
+          }
+        ).run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+          prompt: 'Test',
+          max_tokens: 10,
+        })) as Record<string, unknown>
         if (!response.response) throw new Error('No response')
       },
     },

@@ -31,8 +31,8 @@ const uploadService = new UploadService()
  * Development-only endpoint to seed test data into local R2
  * This only works with Miniflare (wrangler dev)
  */
-export async function seedTestData(c: Context) {
-  const env = c.env as any
+export async function seedTestData(c: Context<{ Bindings: Env }>) {
+  const env = c.env
 
   // Only allow in local development
   if (env.ENVIRONMENT !== 'local') {
@@ -111,8 +111,8 @@ export async function seedTestData(c: Context) {
 /**
  * Development endpoint to manually upload a file to R2
  */
-export async function uploadToR2(c: Context) {
-  const env = c.env as any
+export async function uploadToR2(c: Context<{ Bindings: Env }>) {
+  const env = c.env
 
   // Only allow in local development
   if (env.ENVIRONMENT !== 'local') {

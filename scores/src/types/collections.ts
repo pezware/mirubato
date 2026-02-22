@@ -53,7 +53,7 @@ export interface Score {
   derivedVisibility?: CollectionVisibility // Inherited from collections
   userId?: string // Owner for user-uploaded scores
   tags: string[]
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   createdAt: Date
   updatedAt: Date
 }

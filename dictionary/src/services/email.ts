@@ -12,7 +12,7 @@ export class EmailService {
    * Send magic link email
    */
   async sendMagicLink(email: string, magicLink: string): Promise<void> {
-    console.log(`Attempting to send magic link to ${email}`)
+    console.warn(`Attempting to send magic link to ${email}`)
 
     const html = `
 <!DOCTYPE html>
@@ -55,7 +55,7 @@ export class EmailService {
 
     // For local development, just log the magic link
     if (this.env.ENVIRONMENT === 'local') {
-      console.log(`[LOCAL] Magic link for ${email}: ${magicLink}`)
+      console.warn(`[LOCAL] Magic link for ${email}: ${magicLink}`)
       return
     }
 
@@ -63,7 +63,7 @@ export class EmailService {
     if (!this.env.RESEND_API_KEY) {
       // In staging, log that email service is not configured
       if (this.env.ENVIRONMENT === 'staging') {
-        console.log(
+        console.warn(
           `[STAGING] No RESEND_API_KEY configured. Cannot send email to ${email}.`
         )
         throw new Error('Email service not configured. Please contact support.')
@@ -72,20 +72,20 @@ export class EmailService {
     }
 
     // Send email via Resend
-    console.log('Using Resend to send email')
+    console.warn('Using Resend to send email')
     try {
       await this.sendWithResend(
         email,
         'Sign in to Mirubato Dictionary Admin',
         html
       )
-      console.log('Email sent successfully')
+      console.warn('Email sent successfully')
     } catch (error) {
       console.error('Failed to send email via Resend:', error)
 
       // In staging, log the error but don't expose the magic link
       if (this.env.ENVIRONMENT === 'staging') {
-        console.log(
+        console.warn(
           `[STAGING] Email failed for ${email}. Check server logs for details.`
         )
         throw new Error(`Email service error. Please contact support.`)
@@ -123,6 +123,6 @@ export class EmailService {
     }
 
     const result = await response.json()
-    console.log('Resend API response:', result)
+    console.warn('Resend API response:', result)
   }
 }

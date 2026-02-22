@@ -57,7 +57,7 @@ export function cache(options: CacheOptions = {}) {
           }
         })
 
-        return c.json(cached.data as any)
+        return c.json(cached.data as Record<string, unknown>)
       }
     } catch (error) {
       console.error('Cache read error:', error)
@@ -211,7 +211,7 @@ function generateCacheKey(c: Context, varyBy?: string[]): string {
   }
 
   // Add user ID if authenticated
-  const userId = c.get('userId' as any)
+  const userId = c.get('userId')
   if (userId) {
     parts.push(`user:${userId}`)
   }

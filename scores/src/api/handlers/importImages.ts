@@ -29,7 +29,9 @@ async function checkRateLimit(
   // If JWT is provided, skip rate limiting
   if (authHeader?.startsWith('Bearer ')) {
     try {
-      const userId = await getUserIdFromAuth(c as any)
+      const userId = await getUserIdFromAuth(
+        c as unknown as Parameters<typeof getUserIdFromAuth>[0]
+      )
       if (userId) {
         return { allowed: true }
       }
@@ -101,7 +103,9 @@ importImagesHandler.post('/', async c => {
     }
 
     // Get user ID (required for image uploads)
-    const userId = await getUserIdFromAuth(c as any)
+    const userId = await getUserIdFromAuth(
+      c as unknown as Parameters<typeof getUserIdFromAuth>[0]
+    )
     if (!userId) {
       throw new HTTPException(401, {
         message: 'Authentication required for image uploads',
@@ -212,13 +216,17 @@ importImagesHandler.post('/', async c => {
       difficulty?: string
       difficultyLevel?: number
       tags?: string[]
-      visualFeatures?: any
+      visualFeatures?: Record<string, unknown>
     } = {}
     let visualAnalysis = null
     let visualConfidence = 0
 
     try {
-      const aiExtractor = new HybridAiExtractor(c.env.AI as any)
+      const aiExtractor = new HybridAiExtractor(
+        c.env.AI as unknown as ConstructorParameters<
+          typeof HybridAiExtractor
+        >[0]
+      )
       const firstImageKey = imageUrls[0].r2Key
       const firstImageData = await c.env.SCORES_BUCKET.get(firstImageKey)
 

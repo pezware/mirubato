@@ -9,7 +9,7 @@ export interface UploadResult {
   key?: string
   url?: string
   error?: string
-  details?: any
+  details?: string
 }
 
 export interface FileMetadata {
@@ -18,6 +18,11 @@ export interface FileMetadata {
   mimeType: string
   uploadedAt: string
   uploadedBy?: string
+}
+
+interface UploadEnv {
+  SCORES_BUCKET: R2Bucket
+  SCORES_URL?: string
 }
 
 // Default configuration
@@ -96,7 +101,7 @@ export class UploadService {
    */
   async uploadToR2(
     file: File,
-    env: any,
+    env: UploadEnv,
     options: {
       prefix?: string
       metadata?: Record<string, string>
@@ -143,7 +148,11 @@ export class UploadService {
           cacheControl: 'public, max-age=31536000, immutable', // 1 year cache for immutable PDFs
         },
         customMetadata: {
-          ...metadata,
+          filename: metadata.filename,
+          size: String(metadata.size),
+          mimeType: metadata.mimeType,
+          uploadedAt: metadata.uploadedAt,
+          ...(metadata.uploadedBy ? { uploadedBy: metadata.uploadedBy } : {}),
           ...options.metadata,
         },
       })
@@ -176,7 +185,7 @@ export class UploadService {
   async uploadFromBase64(
     base64Content: string,
     filename: string,
-    env: any,
+    env: UploadEnv,
     options: {
       prefix?: string
       metadata?: Record<string, string>
@@ -253,7 +262,7 @@ export class UploadService {
   private log(
     _level: 'info' | 'error' | 'warn',
     _message: string,
-    _data?: any
+    _data?: Record<string, unknown>
   ) {
     // In production, this could send to a logging service
     // Logging disabled for now to avoid console pollution
@@ -262,7 +271,7 @@ export class UploadService {
   /**
    * Checks if a file exists in R2
    */
-  async fileExists(key: string, env: any): Promise<boolean> {
+  async fileExists(key: string, env: UploadEnv): Promise<boolean> {
     try {
       const file = await env.SCORES_BUCKET.head(key)
       return file !== null
@@ -274,7 +283,7 @@ export class UploadService {
   /**
    * Deletes a file from R2
    */
-  async deleteFile(key: string, env: any): Promise<boolean> {
+  async deleteFile(key: string, env: UploadEnv): Promise<boolean> {
     try {
       await env.SCORES_BUCKET.delete(key)
       this.log('info', `File deleted: ${key}`)

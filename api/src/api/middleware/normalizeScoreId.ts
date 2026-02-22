@@ -61,55 +61,58 @@ export const normalizeScoreIdBody = async (c: Context, next: Next) => {
 
         // Normalize entries within changes
         if (changes.entries && Array.isArray(changes.entries)) {
-          changes.entries = changes.entries.map((entry: any) => {
-            const normalizedEntry = { ...entry }
+          changes.entries = changes.entries.map(
+            (entry: Record<string, unknown>) => {
+              const normalizedEntry = { ...entry }
 
-            // Normalize pieces array in each entry
-            if (
-              normalizedEntry.pieces &&
-              Array.isArray(normalizedEntry.pieces)
-            ) {
-              normalizedEntry.pieces = normalizedEntry.pieces.map(
-                (piece: any) => {
-                  if (piece && typeof piece === 'object' && piece.title) {
-                    const scoreId = generateNormalizedScoreId(
-                      piece.title,
-                      piece.composer
-                    )
-                    return {
-                      ...piece,
-                      id: scoreId,
+              // Normalize pieces array in each entry
+              if (
+                normalizedEntry.pieces &&
+                Array.isArray(normalizedEntry.pieces)
+              ) {
+                normalizedEntry.pieces = normalizedEntry.pieces.map(
+                  (piece: Record<string, unknown>) => {
+                    if (piece && typeof piece === 'object' && piece.title) {
+                      const scoreId = generateNormalizedScoreId(
+                        piece.title as string,
+                        piece.composer as string | undefined
+                      )
+                      return {
+                        ...piece,
+                        id: scoreId,
+                      }
                     }
+                    return piece
                   }
-                  return piece
-                }
-              )
-            }
+                )
+              }
 
-            // Normalize scoreId field if present
-            if (
-              normalizedEntry.scoreId &&
-              typeof normalizedEntry.scoreId === 'string'
-            ) {
-              normalizedEntry.scoreId = normalizeExistingScoreId(
-                normalizedEntry.scoreId
-              )
-            }
+              // Normalize scoreId field if present
+              if (
+                normalizedEntry.scoreId &&
+                typeof normalizedEntry.scoreId === 'string'
+              ) {
+                normalizedEntry.scoreId = normalizeExistingScoreId(
+                  normalizedEntry.scoreId
+                )
+              }
 
-            // Handle scoreTitle/scoreComposer fields (legacy format)
-            if (
-              normalizedEntry.scoreTitle &&
-              typeof normalizedEntry.scoreTitle === 'string'
-            ) {
-              const scoreComposer = normalizedEntry.scoreComposer || ''
-              normalizedEntry.scoreId = generateNormalizedScoreId(
-                normalizedEntry.scoreTitle,
-                scoreComposer
-              )
-            }
+              // Handle scoreTitle/scoreComposer fields (legacy format)
+              if (
+                normalizedEntry.scoreTitle &&
+                typeof normalizedEntry.scoreTitle === 'string'
+              ) {
+                const scoreComposer =
+                  (normalizedEntry.scoreComposer as string) || ''
+                normalizedEntry.scoreId = generateNormalizedScoreId(
+                  normalizedEntry.scoreTitle as string,
+                  scoreComposer
+                )
+              }
 
-            return normalizedEntry
-          })
+              return normalizedEntry
+            }
+          )
         }
       }
 
@@ -127,19 +130,21 @@ export const normalizeScoreIdBody = async (c: Context, next: Next) => {
 
         // Normalize pieces array if present (for logbook entries)
         if (normalizedBody.pieces && Array.isArray(normalizedBody.pieces)) {
-          normalizedBody.pieces = normalizedBody.pieces.map((piece: any) => {
-            if (piece && typeof piece === 'object' && piece.title) {
-              const scoreId = generateNormalizedScoreId(
-                piece.title,
-                piece.composer
-              )
-              return {
-                ...piece,
-                id: scoreId,
+          normalizedBody.pieces = normalizedBody.pieces.map(
+            (piece: Record<string, unknown>) => {
+              if (piece && typeof piece === 'object' && piece.title) {
+                const scoreId = generateNormalizedScoreId(
+                  piece.title as string,
+                  piece.composer as string | undefined
+                )
+                return {
+                  ...piece,
+                  id: scoreId,
+                }
               }
+              return piece
             }
-            return piece
-          })
+          )
         }
 
         // Handle scoreTitle/scoreComposer fields (legacy format)

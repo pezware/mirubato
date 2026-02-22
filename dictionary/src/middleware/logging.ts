@@ -45,7 +45,7 @@ export const structuredLogger = () => {
 
       // Log request
       if (c.env.LOG_LEVEL === 'debug' || c.env.ENVIRONMENT !== 'production') {
-        console.log('Request:', JSON.stringify(logContext))
+        console.warn('Request:', JSON.stringify(logContext))
       }
 
       try {
@@ -63,7 +63,7 @@ export const structuredLogger = () => {
           c.env.LOG_LEVEL === 'debug' ||
           (c.res.status >= 400 && c.env.ENVIRONMENT !== 'production')
         ) {
-          console.log('Response:', JSON.stringify(logContext))
+          console.warn('Response:', JSON.stringify(logContext))
         }
       } catch (error) {
         // Add error data
@@ -71,7 +71,10 @@ export const structuredLogger = () => {
         logContext.status = 500
         logContext.error = {
           message: error instanceof Error ? error.message : 'Unknown error',
-          code: (error as any)?.code,
+          code:
+            error instanceof Error
+              ? (error as Error & { code?: string }).code
+              : undefined,
         }
 
         // Log error
@@ -101,7 +104,7 @@ export const accessLogger = () => {
       if (c.res.status >= 400) {
         console.error(log)
       } else if (c.env.LOG_LEVEL !== 'error') {
-        console.log(log)
+        console.warn(log)
       }
     }
   )
