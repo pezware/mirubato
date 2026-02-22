@@ -275,7 +275,7 @@ export async function validateWikipediaUrl(url: string): Promise<boolean> {
 
     const response = await fetch(apiUrl)
     const data = (await response.json()) as {
-      query: { pages: Record<string, any> }
+      query: { pages: Record<string, Record<string, unknown>> }
     }
 
     // Check if page exists (not a missing page)

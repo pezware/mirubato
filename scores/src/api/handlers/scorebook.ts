@@ -3,8 +3,8 @@ import { Context } from 'hono'
 /**
  * Handles scorebook routes by redirecting to the frontend application
  */
-export async function scorebookHandler(c: Context) {
-  const env = c.env as any
+export async function scorebookHandler(c: Context<{ Bindings: Env }>) {
+  const env = c.env
   const path = c.req.path
 
   // Use the frontend URL from environment configuration

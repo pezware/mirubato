@@ -78,7 +78,9 @@ featuredCollectionsHandler.get('/', async c => {
 featuredCollectionsHandler.post('/feature', async c => {
   try {
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Parameters<typeof getAuthUser>[0]
+    )
     if (!user || !isAdmin(user)) {
       throw new HTTPException(403, { message: 'Admin access required' })
     }
@@ -155,7 +157,9 @@ featuredCollectionsHandler.delete('/feature/:id', async c => {
     const collectionId = c.req.param('id')
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Parameters<typeof getAuthUser>[0]
+    )
     if (!user || !isAdmin(user)) {
       throw new HTTPException(403, { message: 'Admin access required' })
     }
@@ -199,7 +203,9 @@ featuredCollectionsHandler.delete('/feature/:id', async c => {
 featuredCollectionsHandler.put('/order', async c => {
   try {
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Parameters<typeof getAuthUser>[0]
+    )
     if (!user || !isAdmin(user)) {
       throw new HTTPException(403, { message: 'Admin access required' })
     }

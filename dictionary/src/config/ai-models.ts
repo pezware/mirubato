@@ -145,7 +145,11 @@ export const PROMPT_TEMPLATES = {
   definition: (
     term: string,
     type: string,
-    context?: any,
+    context?: {
+      instruments?: string[]
+      difficulty_level?: string
+      [key: string]: unknown
+    },
     lang: string = 'en'
   ) => `You are a professional music dictionary editor with deep knowledge of music theory, instruments, and musical terminology.
 
@@ -205,7 +209,7 @@ Provide your evaluation in JSON format:
 Be constructive and specific in your feedback.`,
 
   enhancement: (
-    entry: any,
+    entry: Record<string, unknown>,
     focusAreas?: string[]
   ) => `You are enhancing a music dictionary entry to make it more comprehensive and valuable for learners.
 
@@ -286,7 +290,7 @@ Example for term "Allegro":
 }`,
 
   qualityCheck: (
-    entry: any
+    entry: Record<string, unknown>
   ) => `You are a music education quality reviewer. Evaluate the following dictionary entry for overall quality.
 
 Entry:

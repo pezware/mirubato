@@ -33,19 +33,25 @@ vi.mock('../../services/syncWorkerBroadcaster', () => ({
 
 vi.mock('../middleware', () => ({
   authMiddleware: (c: unknown, next: () => Promise<void>) => {
-    const context = c as any
+    const context = c as { set: (key: string, value: unknown) => void }
     context.set('userId', 'test-user-123')
     return next()
   },
   validateBody:
     (_schema: unknown) => async (c: unknown, next: () => Promise<void>) => {
       try {
-        const body = await (c as any).req.json()
-        const context = c as any
+        const context = c as {
+          req: { json: () => Promise<unknown> }
+          set: (key: string, value: unknown) => void
+          json: (body: unknown, status?: number) => Response
+        }
+        const body = await context.req.json()
         context.set('validatedBody', body)
         return next()
       } catch {
-        return (c as any).json({ error: 'Invalid body' }, 400)
+        return (
+          c as { json: (body: unknown, status?: number) => Response }
+        ).json({ error: 'Invalid body' }, 400)
       }
     },
 }))
@@ -68,7 +74,7 @@ describe('Sync Handlers', () => {
     mockDbInstance.updateSyncMetadata.mockReset()
 
     // Clear app instance
-    app = null as any
+    app = null as unknown as Hono<{ Bindings: Env; Variables: Variables }>
   })
 
   describe('POST /api/sync/pull', () => {

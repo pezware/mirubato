@@ -53,21 +53,21 @@ export interface Env {
 export interface Variables {
   userId?: string
   userRoles?: string[]
-  user?: any
-  apiKey?: any
+  user?: Record<string, unknown>
+  apiKey?: Record<string, unknown>
   userEmail?: string
   userScopes?: string[]
   userTier?: string
-  jwtPayload?: any
+  jwtPayload?: Record<string, unknown>
   apiKeyId?: string
   apiKeyName?: string
   apiKeyScopes?: string[]
   serviceName?: string
   isAdmin?: boolean
   // Validation
-  validatedQuery?: any
-  validatedParams?: any
-  validatedBody?: any
+  validatedQuery?: Record<string, unknown>
+  validatedParams?: Record<string, unknown>
+  validatedBody?: Record<string, unknown>
   // Request tracking
   requestId?: string
 }
@@ -75,6 +75,6 @@ export interface Variables {
 export interface Context {
   env: Env
   request: Request
-  waitUntil: (promise: Promise<any>) => void
+  waitUntil: (promise: Promise<unknown>) => void
   passThroughOnException: () => void
 }

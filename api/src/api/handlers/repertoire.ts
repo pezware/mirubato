@@ -477,10 +477,12 @@ repertoireHandler.delete('/:scoreId/dissociate', async c => {
         ]
       } else {
         // Update existing piece data
-        entryData.pieces = entryData.pieces.map((piece: any) => ({
-          title: piece.title || pieceTitle,
-          composer: piece.composer || pieceComposer,
-        }))
+        entryData.pieces = entryData.pieces.map(
+          (piece: Record<string, unknown>) => ({
+            title: piece.title || pieceTitle,
+            composer: piece.composer || pieceComposer,
+          })
+        )
       }
 
       updateOperations.push(

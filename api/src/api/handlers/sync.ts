@@ -244,7 +244,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             ) {
               // Normalize scoreId for each piece, preserving existing canonical IDs
               transformedEntry.pieces = transformedEntry.pieces.map(
-                (piece: any) => {
+                (piece: Record<string, unknown>) => {
                   if (piece && typeof piece === 'object') {
                     let scoreId: string | undefined
 
@@ -255,8 +255,8 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
                     } else if (piece.title) {
                       // Only generate new ID if piece doesn't have one
                       scoreId = generateNormalizedScoreId(
-                        piece.title,
-                        piece.composer
+                        piece.title as string,
+                        piece.composer as string | undefined
                       )
                     }
 
@@ -883,9 +883,10 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       // Add first entry details for debugging
       firstEntry: changes.entries?.[0]
         ? {
-            id: (changes.entries[0] as any).id,
-            hasDeletedAt: 'deletedAt' in (changes.entries[0] as any),
-            keys: Object.keys(changes.entries[0] as any),
+            id: (changes.entries[0] as Record<string, unknown>).id,
+            hasDeletedAt:
+              'deletedAt' in (changes.entries[0] as Record<string, unknown>),
+            keys: Object.keys(changes.entries[0] as Record<string, unknown>),
           }
         : null,
     }

@@ -15,8 +15,8 @@ const mockAi = {
 
 describe('HybridAiExtractor', () => {
   let extractor: HybridAiExtractor
-  let mockCloudflareExtractor: any
-  let mockExtractMetadataFromPdf: any
+  let mockCloudflareExtractor: { extractFromImage: ReturnType<typeof vi.fn> }
+  let mockExtractMetadataFromPdf: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -32,12 +32,21 @@ describe('HybridAiExtractor', () => {
     )
 
     mockExtractMetadataFromPdf = vi.fn()
-    vi.mocked(aiMetadataModule).extractMetadataFromPdf =
-      mockExtractMetadataFromPdf
+    Object.defineProperty(
+      vi.mocked(aiMetadataModule),
+      'extractMetadataFromPdf',
+      {
+        value: mockExtractMetadataFromPdf,
+        writable: true,
+      }
+    )
 
-    extractor = new HybridAiExtractor(mockAi as any, {
-      geminiApiKey: 'test-api-key',
-    })
+    extractor = new HybridAiExtractor(
+      mockAi as unknown as ConstructorParameters<typeof HybridAiExtractor>[0],
+      {
+        geminiApiKey: 'test-api-key',
+      }
+    )
   })
 
   describe('extractFromImage', () => {
@@ -102,10 +111,13 @@ describe('HybridAiExtractor', () => {
       )
       mockExtractMetadataFromPdf.mockResolvedValue(geminiResult)
 
-      const hybridExtractor = new HybridAiExtractor(mockAi as any, {
-        geminiApiKey: 'test-api-key',
-        enableCrossValidation: true,
-      })
+      const hybridExtractor = new HybridAiExtractor(
+        mockAi as unknown as ConstructorParameters<typeof HybridAiExtractor>[0],
+        {
+          geminiApiKey: 'test-api-key',
+          enableCrossValidation: true,
+        }
+      )
 
       const request: ImageAnalysisRequest = {
         imageData: 'base64image',
@@ -152,10 +164,13 @@ describe('HybridAiExtractor', () => {
 
       mockExtractMetadataFromPdf.mockResolvedValue(geminiResult)
 
-      const hybridExtractor = new HybridAiExtractor(mockAi as any, {
-        geminiApiKey: 'test-api-key',
-        enableCrossValidation: true,
-      })
+      const hybridExtractor = new HybridAiExtractor(
+        mockAi as unknown as ConstructorParameters<typeof HybridAiExtractor>[0],
+        {
+          geminiApiKey: 'test-api-key',
+          enableCrossValidation: true,
+        }
+      )
 
       const request: ImageAnalysisRequest = {
         imageData: 'base64image',
@@ -228,7 +243,9 @@ describe('HybridAiExtractor', () => {
     })
 
     it('should handle PDF extraction without Gemini API key', async () => {
-      const extractorNoGemini = new HybridAiExtractor(mockAi as any)
+      const extractorNoGemini = new HybridAiExtractor(
+        mockAi as unknown as ConstructorParameters<typeof HybridAiExtractor>[0]
+      )
 
       const pdfBuffer = new ArrayBuffer(100)
       const result = await extractorNoGemini.extractFromPdf(pdfBuffer)
@@ -258,10 +275,13 @@ describe('HybridAiExtractor', () => {
       )
       mockExtractMetadataFromPdf.mockResolvedValue(geminiResult)
 
-      const hybridExtractor = new HybridAiExtractor(mockAi as any, {
-        geminiApiKey: 'test-api-key',
-        enableCrossValidation: true,
-      })
+      const hybridExtractor = new HybridAiExtractor(
+        mockAi as unknown as ConstructorParameters<typeof HybridAiExtractor>[0],
+        {
+          geminiApiKey: 'test-api-key',
+          enableCrossValidation: true,
+        }
+      )
 
       const request: ImageAnalysisRequest = {
         imageData: 'base64image',
@@ -295,10 +315,13 @@ describe('HybridAiExtractor', () => {
       )
       mockExtractMetadataFromPdf.mockResolvedValue(geminiResult)
 
-      const hybridExtractor = new HybridAiExtractor(mockAi as any, {
-        geminiApiKey: 'test-api-key',
-        enableCrossValidation: true,
-      })
+      const hybridExtractor = new HybridAiExtractor(
+        mockAi as unknown as ConstructorParameters<typeof HybridAiExtractor>[0],
+        {
+          geminiApiKey: 'test-api-key',
+          enableCrossValidation: true,
+        }
+      )
 
       const request: ImageAnalysisRequest = {
         imageData: 'base64image',
@@ -330,10 +353,13 @@ describe('HybridAiExtractor', () => {
       )
       mockExtractMetadataFromPdf.mockResolvedValue(geminiResult)
 
-      const hybridExtractor = new HybridAiExtractor(mockAi as any, {
-        geminiApiKey: 'test-api-key',
-        enableCrossValidation: true,
-      })
+      const hybridExtractor = new HybridAiExtractor(
+        mockAi as unknown as ConstructorParameters<typeof HybridAiExtractor>[0],
+        {
+          geminiApiKey: 'test-api-key',
+          enableCrossValidation: true,
+        }
+      )
 
       const request: ImageAnalysisRequest = {
         imageData: 'base64image',

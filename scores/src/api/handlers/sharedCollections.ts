@@ -15,7 +15,9 @@ const ShareCollectionSchema = z.object({
 sharedCollectionsHandler.get('/with-me', async c => {
   try {
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Parameters<typeof getAuthUser>[0]
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
@@ -72,7 +74,9 @@ sharedCollectionsHandler.post('/:id/share', async c => {
     const collectionId = c.req.param('id')
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Parameters<typeof getAuthUser>[0]
+    )
     if (!user || !isTeacher(user)) {
       throw new HTTPException(403, {
         message: 'Teacher or admin access required',
@@ -143,7 +147,9 @@ sharedCollectionsHandler.delete('/:id/share', async c => {
     }
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Parameters<typeof getAuthUser>[0]
+    )
     if (!user || !isTeacher(user)) {
       throw new HTTPException(403, {
         message: 'Teacher or admin access required',
@@ -194,7 +200,9 @@ sharedCollectionsHandler.delete('/:id/share', async c => {
 sharedCollectionsHandler.get('/by-me', async c => {
   try {
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Parameters<typeof getAuthUser>[0]
+    )
     if (!user || !isTeacher(user)) {
       throw new HTTPException(403, {
         message: 'Teacher or admin access required',

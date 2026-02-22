@@ -323,7 +323,7 @@ export class DatabaseHelpers {
         version: data.version || 1,
         deletedAt,
         deviceId: data.deviceId,
-        dataKeys: Object.keys(data.data as any),
+        dataKeys: Object.keys(data.data as Record<string, unknown>),
       })
       throw error
     }
@@ -349,7 +349,7 @@ export class DatabaseHelpers {
         .bind(deletedAt, userId, entityType, entityId)
         .run()
 
-      console.log(
+      console.warn(
         `[Database] Soft deleted ${entityType} ${entityId} for user ${userId}`
       )
     } catch (error) {

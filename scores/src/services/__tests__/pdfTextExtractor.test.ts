@@ -19,8 +19,14 @@ vi.mock('pdfjs-dist', () => {
 import * as pdfjs from 'pdfjs-dist'
 
 describe('pdfTextExtractor', () => {
-  let mockPdfDocument: any
-  let mockPage: any
+  let mockPdfDocument: {
+    numPages: number
+    getPage: ReturnType<typeof vi.fn>
+    getMetadata: ReturnType<typeof vi.fn>
+  }
+  let mockPage: {
+    getTextContent: ReturnType<typeof vi.fn>
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -58,7 +64,7 @@ describe('pdfTextExtractor', () => {
     // Setup getDocument mock
     vi.mocked(pdfjs.getDocument).mockReturnValue({
       promise: Promise.resolve(mockPdfDocument),
-    } as any)
+    } as unknown as ReturnType<typeof pdfjs.getDocument>)
   })
 
   afterEach(() => {
@@ -169,7 +175,7 @@ describe('pdfTextExtractor', () => {
     it('should handle PDF loading errors gracefully', async () => {
       vi.mocked(pdfjs.getDocument).mockReturnValue({
         promise: Promise.reject(new Error('Invalid PDF')),
-      } as any)
+      } as unknown as ReturnType<typeof pdfjs.getDocument>)
 
       const pdfData = new Uint8Array([1, 2, 3, 4])
 
@@ -270,7 +276,7 @@ describe('pdfTextExtractor', () => {
     it('should return empty string on error', async () => {
       vi.mocked(pdfjs.getDocument).mockReturnValue({
         promise: Promise.reject(new Error('PDF error')),
-      } as any)
+      } as unknown as ReturnType<typeof pdfjs.getDocument>)
 
       const pdfData = new Uint8Array([1, 2, 3, 4])
 

@@ -12,7 +12,11 @@ describe('CloudflareAiExtractor', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    extractor = new CloudflareAiExtractor(mockAi as any)
+    extractor = new CloudflareAiExtractor(
+      mockAi as unknown as ConstructorParameters<
+        typeof CloudflareAiExtractor
+      >[0]
+    )
   })
 
   afterEach(() => {
@@ -21,7 +25,7 @@ describe('CloudflareAiExtractor', () => {
     mockAi.run.mockReset()
 
     // Clear extractor instance
-    extractor = null as any
+    extractor = null as unknown as CloudflareAiExtractor
   })
 
   describe('extractFromImage', () => {
@@ -279,11 +283,16 @@ describe('CloudflareAiExtractor', () => {
 
   describe('constructor options', () => {
     it('should allow custom model configuration', async () => {
-      const customExtractor = new CloudflareAiExtractor(mockAi as any, {
-        model: '@cf/llava-hf/llava-1.5-7b-hf',
-        maxTokens: 1000,
-        temperature: 0.5,
-      })
+      const customExtractor = new CloudflareAiExtractor(
+        mockAi as unknown as ConstructorParameters<
+          typeof CloudflareAiExtractor
+        >[0],
+        {
+          model: '@cf/llava-hf/llava-1.5-7b-hf',
+          maxTokens: 1000,
+          temperature: 0.5,
+        }
+      )
 
       const mockResponse = {
         response: JSON.stringify({ title: 'Test' }),

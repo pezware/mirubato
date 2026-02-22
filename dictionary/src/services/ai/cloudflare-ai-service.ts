@@ -31,17 +31,15 @@ export class CloudflareAIService {
       
 IMPORTANT: Respond with valid JSON only. No markdown, no additional text, just the JSON object.`
 
-      const response = (await this.env.AI.run(
-        model as any,
-        {
-          prompt: structuredPrompt,
-          max_tokens: options.max_tokens || 500,
-          temperature: options.temperature || 0.3,
-          top_p: options.top_p || 0.9,
-          stream: options.stream || false,
-          // Note: Cloudflare AI doesn't support all OpenAI parameters yet
-        } as any
-      )) as any
+      // @ts-expect-error - CF AI model string not in type union
+      const response = (await this.env.AI.run(model, {
+        prompt: structuredPrompt,
+        max_tokens: options.max_tokens || 500,
+        temperature: options.temperature || 0.3,
+        top_p: options.top_p || 0.9,
+        stream: options.stream || false,
+        // Note: Cloudflare AI doesn't support all OpenAI parameters yet
+      })) as { response?: string; error?: string }
 
       const latency = Date.now() - startTime
 
@@ -102,12 +100,10 @@ IMPORTANT: Respond with valid JSON only. No markdown, no additional text, just t
     const startTime = Date.now()
 
     try {
-      const response = (await this.env.AI.run(
-        model as any,
-        {
-          text: text,
-        } as any
-      )) as any
+      // @ts-expect-error - CF AI model string not in type union
+      const response = (await this.env.AI.run(model, {
+        text: text,
+      })) as { data?: number[][] }
 
       if (!response || !response.data || !Array.isArray(response.data)) {
         throw new Error('Invalid embedding response format')
@@ -258,14 +254,18 @@ IMPORTANT: Respond with valid JSON only. No markdown, no additional text, just t
     try {
       const startTime = Date.now()
 
-      const response = (await this.env.AI.run(
-        '@cf/meta/llama-3.1-8b-instruct' as any,
-        {
-          prompt: 'Reply with "OK" in JSON format: {"status": "OK"}',
-          max_tokens: 20,
-          temperature: 0,
-        } as any
-      )) as any
+      const response = (await (
+        this.env.AI as {
+          run: (
+            model: string,
+            params: Record<string, unknown>
+          ) => Promise<unknown>
+        }
+      ).run('@cf/meta/llama-3.1-8b-instruct', {
+        prompt: 'Reply with "OK" in JSON format: {"status": "OK"}',
+        max_tokens: 20,
+        temperature: 0,
+      })) as { response?: string; error?: string }
 
       const latency = Date.now() - startTime
 

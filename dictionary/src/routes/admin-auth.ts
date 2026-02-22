@@ -74,10 +74,12 @@ adminAuthRoutes.post(
           email,
         })
       )
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating magic link:', error)
       throw new InternalError(
-        error.message || 'Failed to process authentication request'
+        error instanceof Error
+          ? error.message
+          : 'Failed to process authentication request'
       )
     }
   }
@@ -218,7 +220,7 @@ adminAuthRoutes.get('/verify', async c => {
       </body>
       </html>
     `)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Token verification failed:', error)
     return c.html(errorHtml, 400)
   }

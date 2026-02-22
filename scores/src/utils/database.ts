@@ -1,72 +1,82 @@
-import { Score, ScoreVersion, Collection } from '../types/score'
+import {
+  Score,
+  ScoreVersion,
+  Collection,
+  type StylePeriod,
+  type ScoreSource,
+  type ScoreFormat,
+} from '../types/score'
 
 /**
  * Database utility functions for common operations
  */
 
-export function parseScoreFromRow(row: any): Score {
+// D1 row type - all values come back as unknown from the database
+type D1Row = Record<string, unknown>
+
+export function parseScoreFromRow(row: D1Row): Score {
   return {
-    id: row.id,
-    title: row.title,
-    composer: row.composer,
-    opus: row.opus || undefined,
-    movement: row.movement || undefined,
-    instrument: row.instrument,
-    difficulty: row.difficulty,
-    difficultyLevel: row.difficulty_level || undefined,
-    gradeLevel: row.grade_level || undefined,
-    durationSeconds: row.duration_seconds || undefined,
-    timeSignature: row.time_signature || undefined,
-    keySignature: row.key_signature || undefined,
-    tempoMarking: row.tempo_marking || undefined,
-    suggestedTempo: row.suggested_tempo || undefined,
-    stylePeriod: row.style_period || undefined,
-    source: row.source,
-    imslpUrl: row.imslp_url || undefined,
-    tags: row.tags ? JSON.parse(row.tags) : [],
-    metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
+    id: row.id as string,
+    title: row.title as string,
+    composer: row.composer as string,
+    opus: (row.opus as string) || undefined,
+    movement: (row.movement as string) || undefined,
+    instrument: row.instrument as Score['instrument'],
+    difficulty: row.difficulty as Score['difficulty'],
+    difficultyLevel: (row.difficulty_level as number) || undefined,
+    gradeLevel: (row.grade_level as string) || undefined,
+    durationSeconds: (row.duration_seconds as number) || undefined,
+    timeSignature: (row.time_signature as string) || undefined,
+    keySignature: (row.key_signature as string) || undefined,
+    tempoMarking: (row.tempo_marking as string) || undefined,
+    suggestedTempo: (row.suggested_tempo as number) || undefined,
+    stylePeriod: (row.style_period as StylePeriod) || undefined,
+    source: row.source as ScoreSource,
+    imslpUrl: (row.imslp_url as string) || undefined,
+    tags: row.tags ? JSON.parse(row.tags as string) : [],
+    metadata: row.metadata ? JSON.parse(row.metadata as string) : undefined,
+    createdAt: new Date(row.created_at as string),
+    updatedAt: new Date(row.updated_at as string),
   }
 }
 
-export function parseVersionFromRow(row: any): ScoreVersion {
+export function parseVersionFromRow(row: D1Row): ScoreVersion {
   return {
-    id: row.id,
-    scoreId: row.score_id,
-    format: row.format,
-    r2Key: row.r2_key,
-    fileSizeBytes: row.file_size_bytes || undefined,
-    pageCount: row.page_count || undefined,
-    resolution: row.resolution || undefined,
-    processingStatus: row.processing_status,
-    processingError: row.processing_error || undefined,
-    createdAt: new Date(row.created_at),
+    id: row.id as string,
+    scoreId: row.score_id as string,
+    format: row.format as ScoreFormat,
+    r2Key: row.r2_key as string,
+    fileSizeBytes: (row.file_size_bytes as number) || undefined,
+    pageCount: (row.page_count as number) || undefined,
+    resolution: (row.resolution as string) || undefined,
+    processingStatus: row.processing_status as ScoreVersion['processingStatus'],
+    processingError: (row.processing_error as string) || undefined,
+    createdAt: new Date(row.created_at as string),
   }
 }
 
-export function parseCollectionFromRow(row: any): Collection {
+export function parseCollectionFromRow(row: D1Row): Collection {
   return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description || undefined,
-    instrument: row.instrument || undefined,
-    difficulty: row.difficulty || undefined,
-    scoreIds: row.score_ids ? JSON.parse(row.score_ids) : [],
-    displayOrder: row.display_order,
+    id: row.id as string,
+    name: row.name as string,
+    slug: row.slug as string,
+    description: (row.description as string) || undefined,
+    instrument: (row.instrument as Collection['instrument']) || undefined,
+    difficulty: (row.difficulty as Collection['difficulty']) || undefined,
+    scoreIds: row.score_ids ? JSON.parse(row.score_ids as string) : [],
+    displayOrder: row.display_order as number,
     isFeatured: Boolean(row.is_featured),
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
+    createdAt: new Date(row.created_at as string),
+    updatedAt: new Date(row.updated_at as string),
   }
 }
 
 export function buildScoreUpdateQuery(updates: Partial<Score>): {
   query: string
-  params: any[]
+  params: unknown[]
 } {
   const fields: string[] = []
-  const params: any[] = []
+  const params: unknown[] = []
 
   const fieldMap: Record<string, string> = {
     title: 'title',

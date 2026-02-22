@@ -43,7 +43,7 @@ export class DictionaryDatabase {
       AND overall_score >= ?
     `
 
-    const params: any[] = [normalizedTerm, 60]
+    const params: unknown[] = [normalizedTerm, 60]
 
     if (!options?.searchAllLanguages) {
       query += ` AND lang = ?`
@@ -167,7 +167,7 @@ export class DictionaryDatabase {
 
     // Build WHERE conditions
     const conditions: string[] = []
-    const params: any[] = []
+    const params: unknown[] = []
 
     // Only add search condition if query is not empty
     if (query.q && query.q.trim() !== '') {
@@ -220,7 +220,7 @@ export class DictionaryDatabase {
       conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
     // Debug logging
-    console.log('Search query:', {
+    console.warn('Search query:', {
       query: query.q,
       type: query.type,
       lang: query.lang,
@@ -242,7 +242,7 @@ export class DictionaryDatabase {
 
     // Get results with sorting
     let orderBy = 'ORDER BY '
-    const sortParams: any[] = []
+    const sortParams: unknown[] = []
 
     // Always prioritize language match first when doing cross-language search
     if (query.searchAllLanguages) {
@@ -291,7 +291,7 @@ export class DictionaryDatabase {
     // Combine all parameters in the correct order
     const allParams = [...params, ...sortParams, limit, offset]
 
-    console.log(
+    console.warn(
       'SQL query:',
       `
         SELECT * FROM dictionary_entries 
@@ -300,7 +300,7 @@ export class DictionaryDatabase {
         LIMIT ? OFFSET ?
       `
     )
-    console.log('All params:', allParams)
+    console.warn('All params:', allParams)
 
     const results = await this.db
       .prepare(
@@ -782,7 +782,7 @@ export class DictionaryDatabase {
     limit?: number
   }): Promise<DictionaryEntry[]> {
     let query = 'SELECT * FROM dictionary_entries WHERE 1=1'
-    const params: any[] = []
+    const params: unknown[] = []
 
     if (options.minQuality !== undefined) {
       query += ' AND json_extract(quality_score, "$.overall") >= ?'
@@ -988,7 +988,7 @@ export class DictionaryDatabase {
 
     // Build where clause for date filtering
     const whereConditions: string[] = []
-    const params: any[] = []
+    const params: unknown[] = []
 
     if (startDate) {
       whereConditions.push('created_at >= ?')
@@ -1098,7 +1098,7 @@ export class DictionaryDatabase {
 
     // Build where clause for date filtering
     const whereConditions: string[] = []
-    const params: any[] = []
+    const params: unknown[] = []
 
     if (startDate) {
       whereConditions.push('created_at >= ?')
@@ -1347,7 +1347,7 @@ export class DictionaryDatabase {
       term: row.term as string,
       languages: JSON.parse(row.languages as string),
       priority: row.priority as number,
-      status: row.status as any,
+      status: row.status as SeedQueueEntry['status'],
       attempts: row.attempts as number,
       last_attempt_at: row.last_attempt_at as string | undefined,
       completed_at: row.completed_at as string | undefined,
@@ -1440,7 +1440,7 @@ export class DictionaryDatabase {
    */
   async clearSeedQueueByStatus(status?: string): Promise<number> {
     let query = 'DELETE FROM seed_queue'
-    const params: any[] = []
+    const params: unknown[] = []
 
     if (status && status !== 'all') {
       query += ' WHERE status = ?'
@@ -1502,7 +1502,7 @@ export class DictionaryDatabase {
    */
   async getManualReviewQueueCount(status?: string): Promise<number> {
     let query = 'SELECT COUNT(*) as count FROM manual_review_queue'
-    const params: any[] = []
+    const params: unknown[] = []
 
     if (status) {
       query += ' WHERE status = ?'
@@ -1528,7 +1528,7 @@ export class DictionaryDatabase {
     items: Array<{
       id: string
       term: string
-      generated_content: any
+      generated_content: unknown
       quality_score: number
       reason: string
       status: string
@@ -1579,7 +1579,7 @@ export class DictionaryDatabase {
     reason: string
     status: string
     created_at: string
-    generated_content: any
+    generated_content: unknown
   } | null> {
     const item = await this.db
       .prepare(`SELECT * FROM manual_review_queue WHERE id = ?`)

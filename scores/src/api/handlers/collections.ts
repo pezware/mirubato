@@ -16,7 +16,7 @@ collectionsHandler.get('/', async c => {
 
     let query = 'SELECT * FROM collections'
     const conditions: string[] = []
-    const params: any[] = []
+    const params: string[] = []
 
     if (instrument) {
       conditions.push('(instrument = ? OR instrument IS NULL)')
@@ -42,12 +42,12 @@ collectionsHandler.get('/', async c => {
       .bind(...params)
       .all()
 
-    const collections = results.map((row: any) => ({
+    const collections = results.map(row => ({
       ...row,
-      scoreIds: JSON.parse(row.score_ids),
+      scoreIds: JSON.parse(row.score_ids as string),
       isFeatured: Boolean(row.is_featured),
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
     }))
 
     const response: ApiResponse<Collection[]> = {
@@ -89,13 +89,13 @@ collectionsHandler.get('/:slug', async c => {
         .bind(...scoreIds)
         .all()
 
-      scores = results.map((row: any) => ({
+      scores = results.map(row => ({
         ...row,
-        tags: row.tags ? JSON.parse(row.tags) : [],
-        metadata: row.metadata ? JSON.parse(row.metadata) : {},
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-      }))
+        tags: row.tags ? JSON.parse(row.tags as string) : [],
+        metadata: row.metadata ? JSON.parse(row.metadata as string) : {},
+        createdAt: new Date(row.created_at as string),
+        updatedAt: new Date(row.updated_at as string),
+      })) as Score[]
     }
 
     const formattedCollection = {
@@ -239,7 +239,7 @@ collectionsHandler.put('/:id', async c => {
 
     // Build update query
     const updates: string[] = []
-    const params: any[] = []
+    const params: unknown[] = []
 
     if (body.name !== undefined) {
       updates.push('name = ?')

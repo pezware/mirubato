@@ -7,7 +7,10 @@ import {
   ImportResponse,
 } from '../../types/api'
 import { Instrument } from '../../types/score'
-import { BrowserRenderingService } from '../../services/browser-rendering'
+import {
+  BrowserRenderingService,
+  type BrowserRenderingEnv,
+} from '../../services/browser-rendering'
 
 export const enhancedImportHandler = new Hono<{ Bindings: Env }>()
 
@@ -106,7 +109,9 @@ enhancedImportHandler.post('/pdf', async c => {
     } else {
       // Fallback: Generate preview synchronously (first page only)
       try {
-        const browserService = new BrowserRenderingService(c.env as any)
+        const browserService = new BrowserRenderingService(
+          c.env as unknown as BrowserRenderingEnv
+        )
         const pdfUrl = `https://scores.mirubato.com/files/${r2Key}`
         const preview = await browserService.pdfToImage(pdfUrl, 1)
 
@@ -173,8 +178,11 @@ enhancedImportHandler.post('/imslp', async c => {
     }
 
     // Use Browser Rendering to scrape IMSLP
-    const browserService = new BrowserRenderingService(c.env as any)
-    let metadata: any = {}
+    const browserService = new BrowserRenderingService(
+      c.env as unknown as BrowserRenderingEnv
+    )
+    let metadata: Awaited<ReturnType<BrowserRenderingService['scrapeIMSLP']>> =
+      {}
 
     try {
       metadata = await browserService.scrapeIMSLP(validatedData.url)
@@ -221,7 +229,7 @@ enhancedImportHandler.post('/imslp', async c => {
     if (
       c.env.PDF_QUEUE &&
       validatedData.autoProcess &&
-      metadata.pdfLinks?.length > 0
+      (metadata.pdfLinks?.length ?? 0) > 0
     ) {
       await c.env.PDF_QUEUE.send({
         scoreId,
