@@ -74,21 +74,24 @@ describe('sanitizeForD1 in middleware context', () => {
       },
     }
 
-    const sanitized = sanitizeForD1(syncData) as any
+    const sanitized = sanitizeForD1(syncData) as Record<string, unknown>
 
     // Check that all undefined values are now null
-    const entry = sanitized.changes.entries[0]
+    const changes = sanitized.changes as Record<string, unknown>
+    const entries = changes.entries as Array<Record<string, unknown>>
+    const entry = entries[0]
+    const pieces = entry.pieces as Array<Record<string, unknown>>
     expect(entry.notes).toBe(null)
     expect(entry.mood).toBe(null)
     expect(entry.metadata).toBe(null)
-    expect(entry.pieces[0].composer).toBe(null)
-    expect(entry.pieces[0].measures).toBe(null)
-    expect(entry.pieces[0].tempo).toBe(null)
+    expect(pieces[0].composer).toBe(null)
+    expect(pieces[0].measures).toBe(null)
+    expect(pieces[0].tempo).toBe(null)
 
     // But other values are preserved
     expect(entry.id).toBe('entry_1750717972797_0suwq20o8')
     expect(entry.type).toBe('PRACTICE')
-    expect(entry.pieces[0].title).toBe('Russian Folk Song')
+    expect(pieces[0].title).toBe('Russian Folk Song')
   })
 
   it('should demonstrate why API-side sanitization is needed', () => {
@@ -109,12 +112,17 @@ describe('sanitizeForD1 in middleware context', () => {
     }
 
     // After sanitization in the middleware
-    const sanitized = sanitizeForD1(storedData) as any
+    const sanitized = sanitizeForD1(storedData) as Record<string, unknown>
 
     // All undefined values should be null for D1 compatibility
-    expect(sanitized.entries[0].notes).toBe(null)
-    expect(sanitized.entries[0].mood).toBe(null)
-    expect(sanitized.entries[0].metadata.accuracy).toBe(null)
-    expect(sanitized.entries[0].metadata.source).toBe('manual')
+    const sanitizedEntries = sanitized.entries as Array<Record<string, unknown>>
+    expect(sanitizedEntries[0].notes).toBe(null)
+    expect(sanitizedEntries[0].mood).toBe(null)
+    const sanitizedMetadata = sanitizedEntries[0].metadata as Record<
+      string,
+      unknown
+    >
+    expect(sanitizedMetadata.accuracy).toBe(null)
+    expect(sanitizedMetadata.source).toBe('manual')
   })
 })

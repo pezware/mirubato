@@ -7,8 +7,24 @@
  * - Score rendering
  */
 
-interface BrowserRenderingEnv extends Env {
-  BROWSER: any // Browser Rendering binding
+interface PageLink {
+  href?: string
+  text?: string
+}
+
+// Browser Rendering API binding methods
+interface BrowserBinding {
+  fetch: typeof fetch
+  screenshot: (options: Record<string, unknown>) => Promise<ArrayBuffer>
+  markdown: (options: { url: string }) => Promise<string>
+  links: (options: {
+    url: string
+    options?: { selector: string }
+  }) => Promise<PageLink[]>
+}
+
+export interface BrowserRenderingEnv extends Env {
+  BROWSER: BrowserBinding
   CF_ACCOUNT_ID: string
   CF_API_TOKEN: string
   SCORES_URL?: string
@@ -91,7 +107,7 @@ export class BrowserRenderingService {
 
       // Find PDF links
       const pdfLinks = links.filter(
-        (link: any) =>
+        (link: PageLink) =>
           link.href?.includes('.pdf') || link.href?.includes('/api.php?')
       )
 
@@ -132,7 +148,7 @@ export class BrowserRenderingService {
   /**
    * Get all links from a page
    */
-  private async getPageLinks(url: string): Promise<any[]> {
+  private async getPageLinks(url: string): Promise<PageLink[]> {
     if (this.env.BROWSER) {
       const result = await this.env.BROWSER.links({
         url,
@@ -321,7 +337,7 @@ interface IMSLPMetadata {
   year?: number
   movements?: string
   difficulty?: string
-  pdfLinks?: any[]
+  pdfLinks?: PageLink[]
 }
 
 interface PreviewResult {

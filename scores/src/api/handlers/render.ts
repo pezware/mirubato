@@ -91,7 +91,7 @@ renderHandler.get('/scores/:id/download/pdf', async c => {
     // Get score from database
     const score = await c.env.DB.prepare('SELECT * FROM scores WHERE id = ?')
       .bind(scoreId)
-      .first<any>()
+      .first<Record<string, unknown>>()
 
     if (!score) {
       throw new HTTPException(404, { message: 'Score not found' })
@@ -105,7 +105,9 @@ renderHandler.get('/scores/:id/download/pdf', async c => {
         const authHeader = c.req.header('Authorization')
         if (authHeader?.startsWith('Bearer ')) {
           const { getUserIdFromAuth } = await import('../../utils/auth')
-          userId = await getUserIdFromAuth(c as any)
+          userId = await getUserIdFromAuth(
+            c as unknown as Parameters<typeof getUserIdFromAuth>[0]
+          )
         }
       } catch {
         // Continue without auth
@@ -117,8 +119,8 @@ renderHandler.get('/scores/:id/download/pdf', async c => {
     }
 
     // If this is an imported score with pdf_url, serve it from R2
-    if (score.pdf_url && score.pdf_url.startsWith('/files/')) {
-      const r2Key = score.pdf_url.replace('/files/', '')
+    if (score.pdf_url && (score.pdf_url as string).startsWith('/files/')) {
+      const r2Key = (score.pdf_url as string).replace('/files/', '')
       const object = await c.env.SCORES_BUCKET.get(r2Key)
 
       if (!object) {
@@ -213,7 +215,7 @@ renderHandler.get('/scores/:id/download/:format', async c => {
     headers.set('Content-Type', getContentType(format))
     headers.set(
       'Content-Disposition',
-      `attachment; filename="${(score as any).title.replace(/[^a-z0-9]/gi, '_')}.${format}"`
+      `attachment; filename="${String(score.title).replace(/[^a-z0-9]/gi, '_')}.${format}"`
     )
 
     if (version.file_size_bytes) {

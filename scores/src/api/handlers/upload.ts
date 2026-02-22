@@ -1,5 +1,6 @@
 import { Context } from 'hono'
 import { UploadService } from '../../services/uploadService'
+import type { Variables } from '../middleware'
 
 const uploadService = new UploadService({
   maxFileSize: 50 * 1024 * 1024, // 50MB for sheet music PDFs
@@ -10,9 +11,11 @@ const uploadService = new UploadService({
 /**
  * Handles multipart form upload of PDF scores
  */
-export async function uploadScore(c: Context) {
+export async function uploadScore(
+  c: Context<{ Bindings: Env; Variables: Variables }>
+) {
   try {
-    const env = c.env as any
+    const env = c.env
 
     // Parse multipart form data
     const formData = await c.req.formData()
@@ -144,8 +147,8 @@ export async function uploadScore(c: Context) {
 /**
  * Development endpoint for uploading files via base64
  */
-export async function uploadBase64(c: Context) {
-  const env = c.env as any
+export async function uploadBase64(c: Context<{ Bindings: Env }>) {
+  const env = c.env
 
   // Only allow in local development
   if (env.ENVIRONMENT !== 'local') {
@@ -200,8 +203,8 @@ export async function uploadBase64(c: Context) {
 /**
  * Check if a file exists
  */
-export async function checkFile(c: Context) {
-  const env = c.env as any
+export async function checkFile(c: Context<{ Bindings: Env }>) {
+  const env = c.env
   const key = c.req.param('key')
 
   if (!key) {
@@ -226,8 +229,10 @@ export async function checkFile(c: Context) {
 /**
  * Delete a file (authenticated users only)
  */
-export async function deleteFile(c: Context) {
-  const env = c.env as any
+export async function deleteFile(
+  c: Context<{ Bindings: Env; Variables: Variables }>
+) {
+  const env = c.env
   const key = c.req.param('key')
   const userId = c.get('userId')
 

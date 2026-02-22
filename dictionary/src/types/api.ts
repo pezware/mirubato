@@ -148,7 +148,7 @@ export interface ServiceHealth {
   latency?: number
   message?: string
   error?: string
-  [key: string]: any // Additional service-specific data
+  [key: string]: unknown // Additional service-specific data
 }
 
 export interface AIServiceHealth {
@@ -194,10 +194,10 @@ export interface MetricsResponse {
 
 // Admin endpoint types
 export interface AdminUpdateRequest {
-  definition?: any
-  references?: any
-  metadata?: any
-  quality_score?: any
+  definition?: Record<string, unknown>
+  references?: Record<string, unknown>
+  metadata?: Record<string, unknown>
+  quality_score?: Record<string, unknown>
   force_update?: boolean
 }
 

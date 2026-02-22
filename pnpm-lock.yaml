@@ -65,7 +65,7 @@ importers:
     dependencies:
       '@hono/zod-validator':
         specifier: ^0.2.0
-        version: 0.2.2(hono@4.11.7)(zod@3.25.76)
+        version: 0.2.2(hono@4.11.10)(zod@3.25.76)
       '@mirubato/utils':
         specifier: workspace:*
         version: link:../packages/utils
@@ -76,8 +76,8 @@ importers:
         specifier: ^8.1.0
         version: 8.1.5
       hono:
-        specifier: ^4.11.7
-        version: 4.11.7
+        specifier: ^4.11.10
+        version: 4.11.10
       jose:
         specifier: ^5.2.0
         version: 5.10.0
@@ -144,13 +144,13 @@ importers:
     dependencies:
       '@hono/swagger-ui':
         specifier: ^0.5.2
-        version: 0.5.2(hono@4.11.7)
+        version: 0.5.2(hono@4.11.10)
       '@hono/zod-openapi':
         specifier: ^0.19.10
-        version: 0.19.10(hono@4.11.7)(zod@3.25.76)
+        version: 0.19.10(hono@4.11.10)(zod@3.25.76)
       '@hono/zod-validator':
         specifier: ^0.7.2
-        version: 0.7.2(hono@4.11.7)(zod@3.25.76)
+        version: 0.7.2(hono@4.11.10)(zod@3.25.76)
       '@mirubato/workers-utils':
         specifier: workspace:*
         version: link:../packages/workers-utils
@@ -164,8 +164,8 @@ importers:
         specifier: ^0.44.3
         version: 0.44.3(@cloudflare/workers-types@4.20250726.0)
       hono:
-        specifier: ^4.11.7
-        version: 4.11.7
+        specifier: ^4.11.10
+        version: 4.11.10
       jose:
         specifier: ^5.10.0
         version: 5.10.0
@@ -545,8 +545,8 @@ importers:
         specifier: ^16.0.0
         version: 16.3.0
       hono:
-        specifier: ^4.11.7
-        version: 4.11.7
+        specifier: ^4.11.10
+        version: 4.11.10
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
@@ -575,8 +575,8 @@ importers:
         specifier: ^1.0.20
         version: 1.0.20
       hono:
-        specifier: ^4.11.7
-        version: 4.11.7
+        specifier: ^4.11.10
+        version: 4.11.10
       jose:
         specifier: ^5.2.0
         version: 5.10.0
@@ -5692,10 +5692,10 @@ packages:
       }
     engines: { node: '>= 0.4' }
 
-  hono@4.11.7:
+  hono@4.11.10:
     resolution:
       {
-        integrity: sha512-l7qMiNee7t82bH3SeyUCt9UF15EVmaBvsppY2zQtrbIhl/yzBTny+YUxsVjSjQ6gaqaeVtZmGocom8TzBlA4Yw==,
+        integrity: sha512-kyWP5PAiMooEvGrA9jcD3IXF7ATu8+o7B3KCbPXid5se52NPqnOpM/r9qeW2heMnOekF4kqR1fXJqCYeCLKrZg==,
       }
     engines: { node: '>=16.9.0' }
 
@@ -9053,26 +9053,26 @@ snapshots:
       react-dom: 19.2.4(react@19.2.4)
       use-sync-external-store: 1.5.0(react@19.2.4)
 
-  '@hono/swagger-ui@0.5.2(hono@4.11.7)':
+  '@hono/swagger-ui@0.5.2(hono@4.11.10)':
     dependencies:
-      hono: 4.11.7
+      hono: 4.11.10
 
-  '@hono/zod-openapi@0.19.10(hono@4.11.7)(zod@3.25.76)':
+  '@hono/zod-openapi@0.19.10(hono@4.11.10)(zod@3.25.76)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.76)
-      '@hono/zod-validator': 0.7.2(hono@4.11.7)(zod@3.25.76)
-      hono: 4.11.7
+      '@hono/zod-validator': 0.7.2(hono@4.11.10)(zod@3.25.76)
+      hono: 4.11.10
       openapi3-ts: 4.5.0
       zod: 3.25.76
 
-  '@hono/zod-validator@0.2.2(hono@4.11.7)(zod@3.25.76)':
+  '@hono/zod-validator@0.2.2(hono@4.11.10)(zod@3.25.76)':
     dependencies:
-      hono: 4.11.7
+      hono: 4.11.10
       zod: 3.25.76
 
-  '@hono/zod-validator@0.7.2(hono@4.11.7)(zod@3.25.76)':
+  '@hono/zod-validator@0.7.2(hono@4.11.10)(zod@3.25.76)':
     dependencies:
-      hono: 4.11.7
+      hono: 4.11.10
       zod: 3.25.76
 
   '@humanfs/core@0.19.1': {}
@@ -10969,7 +10969,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.11.7: {}
+  hono@4.11.10: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:

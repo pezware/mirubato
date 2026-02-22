@@ -6,7 +6,11 @@
  */
 
 import type { Env } from '../types/env'
-import type { DictionaryEntry, SeedQueueEntry } from '../types/dictionary'
+import type {
+  DictionaryEntry,
+  SeedQueueEntry,
+  SupportedLanguage,
+} from '../types/dictionary'
 import { DictionaryDatabase } from './storage/dictionary-database'
 import { DictionaryGenerator } from './ai/dictionary-generator'
 import { TokenBudgetManager } from './token-budget-manager'
@@ -77,13 +81,13 @@ export class SeedProcessor {
     try {
       // Check if seeding is enabled
       if (this.env.SEED_ENABLED !== 'true') {
-        console.log('Seed processing is disabled')
+        console.warn('Seed processing is disabled')
         return result
       }
 
       // Check token budget
       if (!(await this.budgetManager.canProcessTerms())) {
-        console.log('Daily token budget exhausted')
+        console.warn('Daily token budget exhausted')
         result.errors.push('Daily token budget exhausted')
         return result
       }
@@ -93,7 +97,7 @@ export class SeedProcessor {
         this.BATCH_SIZE
       )
       if (safeBatchSize === 0) {
-        console.log('Insufficient token budget for processing')
+        console.warn('Insufficient token budget for processing')
         result.errors.push('Insufficient token budget')
         return result
       }
@@ -101,11 +105,11 @@ export class SeedProcessor {
       // Get high-priority terms from queue
       const queueItems = await this.getNextHighPriorityTerms(safeBatchSize)
       if (queueItems.length === 0) {
-        console.log('No pending high-priority terms in queue')
+        console.warn('No pending high-priority terms in queue')
         return result
       }
 
-      console.log(
+      console.warn(
         `Processing ${queueItems.length} terms with priority >= ${this.PRIORITY_THRESHOLD}`
       )
 
@@ -129,7 +133,7 @@ export class SeedProcessor {
                 existing &&
                 existing.quality_score.overall >= this.MIN_QUALITY_SCORE
               ) {
-                console.log(
+                console.warn(
                   `Term "${item.term}" in ${lang} already exists with sufficient quality`
                 )
                 processedLanguages.push(lang)
@@ -137,7 +141,7 @@ export class SeedProcessor {
               }
 
               // Generate high-quality entry
-              console.log(`Generating "${item.term}" in ${lang}...`)
+              console.warn(`Generating "${item.term}" in ${lang}...`)
               const startTokens = await this.budgetManager.getTokensUsedToday()
 
               const entry = await this.generateHighQualityEntry(item.term, lang)
@@ -161,7 +165,7 @@ export class SeedProcessor {
                   reason: `Quality score ${entry.quality_score.overall} below threshold ${this.MIN_QUALITY_SCORE}`,
                 })
 
-                console.log(
+                console.warn(
                   `Term "${item.term}" in ${lang} sent to manual review (score: ${entry.quality_score.overall})`
                 )
                 languageScores.push(entry.quality_score.overall)
@@ -182,7 +186,7 @@ export class SeedProcessor {
                 processedLanguages.push(lang)
                 languageScores.push(entry.quality_score.overall)
 
-                console.log(
+                console.warn(
                   `Successfully generated "${item.term}" in ${lang} with quality score ${entry.quality_score.overall}`
                 )
               } catch (saveError: unknown) {
@@ -191,7 +195,7 @@ export class SeedProcessor {
                   saveError instanceof Error &&
                   saveError.message?.includes('UNIQUE constraint failed')
                 ) {
-                  console.log(
+                  console.warn(
                     `Entry for "${item.term}" in ${lang} already exists (created elsewhere), skipping`
                   )
                   // Still count as processed since the entry exists
@@ -248,7 +252,7 @@ export class SeedProcessor {
           // Check if we're approaching token limit
           const usagePercentage = await this.budgetManager.getUsagePercentage()
           if (usagePercentage >= 90) {
-            console.log(
+            console.warn(
               `Token usage at ${usagePercentage}%, stopping processing`
             )
             break
@@ -274,7 +278,7 @@ export class SeedProcessor {
             )
           : 0
 
-      console.log(`Seed processing complete:
+      console.warn(`Seed processing complete:
         - Processed: ${result.processed}
         - Succeeded: ${result.succeeded}
         - Failed: ${result.failed}
@@ -334,7 +338,7 @@ export class SeedProcessor {
       const entry = await this.generator.generateEntry({
         term,
         type: 'general', // Will be refined by AI
-        lang: lang as any,
+        lang: lang as SupportedLanguage,
         context: {
           requested_by: 'seed_processor',
           generation_reason: 'auto_seed',

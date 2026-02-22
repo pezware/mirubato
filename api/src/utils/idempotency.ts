@@ -39,7 +39,7 @@ export class IdempotencyManager {
 
       // Check if same request
       if (existing.request_hash === requestHash) {
-        console.log(`[Idempotency] Returning cached response for key: ${key}`)
+        console.warn(`[Idempotency] Returning cached response for key: ${key}`)
         return {
           exists: true,
           response: JSON.parse(existing.response),

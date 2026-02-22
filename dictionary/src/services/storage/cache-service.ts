@@ -90,7 +90,10 @@ export class CacheService {
     filters: Record<string, unknown>
   ): Promise<{ results: DictionaryEntry[]; total: number } | null> {
     const key = this.getSearchKey(query, filters)
-    const cached = (await this.kv.get(key, 'json')) as any
+    const cached = (await this.kv.get(key, 'json')) as {
+      results: DictionaryEntry[]
+      total: number
+    } | null
 
     if (cached) {
       return {
@@ -141,7 +144,7 @@ export class CacheService {
   /**
    * Cache export data
    */
-  async cacheExport(exportId: string, data: any): Promise<void> {
+  async cacheExport(exportId: string, data: unknown): Promise<void> {
     const key = this.getExportKey(exportId)
     await this.kv.put(key, JSON.stringify(data), {
       expirationTtl: 3600 * 24, // 24 hours for exports
@@ -151,7 +154,7 @@ export class CacheService {
   /**
    * Get cached export
    */
-  async getCachedExport(exportId: string): Promise<any | null> {
+  async getCachedExport(exportId: string): Promise<unknown> {
     const key = this.getExportKey(exportId)
     return await this.kv.get(key, 'json')
   }

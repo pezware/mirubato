@@ -10,7 +10,7 @@ interface ProcessPdfMessage {
     | 'download-imslp-pdf'
     | 'analyze-imslp'
     | 'import-imslp'
-  data?: any
+  data?: Record<string, unknown>
 }
 
 // Dedicated message for thumbnail-only generation (more efficient than full reprocessing)
@@ -47,7 +47,7 @@ interface Env {
   CACHE: KVNamespace
 
   // Optional enhanced features (from wrangler-enhanced.toml)
-  BROWSER?: any // Browser Rendering API
+  BROWSER?: { fetch: typeof fetch } // Browser Rendering API (BrowserWorker)
   AI?: Ai // Workers AI binding
   GEMINI_API_KEY?: string // Vertex AI/Gemini API key
 
@@ -55,7 +55,7 @@ interface Env {
   PDF_QUEUE?: Queue<QueueMessage> // Queue producer for PDF processing
 
   // Rate limiting
-  RATE_LIMITER?: any // Rate limiting API
+  RATE_LIMITER?: unknown // Rate limiting API
 
   // Durable Objects (if needed later)
   // SCORE_PROCESSOR: DurableObjectNamespace

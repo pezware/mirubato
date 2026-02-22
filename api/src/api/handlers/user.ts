@@ -58,7 +58,7 @@ userHandler.get('/preferences', async c => {
 
     // Find the user_preferences record for this user
     const preferencesRecord = result.results.find(
-      (record: any) =>
+      (record: Record<string, unknown>) =>
         record.entity_id === userId && record.entity_type === 'user_preferences'
     )
 

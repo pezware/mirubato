@@ -4,7 +4,7 @@
 import { D1Database } from '@cloudflare/workers-types'
 
 export async function debugSearch(db: D1Database, query: string) {
-  console.log('Debug search for:', query)
+  console.warn('Debug search for:', query)
 
   // First, let's see all entries
   const allEntries = await db
@@ -12,7 +12,7 @@ export async function debugSearch(db: D1Database, query: string) {
       'SELECT id, term, normalized_term, type, overall_score FROM dictionary_entries'
     )
     .all()
-  console.log('All entries in database:', allEntries.results)
+  console.warn('All entries in database:', allEntries.results)
 
   // Try exact normalized match
   const normalized = query.toLowerCase().trim()
@@ -22,7 +22,7 @@ export async function debugSearch(db: D1Database, query: string) {
     )
     .bind(normalized)
     .all()
-  console.log('Exact normalized match:', exactMatch.results)
+  console.warn('Exact normalized match:', exactMatch.results)
 
   // Try LIKE match
   const likeMatch = await db
@@ -31,7 +31,7 @@ export async function debugSearch(db: D1Database, query: string) {
     )
     .bind(`%${normalized}%`)
     .all()
-  console.log('LIKE match:', likeMatch.results)
+  console.warn('LIKE match:', likeMatch.results)
 
   // Try the original complex query
   const complexQuery = await db
@@ -44,7 +44,7 @@ export async function debugSearch(db: D1Database, query: string) {
     )
     .bind(`%${normalized}%`, `%${query}%`)
     .all()
-  console.log('Complex query match:', complexQuery.results)
+  console.warn('Complex query match:', complexQuery.results)
 
   return {
     allEntries: allEntries.results,

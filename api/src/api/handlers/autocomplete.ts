@@ -240,7 +240,9 @@ autocompleteHandler.get('/pieces', async c => {
         ? `pieces:by-composer:${composer.toLowerCase()}`
         : 'pieces:all'
       const allPieces =
-        ((await c.env.MUSIC_CATALOG.get(allPiecesKey, 'json')) as any[]) || []
+        ((await c.env.MUSIC_CATALOG.get(allPiecesKey, 'json')) as Array<
+          Record<string, string | undefined>
+        >) || []
 
       const filteredPieces = []
       for (const piece of allPieces) {
@@ -260,11 +262,13 @@ autocompleteHandler.get('/pieces', async c => {
 
             filteredPieces.push(piece)
             results.push({
-              value: piece.title,
-              label: piece.title,
+              value: piece.title || '',
+              label: piece.title || '',
               metadata: {
                 composer: canonicalComposer,
-                gradeLevel: piece.gradeLevel,
+                gradeLevel: piece.gradeLevel
+                  ? Number(piece.gradeLevel)
+                  : undefined,
                 instrument: piece.instrument,
               },
             })

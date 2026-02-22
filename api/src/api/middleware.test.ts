@@ -13,14 +13,16 @@ describe('Middleware', () => {
       // Create a test endpoint that uses validateBody and manually adds undefined
       app.post('/test', validateBody(schemas.syncChanges), async c => {
         // Get the sanitized body
-        const body = c.get('validatedBody') as any
+        const body = c.get('validatedBody') as Record<string, unknown>
 
         // Let's check that the sanitization works by manually checking
         // In real scenarios, undefined values come from existing data, not JSON
         return c.json({
           sanitized: body,
           // Test the sanitizeForD1 function directly to show it works
-          testUndefined: body.changes.entries[0].notes === null,
+          testUndefined:
+            (body as Record<string, Record<string, Record<string, unknown>[]>>)
+              .changes.entries[0].notes === null,
         })
       })
 
@@ -54,13 +56,18 @@ describe('Middleware', () => {
       const res = await app.fetch(req, {} as Env)
       expect(res.status).toBe(200)
 
-      const result = (await res.json()) as any
+      const result = (await res.json()) as Record<string, unknown>
 
       // The fields that were missing should not have been added by sanitization
       // since they were not present in the JSON
-      const entry = result.sanitized.changes.entries[0]
+      const sanitized = result.sanitized as Record<string, unknown>
+      const changes = sanitized.changes as Record<string, unknown>
+      const entries = changes.entries as Array<Record<string, unknown>>
+      const entry = entries[0]
       expect(entry.id).toBe('test-entry')
-      expect(entry.pieces[0].title).toBe('Test Piece')
+      expect((entry.pieces as Array<Record<string, unknown>>)[0].title).toBe(
+        'Test Piece'
+      )
       // Missing fields remain missing after sanitization
       expect('notes' in entry).toBe(false)
       expect('mood' in entry).toBe(false)
@@ -97,10 +104,12 @@ describe('Middleware', () => {
       const res = await app.fetch(req, {} as Env)
       expect(res.status).toBe(200)
 
-      const result = (await res.json()) as any
+      const result = (await res.json()) as Record<string, unknown>
 
       // Check that null values are preserved
-      const entry = result.changes.entries[0]
+      const changes = result.changes as Record<string, unknown>
+      const entries = changes.entries as Array<Record<string, unknown>>
+      const entry = entries[0]
       expect(entry.notes).toBe(null)
       expect(entry.mood).toBe(null)
     })
@@ -141,16 +150,20 @@ describe('Middleware', () => {
       const res = await app.fetch(req, {} as Env)
       expect(res.status).toBe(200)
 
-      const result = (await res.json()) as any
+      const result = (await res.json()) as Record<string, unknown>
 
       // Check that existing values are preserved
-      const entry = result.changes.entries[0]
-      expect(entry.metadata.source).toBe('manual')
+      const changes = result.changes as Record<string, unknown>
+      const entries = changes.entries as Array<Record<string, unknown>>
+      const entry = entries[0]
+      const metadata = entry.metadata as Record<string, unknown>
+      const pieces = entry.pieces as Array<Record<string, unknown>>
+      expect(metadata.source).toBe('manual')
       // Missing fields remain missing (not converted to null since they weren't present)
-      expect('accuracy' in entry.metadata).toBe(false)
-      expect('notesPlayed' in entry.metadata).toBe(false)
-      expect('composer' in entry.pieces[0]).toBe(false)
-      expect(entry.pieces[1].composer).toBe('Bach')
+      expect('accuracy' in metadata).toBe(false)
+      expect('notesPlayed' in metadata).toBe(false)
+      expect('composer' in pieces[0]).toBe(false)
+      expect(pieces[1].composer).toBe('Bach')
     })
 
     it('should handle validation errors', async () => {

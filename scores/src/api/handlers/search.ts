@@ -28,13 +28,19 @@ searchHandler.get('/', async c => {
       gradeLevel: c.req.query('gradeLevel'),
       limit: c.req.query('limit') ? parseInt(c.req.query('limit')!) : 20,
       offset: c.req.query('offset') ? parseInt(c.req.query('offset')!) : 0,
-      sortBy: c.req.query('sortBy') as any,
-      sortOrder: c.req.query('sortOrder') as any,
+      sortBy: c.req.query('sortBy') as
+        | 'title'
+        | 'composer'
+        | 'difficulty'
+        | 'createdAt'
+        | 'popularity'
+        | undefined,
+      sortOrder: c.req.query('sortOrder') as 'asc' | 'desc' | undefined,
     })
 
     // Build search query
     const conditions: string[] = []
-    const params: any[] = []
+    const params: unknown[] = []
 
     // Full-text search on title and composer
     if (searchParams.query) {
@@ -128,12 +134,12 @@ searchHandler.get('/', async c => {
       .all()
 
     // Parse JSON fields and format results
-    const scores = results.map((row: any) => ({
+    const scores = results.map(row => ({
       ...row,
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      metadata: row.metadata ? JSON.parse(row.metadata) : {},
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      tags: row.tags ? JSON.parse(row.tags as string) : [],
+      metadata: row.metadata ? JSON.parse(row.metadata as string) : {},
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
     }))
 
     const searchResult: ScoreSearchResult = {
@@ -176,12 +182,12 @@ searchHandler.get('/popular', async c => {
 
     const { results } = await c.env.DB.prepare(query).bind(limit).all()
 
-    const scores = results.map((row: any) => ({
+    const scores = results.map(row => ({
       ...row,
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      metadata: row.metadata ? JSON.parse(row.metadata) : {},
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      tags: row.tags ? JSON.parse(row.tags as string) : [],
+      metadata: row.metadata ? JSON.parse(row.metadata as string) : {},
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
     }))
 
     const response: ApiResponse<Score[]> = {
@@ -209,12 +215,12 @@ searchHandler.get('/recent', async c => {
 
     const { results } = await c.env.DB.prepare(query).bind(limit).all()
 
-    const scores = results.map((row: any) => ({
+    const scores = results.map(row => ({
       ...row,
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      metadata: row.metadata ? JSON.parse(row.metadata) : {},
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      tags: row.tags ? JSON.parse(row.tags as string) : [],
+      metadata: row.metadata ? JSON.parse(row.metadata as string) : {},
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
     }))
 
     const response: ApiResponse<Score[]> = {

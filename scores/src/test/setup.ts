@@ -26,7 +26,7 @@ Object.defineProperty(globalThis, 'crypto', {
       }),
     } as unknown as SubtleCrypto,
     // codeql[js/insecure-randomness]: This is test code - cryptographic security not required for test mocks
-    getRandomValues: vi.fn((arr: any) => {
+    getRandomValues: vi.fn((arr: Uint8Array) => {
       for (let i = 0; i < arr.length; i++) {
         arr[i] = Math.floor(Math.random() * 256)
       }
@@ -76,7 +76,7 @@ afterEach(() => {
 
   // Reset fetch mock
   if (global.fetch && typeof global.fetch === 'function') {
-    ;(global.fetch as any).mockReset?.()
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockReset?.()
   }
 
   // Force garbage collection if available (requires --expose-gc flag)

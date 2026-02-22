@@ -32,7 +32,7 @@ export default {
     try {
       // Handle seed processing schedules (both prod and staging)
       if (event.cron === '0 2,8,14,20 * * *' || event.cron === '0 12 * * *') {
-        console.log(
+        console.warn(
           `[Scheduled] Seed processing started for cron: ${event.cron}`
         )
 
@@ -50,7 +50,7 @@ export default {
           recovery
             .recoverFailedItems(20) // Recover up to 20 failed items
             .then(recoveryResult => {
-              console.log(
+              console.warn(
                 `[Scheduled] Recovery completed: ${recoveryResult.retry_scheduled} scheduled for retry, ${recoveryResult.moved_to_dlq} moved to DLQ`
               )
             })
@@ -72,7 +72,7 @@ export default {
                     )
                   : 0
 
-              console.log(
+              console.warn(
                 `[Scheduled] Seed processing completed: processed=${result.processed}, failed=${result.failed}, avgQuality=${avgQuality}`
               )
             })
@@ -83,7 +83,7 @@ export default {
       }
       // Daily cleanup at midnight
       else if (event.cron === '0 0 * * *') {
-        console.log('[Scheduled] Daily maintenance started')
+        console.warn('[Scheduled] Daily maintenance started')
 
         // Clean up old token usage records (keep 30 days)
         ctx.waitUntil(
@@ -93,7 +93,7 @@ export default {
           )
             .run()
             .then(result => {
-              console.log(
+              console.warn(
                 `[Scheduled] Cleaned up ${result.meta.changes} old token usage records`
               )
             })
@@ -114,7 +114,7 @@ export default {
           )
             .run()
             .then(result => {
-              console.log(
+              console.warn(
                 `[Scheduled] Cleaned up ${result.meta.changes} completed seed queue items`
               )
             })
