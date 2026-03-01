@@ -41,7 +41,7 @@
     "lint-staged": "^16.1.0",
     "merge-stream": "^2.0.0",
     "prettier": "^3.5.3",
-    "rollup": "^4.44.0",
+    "rollup": "^4.59.0",
     "wrangler": "^4.61.1",
     "ws": "8.18.3"
   },
