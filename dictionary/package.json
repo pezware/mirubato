@@ -2,6 +2,7 @@
   "name": "@mirubato/dictionary",
   "version": "1.8.0",
   "description": "Music Dictionary Service - AI-powered music terminology definitions",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev --port 9799 --env local --local-protocol http",
