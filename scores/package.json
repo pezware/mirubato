@@ -2,6 +2,7 @@
   "name": "@mirubato/scores",
   "version": "1.8.0",
   "description": "Scores service for mirubato - handles sheet music storage, processing, and delivery",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev --port 9788 --env local --local-protocol http",
