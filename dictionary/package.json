@@ -2,6 +2,7 @@
   "name": "@mirubato/dictionary",
   "version": "1.8.0",
   "description": "Music Dictionary Service - AI-powered music terminology definitions",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev --port 9799 --env local --local-protocol http",
@@ -31,7 +32,7 @@
     "axios": "^1.13.5",
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.3",
-    "hono": "^4.11.10",
+    "hono": "^4.12.4",
     "jose": "^5.10.0",
     "nanoid": "^5.1.5",
     "zod": "^3.25.76"

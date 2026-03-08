@@ -2,6 +2,7 @@
   "name": "@mirubato/scores",
   "version": "1.8.0",
   "description": "Scores service for mirubato - handles sheet music storage, processing, and delivery",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev --port 9788 --env local --local-protocol http",
@@ -54,7 +55,7 @@
     "@mirubato/utils": "workspace:*",
     "@mirubato/workers-utils": "workspace:*",
     "aws4fetch": "^1.0.20",
-    "hono": "^4.11.10",
+    "hono": "^4.12.4",
     "jose": "^5.2.0",
     "nanoid": "^5.0.4",
     "pdfjs-dist": "^5.3.31",
