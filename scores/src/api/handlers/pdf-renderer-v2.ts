@@ -56,7 +56,7 @@ pdfRendererV2Handler.get(
       // Validate inputs
       const params = renderParamsSchema.parse({
         scoreId: c.req.param('scoreId'),
-        pageNumber: parseInt(c.req.param('pageNumber')),
+        pageNumber: parseInt(c.req.param('pageNumber') ?? ''),
         width: parseInt(c.req.query('width') || '1200'),
         format: c.req.query('format'),
         quality: parseInt(c.req.query('quality') || '85'),

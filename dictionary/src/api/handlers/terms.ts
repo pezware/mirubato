@@ -56,7 +56,7 @@ termsHandler.get(
   }),
   async c => {
     const startTime = Date.now()
-    const term = c.req.param('term')
+    const term = c.req.param('term') ?? ''
     const { type, enhance, generate_if_missing, lang, searchAllLanguages } =
       c.req.query()
 
@@ -256,7 +256,7 @@ termsHandler.get(
   cache({ ttl: 600 }),
   edgeCache({ maxAge: 300, sMaxAge: 3600 }),
   async c => {
-    const id = c.req.param('id')
+    const id = c.req.param('id') ?? ''
     const db = new DictionaryDatabase(c.env.DB)
     const cacheService = new CacheService(c.env.CACHE, c.env)
 
@@ -311,7 +311,7 @@ termsHandler.get(
   cache({ ttl: 600 }),
   edgeCache({ maxAge: 300, sMaxAge: 600 }),
   async c => {
-    const term = c.req.param('term')
+    const term = c.req.param('term') ?? ''
     const { languages } = c.req.query()
 
     const db = new DictionaryDatabase(c.env.DB)
