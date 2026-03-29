@@ -23,7 +23,7 @@ jobs:
       shared: ${{ steps.filter.outputs.shared }}
       any_workspace: ${{ steps.filter.outputs.frontendv2 == 'true' || steps.filter.outputs.api == 'true' || steps.filter.outputs.scores == 'true' || steps.filter.outputs.dictionary == 'true' || steps.filter.outputs.packages_ui == 'true' || steps.filter.outputs.shared == 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -51,10 +51,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.any_workspace == 'true' || github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -79,10 +79,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.any_workspace == 'true' || github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -105,10 +105,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontendv2 == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -137,10 +137,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.api == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -169,10 +169,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scores == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -194,10 +194,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.dictionary == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -225,10 +225,10 @@ jobs:
       (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
       (needs.test-frontendv2.result == 'success' || needs.test-frontendv2.result == 'skipped')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -255,10 +255,10 @@ jobs:
       (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
       (needs.test-api.result == 'success' || needs.test-api.result == 'skipped')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -285,10 +285,10 @@ jobs:
       (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
       (needs.test-scores.result == 'success' || needs.test-scores.result == 'skipped')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -315,10 +315,10 @@ jobs:
       (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
       (needs.test-dictionary.result == 'success' || needs.test-dictionary.result == 'skipped')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -349,10 +349,10 @@ jobs:
         shardIndex: [1, 2]
         shardTotal: [2]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -410,10 +410,10 @@ jobs:
       (needs.changes.outputs.frontendv2 == 'true' || needs.changes.outputs.shared == 'true' || github.ref == 'refs/heads/main') &&
       needs.build-frontendv2.result == 'success'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
