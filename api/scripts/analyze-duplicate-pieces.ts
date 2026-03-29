@@ -5,19 +5,12 @@
  * This script will identify pieces that are the same but stored with different capitalizations
  */
 
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 
 interface PieceData {
   title: string
   composer: string | null
   scoreId?: string
-}
-
-interface EntryPiece {
-  id: string
-  entry_id: string
-  pieces: PieceData[]
-  raw_data: string
 }
 
 // Normalization functions (matching frontend exactly)
@@ -81,11 +74,11 @@ async function executeD1Query(
 ): Promise<any> {
   try {
     const dbName = env === 'production' ? 'mirubato-prod' : 'mirubato-dev'
-    const command = `wrangler d1 execute ${dbName} --env ${env} --remote --command "${query.replace(/"/g, '\\"')}"`
-    const result = execSync(command, {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'ignore'],
-    })
+    const result = execFileSync(
+      'wrangler',
+      ['d1', 'execute', dbName, '--env', env, '--remote', '--command', query],
+      { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] }
+    )
 
     // Parse the wrangler output - look for JSON array in the output
     const lines = result.split('\n')
@@ -99,7 +92,7 @@ async function executeD1Query(
           if (Array.isArray(parsed) && parsed[0]?.results) {
             return parsed[0].results
           }
-        } catch (e) {
+        } catch {
           // Continue to next line if JSON parse fails
         }
       }
