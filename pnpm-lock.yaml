@@ -106,7 +106,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       '@vitest/coverage-v8':
         specifier: ^4.0.10
-        version: 4.0.10(vitest@4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0))
+        version: 4.0.10(vitest@4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3))
       eslint:
         specifier: ^9.25.0
         version: 9.31.0(jiti@2.4.2)
@@ -139,7 +139,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
       wrangler:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250718.0)
@@ -212,7 +212,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/node@20.19.9)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+        version: 4.0.10(@types/node@20.19.9)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
       wrangler:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250726.0)
@@ -348,10 +348,10 @@ importers:
         version: 19.2.3(@types/react@19.2.10)
       '@vitejs/plugin-react':
         specifier: ^4.4.1
-        version: 4.7.0(vite@7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))
+        version: 4.7.0(vite@7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: ^4.0.10
-        version: 4.0.10(vitest@4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0))
+        version: 4.0.10(vitest@4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3))
       autoprefixer:
         specifier: ^10.4.16
         version: 10.4.21(postcss@8.5.6)
@@ -417,13 +417,13 @@ importers:
         version: 1.5.10
       vite:
         specifier: ^7.1.11
-        version: 7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+        version: 7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       vite-node:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+        version: 3.2.4(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+        version: 4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
       wrangler:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250726.0)
@@ -472,10 +472,10 @@ importers:
         version: 19.2.3(@types/react@19.2.10)
       '@vitejs/plugin-react':
         specifier: ^4.4.1
-        version: 4.7.0(vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))
+        version: 4.7.0(vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: ^4.0.10
-        version: 4.0.10(vitest@4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0))
+        version: 4.0.10(vitest@4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3))
       eslint:
         specifier: ^9.25.0
         version: 9.31.0(jiti@2.4.2)
@@ -508,7 +508,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
       zod:
         specifier: ^4.0.0
         version: 4.0.17
@@ -532,7 +532,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
 
   packages/workers-utils:
     devDependencies:
@@ -559,7 +559,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+        version: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
 
   scores:
     dependencies:
@@ -626,7 +626,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+        version: 4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
       wrangler:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250718.0)
@@ -885,10 +885,10 @@ packages:
       }
     engines: { node: '>=6.9.0' }
 
-  '@babel/runtime@7.28.6':
+  '@babel/runtime@7.29.2':
     resolution:
       {
-        integrity: sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==,
+        integrity: sha512-JiDShH45zKHWyGe4ZNVRrCjBz8Nh9TMmZG1kh4QTK8hCBTWBi8Da+i7s1fJw7/lYpM4ccepSNfqzZ/QvABBi5g==,
       }
     engines: { node: '>=6.9.0' }
 
@@ -4132,10 +4132,10 @@ packages:
         integrity: sha512-F1+K8EbfOZE49dtoPtmxUQrpXaBIl3ICvasLh+nJta0xkz+9kF/7uet9fLnwKqhDrmj6g+6K3Tw9yQPUg2ka5g==,
       }
 
-  brace-expansion@5.0.3:
+  brace-expansion@5.0.5:
     resolution:
       {
-        integrity: sha512-fy6KJm2RawA5RcHkLa1z/ScpBeA762UF9KmZQxwIbDtRJrgLzM10depAiEQ+CXYcoiqW1/m96OAAoke2nE9EeA==,
+        integrity: sha512-VZznLgtwhn+Mact9tfiwx64fA9erHH/MCXEUfB/0bX/6Fz6ny5EGTXYltMocqg4xFAQZtnO3DHWWXi8RiuN7cQ==,
       }
     engines: { node: 18 || 20 || >=22 }
 
@@ -6424,17 +6424,17 @@ packages:
         integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==,
       }
 
-  picomatch@2.3.1:
+  picomatch@2.3.2:
     resolution:
       {
-        integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==,
+        integrity: sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==,
       }
     engines: { node: '>=8.6' }
 
-  picomatch@4.0.3:
+  picomatch@4.0.4:
     resolution:
       {
-        integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==,
+        integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==,
       }
     engines: { node: '>=12' }
 
@@ -7837,10 +7837,10 @@ packages:
         integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==,
       }
 
-  yaml@2.8.0:
+  yaml@2.8.3:
     resolution:
       {
-        integrity: sha512-4lLa/EcQCB0cJkyts+FpIRx5G/llPxfP6VQU5KByHEhLxY3IJCH0f0Hy1MHI8sClTvsIb8qwRJ6R/ZdlDJ/leQ==,
+        integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==,
       }
     engines: { node: '>= 14.6' }
     hasBin: true
@@ -8060,7 +8060,7 @@ snapshots:
 
   '@babel/runtime@7.27.6': {}
 
-  '@babel/runtime@7.28.6': {}
+  '@babel/runtime@7.29.2': {}
 
   '@babel/template@7.27.2':
     dependencies:
@@ -9300,7 +9300,7 @@ snapshots:
   '@testing-library/dom@10.4.0':
     dependencies:
       '@babel/code-frame': 7.29.0
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.2
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       chalk: 4.1.2
@@ -9520,7 +9520,7 @@ snapshots:
       '@typescript-eslint/types': 8.37.0
       eslint-visitor-keys: 4.2.1
 
-  '@vitejs/plugin-react@4.7.0(vite@7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitejs/plugin-react@4.7.0(vite@7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@babel/core': 7.28.0
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.0)
@@ -9528,11 +9528,11 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-react@4.7.0(vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitejs/plugin-react@4.7.0(vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@babel/core': 7.28.0
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.0)
@@ -9540,11 +9540,11 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@4.0.10(vitest@4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/coverage-v8@4.0.10(vitest@4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.10
@@ -9557,11 +9557,11 @@ snapshots:
       magicast: 0.5.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+      vitest: 4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@4.0.10(vitest@4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/coverage-v8@4.0.10(vitest@4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.10
@@ -9574,7 +9574,7 @@ snapshots:
       magicast: 0.5.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0)
+      vitest: 4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -9587,29 +9587,29 @@ snapshots:
       chai: 6.2.1
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.10(vite@7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/mocker@4.0.10(vite@7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@vitest/spy': 4.0.10
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
 
-  '@vitest/mocker@4.0.10(vite@7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/mocker@4.0.10(vite@7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@vitest/spy': 4.0.10
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
 
-  '@vitest/mocker@4.0.10(vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/mocker@4.0.10(vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@vitest/spy': 4.0.10
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
 
   '@vitest/pretty-format@4.0.10':
     dependencies:
@@ -9693,7 +9693,7 @@ snapshots:
   anymatch@3.1.3:
     dependencies:
       normalize-path: 3.0.0
-      picomatch: 2.3.1
+      picomatch: 2.3.2
 
   arg@5.0.2: {}
 
@@ -9770,7 +9770,7 @@ snapshots:
 
   blake3-wasm@2.1.5: {}
 
-  brace-expansion@5.0.3:
+  brace-expansion@5.0.5:
     dependencies:
       balanced-match: 4.0.4
 
@@ -10330,9 +10330,9 @@ snapshots:
     dependencies:
       reusify: 1.1.0
 
-  fdir@6.5.0(picomatch@4.0.3):
+  fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   file-entry-cache@8.0.0:
     dependencies:
@@ -10749,7 +10749,7 @@ snapshots:
       nano-spawn: 1.0.2
       pidtree: 0.6.0
       string-argv: 0.3.2
-      yaml: 2.8.0
+      yaml: 2.8.3
     transitivePeerDependencies:
       - supports-color
 
@@ -10863,7 +10863,7 @@ snapshots:
   micromatch@4.0.8:
     dependencies:
       braces: 3.0.3
-      picomatch: 2.3.1
+      picomatch: 2.3.2
 
   mime-db@1.52.0: {}
 
@@ -10909,7 +10909,7 @@ snapshots:
 
   minimatch@10.2.4:
     dependencies:
-      brace-expansion: 5.0.3
+      brace-expansion: 5.0.5
 
   minimist@1.2.8: {}
 
@@ -10966,7 +10966,7 @@ snapshots:
 
   openapi3-ts@4.5.0:
     dependencies:
-      yaml: 2.8.0
+      yaml: 2.8.3
 
   optionator@0.9.4:
     dependencies:
@@ -11051,9 +11051,9 @@ snapshots:
 
   picocolors@1.1.1: {}
 
-  picomatch@2.3.1: {}
+  picomatch@2.3.2: {}
 
-  picomatch@4.0.3: {}
+  picomatch@4.0.4: {}
 
   pidtree@0.6.0: {}
 
@@ -11092,7 +11092,7 @@ snapshots:
   postcss-load-config@4.0.2(postcss@8.5.6):
     dependencies:
       lilconfig: 3.1.3
-      yaml: 2.8.0
+      yaml: 2.8.3
     optionalDependencies:
       postcss: 8.5.6
 
@@ -11211,7 +11211,7 @@ snapshots:
 
   readdirp@3.6.0:
     dependencies:
-      picomatch: 2.3.1
+      picomatch: 2.3.2
 
   redent@3.0.0:
     dependencies:
@@ -11583,8 +11583,8 @@ snapshots:
 
   tinyglobby@0.2.15:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
 
   tinyrainbow@3.0.3: {}
 
@@ -11710,13 +11710,13 @@ snapshots:
 
   vexflow@5.0.0: {}
 
-  vite-node@3.2.4(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0):
+  vite-node@3.2.4(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -11731,11 +11731,11 @@ snapshots:
       - tsx
       - yaml
 
-  vite@7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0):
+  vite@7.2.1(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       esbuild: 0.25.8
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
       postcss: 8.5.6
       rollup: 4.59.0
       tinyglobby: 0.2.15
@@ -11744,13 +11744,13 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.4.2
       tsx: 4.20.3
-      yaml: 2.8.0
+      yaml: 2.8.3
 
-  vite@7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0):
+  vite@7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       esbuild: 0.25.12
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
       postcss: 8.5.6
       rollup: 4.59.0
       tinyglobby: 0.2.15
@@ -11759,13 +11759,13 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.4.2
       tsx: 4.20.3
-      yaml: 2.8.0
+      yaml: 2.8.3
 
-  vite@7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0):
+  vite@7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       esbuild: 0.25.12
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
       postcss: 8.5.6
       rollup: 4.59.0
       tinyglobby: 0.2.15
@@ -11774,13 +11774,13 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.4.2
       tsx: 4.20.3
-      yaml: 2.8.0
+      yaml: 2.8.3
 
-  vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0):
+  vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       esbuild: 0.25.12
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
       postcss: 8.5.6
       rollup: 4.59.0
       tinyglobby: 0.2.15
@@ -11789,12 +11789,12 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.4.2
       tsx: 4.20.3
-      yaml: 2.8.0
+      yaml: 2.8.3
 
-  vitest@4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0):
+  vitest@4.0.10(@types/node@20.19.8)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       '@vitest/expect': 4.0.10
-      '@vitest/mocker': 4.0.10(vite@7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))
+      '@vitest/mocker': 4.0.10(vite@7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/pretty-format': 4.0.10
       '@vitest/runner': 4.0.10
       '@vitest/snapshot': 4.0.10
@@ -11805,13 +11805,13 @@ snapshots:
       expect-type: 1.2.2
       magic-string: 0.30.21
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       std-env: 3.10.0
       tinybench: 2.9.0
       tinyexec: 0.3.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.2(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.8
@@ -11830,10 +11830,10 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.0.10(@types/node@20.19.9)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0):
+  vitest@4.0.10(@types/node@20.19.9)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       '@vitest/expect': 4.0.10
-      '@vitest/mocker': 4.0.10(vite@7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))
+      '@vitest/mocker': 4.0.10(vite@7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/pretty-format': 4.0.10
       '@vitest/runner': 4.0.10
       '@vitest/snapshot': 4.0.10
@@ -11844,13 +11844,13 @@ snapshots:
       expect-type: 1.2.2
       magic-string: 0.30.21
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       std-env: 3.10.0
       tinybench: 2.9.0
       tinyexec: 0.3.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.2(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.9
@@ -11869,10 +11869,10 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.0):
+  vitest@4.0.10(@types/node@24.1.0)(jiti@2.4.2)(jsdom@23.2.0)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       '@vitest/expect': 4.0.10
-      '@vitest/mocker': 4.0.10(vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0))
+      '@vitest/mocker': 4.0.10(vite@7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/pretty-format': 4.0.10
       '@vitest/runner': 4.0.10
       '@vitest/snapshot': 4.0.10
@@ -11883,13 +11883,13 @@ snapshots:
       expect-type: 1.2.2
       magic-string: 0.30.21
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       std-env: 3.10.0
       tinybench: 2.9.0
       tinyexec: 0.3.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.2.2(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.1.0
@@ -12045,7 +12045,7 @@ snapshots:
 
   yallist@3.1.1: {}
 
-  yaml@2.8.0: {}
+  yaml@2.8.3: {}
 
   yargs-parser@21.1.1: {}
 

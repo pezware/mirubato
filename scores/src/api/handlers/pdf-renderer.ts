@@ -275,7 +275,7 @@ pdfRendererHandler.get(
 
     const scoreId = c.req.param('scoreId')
     void scoreId // Will be used when connecting to actual PDFs
-    const pageNumber = parseInt(c.req.param('pageNumber'))
+    const pageNumber = parseInt(c.req.param('pageNumber') ?? '')
     const width = parseInt(c.req.query('width') || '1200')
 
     const browser = await launch(c.env.BROWSER, { keep_alive: 60000 }) // 1 minute
@@ -387,7 +387,7 @@ pdfRendererHandler.get(
       // Validate inputs
       const scoreId = scoreIdSchema.parse(c.req.param('scoreId'))
       const pageNumber = pageNumberSchema.parse(
-        parseInt(c.req.param('pageNumber'))
+        parseInt(c.req.param('pageNumber') ?? '')
       )
 
       // Parse query parameters with defaults

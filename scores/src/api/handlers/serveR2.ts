@@ -5,7 +5,7 @@ import { Context } from 'hono'
  * Works with both Miniflare (local) and production R2
  */
 export async function serveR2File(c: Context) {
-  const filename = c.req.param('filename')
+  const filename = c.req.param('filename') ?? ''
 
   // Security: Only allow specific test PDFs
   const allowedFiles = ['score_01.pdf', 'score_02.pdf']
