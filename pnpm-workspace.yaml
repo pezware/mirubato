@@ -6,4 +6,5 @@ packages:
   - 'dictionary'
   - 'sync-worker'
   - 'tools/debug-data-fix'
-minimumReleaseAge: 1440
+onlyBuiltDependencies: []
+minimumReleaseAge: 7200
