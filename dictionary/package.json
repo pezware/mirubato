@@ -31,8 +31,8 @@
     "@mirubato/workers-utils": "workspace:*",
     "axios": "^1.13.5",
     "drizzle-kit": "^0.31.4",
-    "drizzle-orm": "^0.44.3",
-    "hono": "^4.12.7",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.12",
     "jose": "^5.10.0",
     "nanoid": "^5.1.5",
     "zod": "^3.25.76"
