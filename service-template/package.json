@@ -23,12 +23,12 @@
     "db:migrate:production": "wrangler d1 migrations apply DB --env production"
   },
   "dependencies": {
-    "hono": "^4.11.7",
+    "hono": "^4.12.12",
     "@hono/zod-openapi": "^0.18.0",
     "@hono/swagger-ui": "^0.4.1",
     "jose": "^5.9.6",
     "zod": "^3.23.8",
-    "drizzle-orm": "^0.38.0"
+    "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",
