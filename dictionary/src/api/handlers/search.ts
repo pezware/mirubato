@@ -5,7 +5,7 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
-import { Env } from '../../types/env'
+import { Env, Variables } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { CacheService } from '../../services/storage/cache-service'
 import { CloudflareAIService } from '../../services/ai/cloudflare-ai-service'
@@ -21,7 +21,7 @@ import {
   TermType,
 } from '../../types/dictionary'
 
-export const searchHandler = new Hono<{ Bindings: Env }>()
+export const searchHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 // Search query schema
 const searchQuerySchema = z.object({

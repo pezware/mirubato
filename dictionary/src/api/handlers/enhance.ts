@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import type { Env } from '../../types/env'
+import type { Env, Variables } from '../../types/env'
 import type { DictionaryEntry } from '../../types/dictionary'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
@@ -28,7 +28,10 @@ interface EnhancementJob {
   error?: string
 }
 
-export const enhanceHandler = new Hono<{ Bindings: Env }>()
+export const enhanceHandler = new Hono<{
+  Bindings: Env
+  Variables: Variables
+}>()
 
 // Apply auth middleware to all routes
 enhanceHandler.use('*', auth())
