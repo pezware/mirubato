@@ -5,7 +5,7 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
-import { Env } from '../../types/env'
+import { Env, Variables } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { CacheService } from '../../services/storage/cache-service'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
@@ -22,7 +22,7 @@ import {
   SupportedLanguage,
 } from '../../types/dictionary'
 
-export const termsHandler = new Hono<{ Bindings: Env }>()
+export const termsHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 const feedbackSchema = z.object({
   rating: z.number().min(1).max(5).optional(),

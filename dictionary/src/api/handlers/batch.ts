@@ -5,7 +5,7 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
-import { Env } from '../../types/env'
+import { Env, Variables } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { CacheService } from '../../services/storage/cache-service'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
@@ -15,7 +15,7 @@ import { APIError } from '@mirubato/workers-utils'
 import { DictionaryEntry } from '../../types/dictionary'
 import { normalizeTerm } from '../../utils/validation'
 
-export const batchHandler = new Hono<{ Bindings: Env }>()
+export const batchHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 // Batch query schema
 const batchQuerySchema = z.object({

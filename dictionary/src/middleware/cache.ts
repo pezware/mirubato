@@ -3,7 +3,9 @@
  */
 
 import { Context, Next } from 'hono'
-import { Env } from '../types/env'
+import { Env, Variables } from '../types/env'
+
+type AppContext = Context<{ Bindings: Env; Variables: Variables }>
 import { CacheService } from '../services/storage/cache-service'
 
 export interface CacheOptions {
@@ -17,7 +19,7 @@ export interface CacheOptions {
  * Cache middleware for GET requests
  */
 export function cache(options: CacheOptions = {}) {
-  return async (c: Context<{ Bindings: Env }>, next: Next) => {
+  return async (c: AppContext, next: Next) => {
     // Only cache GET requests
     if (c.req.method !== 'GET') {
       return await next()
@@ -111,7 +113,7 @@ export function cache(options: CacheOptions = {}) {
 export function invalidateCache(
   patterns: string[] | ((c: Context) => string[])
 ) {
-  return async (c: Context<{ Bindings: Env }>, next: Next) => {
+  return async (c: AppContext, next: Next) => {
     await next()
 
     // Only invalidate on successful mutations
