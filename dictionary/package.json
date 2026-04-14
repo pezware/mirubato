@@ -29,7 +29,7 @@
     "@hono/zod-openapi": "^0.19.10",
     "@hono/zod-validator": "^0.7.2",
     "@mirubato/workers-utils": "workspace:*",
-    "axios": "^1.13.5",
+    "axios": "^1.15.0",
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.12",
