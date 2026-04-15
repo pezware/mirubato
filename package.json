@@ -70,7 +70,8 @@
       "ajv@6": "6.14.0",
       "ajv@8": "8.18.0",
       "rollup": ">=4.59.0",
-      "minimatch": ">=10.2.3"
+      "minimatch": ">=10.2.3",
+      "follow-redirects": ">=1.16.0"
     }
   }
 }
