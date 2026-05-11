@@ -14,36 +14,40 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "type-check": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate:sqlite --schema=./src/db/schema.ts",
+    "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "db:migrate:dev": "wrangler d1 migrations apply DB --env development",
     "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
     "db:migrate:production": "wrangler d1 migrations apply DB --env production"
   },
   "dependencies": {
-    "hono": "^4.12.12",
-    "@hono/zod-openapi": "^0.18.0",
-    "@hono/swagger-ui": "^0.4.1",
-    "jose": "^5.9.6",
-    "zod": "^3.23.8",
-    "drizzle-orm": "^0.45.2"
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^0.19.10",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.18",
+    "jose": "^5.10.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241218.0",
-    "@cloudflare/vitest-pool-workers": "^0.5.40",
-    "@types/node": "^22.10.5",
-    "drizzle-kit": "^0.30.1",
-    "typescript": "^5.7.2",
-    "vitest": "2.1.9",
-    "wrangler": "^4.61.1",
-    "prettier": "^3.4.2",
-    "eslint": "^8.57.0",
-    "@typescript-eslint/eslint-plugin": "^8.20.0",
-    "@typescript-eslint/parser": "^8.20.0"
+    "@cloudflare/vitest-pool-workers": "^0.12.21",
+    "@cloudflare/workers-types": "^4.20250726.0",
+    "@eslint/js": "^9.25.0",
+    "@types/node": "^20.19.9",
+    "@typescript-eslint/eslint-plugin": "^8.30.1",
+    "@typescript-eslint/parser": "^8.30.1",
+    "drizzle-kit": "^0.31.4",
+    "eslint": "^9.25.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.61.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18"
   }
 }
