@@ -1311,7 +1311,7 @@ export class SyncCoordinator implements DurableObject {
   }
 
   private broadcast(data: SyncEvent, excludeClientId?: string): void {
-    for (const [clientId, client] of this.clients) {
+    for (const clientId of this.clients.keys()) {
       if (clientId !== excludeClientId) {
         this.sendToClient(clientId, data)
       }
