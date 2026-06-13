@@ -69,7 +69,7 @@ export function useLayoutPreferences(pageKey?: string) {
         // If user is logged in, we could sync to D1 here
         // This would be an API call to save preferences
         if (user) {
-          // TODO: Implement API call to save preferences to D1
+          // TODO(#731): Implement API call to save preferences to D1
           // api.saveUserPreferences(user.id, newPreferences)
         }
       } catch (error) {

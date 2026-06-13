@@ -56,7 +56,7 @@ export function ProfileTab() {
       // Save to local preferences (works for both anonymous and authenticated)
       updatePreferences({ displayName: displayName.trim() })
 
-      // TODO: If authenticated, also sync to server API
+      // TODO(#730): If authenticated, also sync to server API
       // await userApi.updateProfile({ displayName: displayName.trim() })
 
       showToast(t('profile:displayNameSaved', 'Display name saved'), 'success')
