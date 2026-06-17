@@ -1,12 +1,4 @@
 {
-  "backend/**/*.{ts,tsx}": [
-    "pnpm --filter @mirubato/backend exec eslint --fix",
-    "pnpm --filter @mirubato/backend exec vitest related --run --no-coverage --passWithNoTests"
-  ],
-  "frontend/**/*.{ts,tsx}": [
-    "pnpm --filter @mirubato/frontend exec eslint --fix",
-    "pnpm --filter @mirubato/frontend exec jest --bail --findRelatedTests --passWithNoTests"
-  ],
   "frontendv2/**/*.{ts,tsx}": [
     "pnpm --filter @mirubato/frontendv2 exec eslint --fix",
     "pnpm --filter @mirubato/frontendv2 exec vitest related --run --no-coverage --passWithNoTests"
