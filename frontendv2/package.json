@@ -92,7 +92,7 @@
     "typescript-eslint": "^8.30.1",
     "universalify": "^2.0.1",
     "url-parse": "^1.5.10",
-    "vite": "^7.1.11",
+    "vite": "^7.3.5",
     "vite-node": "^3.2.4",
     "vitest": "^4.1.0",
     "wrangler": "^4.61.1",
