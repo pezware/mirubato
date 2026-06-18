@@ -1,3 +1,8 @@
+# Intentionally excluded from the workspace:
+#   - service-template/  reference scaffold for new workers; kept out of `pnpm -r`
+#                        so its deps/tests don't gate the live services. Dependabot
+#                        still patches it; lint/test it manually from its own dir.
+#   - dashboard/         Jekyll docs site (no package.json), not a JS workspace.
 packages:
   - 'packages/*'
   - 'frontendv2'

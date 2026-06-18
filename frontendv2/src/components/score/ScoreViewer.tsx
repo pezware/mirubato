@@ -70,7 +70,7 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
 
   // Handle file upload for missing scores
   const handleScoreUpload = async (file: File) => {
-    // TODO: Implement actual upload functionality
+    // TODO(#729): Implement actual upload functionality
     console.log('Upload file:', file)
     // This would typically call an API to upload the file
     // and associate it with the score

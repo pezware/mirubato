@@ -63,7 +63,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     composer: string
     scoreId?: string
   } | null>(null)
-  const [searchQuery] = useState('') // TODO: Add search input
+  const [searchQuery] = useState('') // TODO(#728): Add search input
   const [editingPieceNotes, setEditingPieceNotes] =
     useState<EnrichedRepertoireItem | null>(null)
 
