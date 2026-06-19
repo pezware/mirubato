@@ -63,7 +63,7 @@ importers:
         version: 4.59.0
       wrangler:
         specifier: ^4.61.1
-        version: 4.61.1(@cloudflare/workers-types@4.20250718.0)
+        version: 4.61.1(@cloudflare/workers-types@4.20250726.0)
       ws:
         specifier: 8.18.3
         version: 8.18.3
@@ -250,8 +250,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       dompurify:
-        specifier: ^3.4.9
-        version: 3.4.9
+        specifier: ^3.4.11
+        version: 3.4.11
       html-to-image:
         specifier: ^1.11.11
         version: 1.11.13
@@ -429,7 +429,7 @@ importers:
         version: 4.1.0(@types/node@20.19.8)(jsdom@23.2.0)(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       wrangler:
         specifier: ^4.61.1
-        version: 4.61.1(@cloudflare/workers-types@4.20250718.0)
+        version: 4.61.1(@cloudflare/workers-types@4.20250726.0)
       zod:
         specifier: ^4.0.0
         version: 4.0.17
@@ -687,7 +687,7 @@ importers:
         version: 6.9.0
       wrangler:
         specifier: ^4.61.1
-        version: 4.61.1(@cloudflare/workers-types@4.20250718.0)
+        version: 4.61.1(@cloudflare/workers-types@4.20250726.0)
     devDependencies:
       '@types/inquirer':
         specifier: ^9.0.0
@@ -3311,8 +3311,8 @@ packages:
   dom-accessibility-api@0.6.3:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
 
-  dompurify@3.4.9:
-    resolution: {integrity: sha512-4dPSRMRDqHvs0V4YDFCsaIZo4if5u0xM+llyxiM2fwuZFdKArUBAF3VtI2+n8NKg9P870WMdYk0UhqQNoWXbfQ==}
+  dompurify@3.4.11:
+    resolution: {integrity: sha512-zhlUV12GsaRzMsf9q5M254YhA4+VuF0fG+QFqu6aYpoGlKtz+w8//jBcGVYBgQkR5GHjUomejY84AV+/uPbWdw==}
 
   dot-prop@5.3.0:
     resolution: {integrity: sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==}
@@ -6784,7 +6784,7 @@ snapshots:
 
   '@types/dompurify@3.2.0':
     dependencies:
-      dompurify: 3.4.9
+      dompurify: 3.4.11
 
   '@types/estree@1.0.8': {}
 
@@ -7454,7 +7454,7 @@ snapshots:
 
   dom-accessibility-api@0.6.3: {}
 
-  dompurify@3.4.9:
+  dompurify@3.4.11:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
