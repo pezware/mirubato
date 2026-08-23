@@ -67,14 +67,14 @@ importers:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250726.0)
       ws:
-        specifier: 8.18.3
-        version: 8.18.3
+        specifier: 8.21.0
+        version: 8.21.0
 
   api:
     dependencies:
       '@hono/zod-validator':
         specifier: ^0.2.0
-        version: 0.2.2(hono@4.12.25)(zod@3.25.76)
+        version: 0.2.2(hono@4.12.34)(zod@3.25.76)
       '@mirubato/utils':
         specifier: workspace:*
         version: link:../packages/utils
@@ -85,8 +85,8 @@ importers:
         specifier: ^8.1.0
         version: 8.1.5
       hono:
-        specifier: ^4.12.25
-        version: 4.12.25
+        specifier: ^4.12.34
+        version: 4.12.34
       jose:
         specifier: ^5.2.0
         version: 5.10.0
@@ -153,13 +153,13 @@ importers:
     dependencies:
       '@hono/swagger-ui':
         specifier: ^0.5.2
-        version: 0.5.2(hono@4.12.25)
+        version: 0.5.2(hono@4.12.34)
       '@hono/zod-openapi':
         specifier: ^0.19.10
-        version: 0.19.10(hono@4.12.25)(zod@3.25.76)
+        version: 0.19.10(hono@4.12.34)(zod@3.25.76)
       '@hono/zod-validator':
         specifier: ^0.7.2
-        version: 0.7.2(hono@4.12.25)(zod@3.25.76)
+        version: 0.7.2(hono@4.12.34)(zod@3.25.76)
       '@mirubato/workers-utils':
         specifier: workspace:*
         version: link:../packages/workers-utils
@@ -173,8 +173,8 @@ importers:
         specifier: ^0.45.2
         version: 0.45.2(@cloudflare/workers-types@4.20250726.0)
       hono:
-        specifier: ^4.12.25
-        version: 4.12.25
+        specifier: ^4.12.34
+        version: 4.12.34
       jose:
         specifier: ^5.10.0
         version: 5.10.0
@@ -252,8 +252,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       dompurify:
-        specifier: ^3.4.11
-        version: 3.4.11
+        specifier: ^3.4.13
+        version: 3.4.13
       html-to-image:
         specifier: ^1.11.11
         version: 1.11.13
@@ -359,7 +359,7 @@ importers:
         version: 4.0.10(vitest@4.1.0(@types/node@20.19.8)(jsdom@23.2.0)(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)))
       autoprefixer:
         specifier: ^10.4.16
-        version: 10.4.21(postcss@8.5.10)
+        version: 10.4.21(postcss@8.5.23)
       chalk:
         specifier: ^4.1.2
         version: 4.1.2
@@ -397,8 +397,8 @@ importers:
         specifier: ^1.56.0
         version: 1.56.1
       postcss:
-        specifier: ^8.5.10
-        version: 8.5.10
+        specifier: ^8.5.23
+        version: 8.5.23
       psl:
         specifier: ^1.15.0
         version: 1.15.0
@@ -554,8 +554,8 @@ importers:
         specifier: ^16.0.0
         version: 16.3.0
       hono:
-        specifier: ^4.12.25
-        version: 4.12.25
+        specifier: ^4.12.34
+        version: 4.12.34
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
@@ -584,8 +584,8 @@ importers:
         specifier: ^1.0.20
         version: 1.0.20
       hono:
-        specifier: ^4.12.25
-        version: 4.12.25
+        specifier: ^4.12.34
+        version: 4.12.34
       jose:
         specifier: ^5.2.0
         version: 5.10.0
@@ -2855,8 +2855,8 @@ packages:
   dom-accessibility-api@0.6.3:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
 
-  dompurify@3.4.11:
-    resolution: {integrity: sha512-zhlUV12GsaRzMsf9q5M254YhA4+VuF0fG+QFqu6aYpoGlKtz+w8//jBcGVYBgQkR5GHjUomejY84AV+/uPbWdw==}
+  dompurify@3.4.13:
+    resolution: {integrity: sha512-2vmYIoqjze2d+kakP8S/nS5shfsl587kzwEjcGlTdiksUVgFHnFCsLYDVj/JNqJVOQZGSYBTmuycv0PodwmnMQ==}
 
   dot-prop@5.3.0:
     resolution: {integrity: sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==}
@@ -3295,8 +3295,8 @@ packages:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
 
-  hono@4.12.25:
-    resolution: {integrity: sha512-2NFaIyNVgJmBs/ecmtGzlmluTFs5cHEWGTdu0t1HBwYzoGXOL5nUQBRMXsXWla5i4KkG//QMzVP88m1+I3fdAQ==}
+  hono@4.12.34:
+    resolution: {integrity: sha512-GqXJqY/xJkJmuloTrnV1ZEXG3fqte+VjkUqoRNZXcrUidiUOP4fMSIHHY4tsqZBK++kVyWmt/AAfSUuy57/eSA==}
     engines: {node: '>=16.9.0'}
 
   html-encoding-sniffer@4.0.0:
@@ -3768,8 +3768,8 @@ packages:
     resolution: {integrity: sha512-21t+ozMQDAL/UGgQVBbZ/xXvNO10++ZPuTmKRO8k9V3AClVRht49ahtDjfY8l1q6nSHOrE5ASfthzH3ol6R/hg==}
     engines: {node: '>=20.17'}
 
-  nanoid@3.3.11:
-    resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
+  nanoid@3.3.18:
+    resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -3975,8 +3975,8 @@ packages:
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
-  postcss@8.5.10:
-    resolution: {integrity: sha512-pMMHxBOZKFU6HgAZ4eyGnwXF/EvPGGqUr0MnZ5+99485wwW41kW91A4LOGxSHhgugZmSChL5AlElNdwlNgcnLQ==}
+  postcss@8.5.23:
+    resolution: {integrity: sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg==}
     engines: {node: ^10 || ^12 || >=14}
 
   prelude-ls@1.2.1:
@@ -4716,8 +4716,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.18.3:
-    resolution: {integrity: sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==}
+  ws@8.21.0:
+    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -5331,26 +5331,26 @@ snapshots:
       react-dom: 19.2.4(react@19.2.4)
       use-sync-external-store: 1.5.0(react@19.2.4)
 
-  '@hono/swagger-ui@0.5.2(hono@4.12.25)':
+  '@hono/swagger-ui@0.5.2(hono@4.12.34)':
     dependencies:
-      hono: 4.12.25
+      hono: 4.12.34
 
-  '@hono/zod-openapi@0.19.10(hono@4.12.25)(zod@3.25.76)':
+  '@hono/zod-openapi@0.19.10(hono@4.12.34)(zod@3.25.76)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.76)
-      '@hono/zod-validator': 0.7.2(hono@4.12.25)(zod@3.25.76)
-      hono: 4.12.25
+      '@hono/zod-validator': 0.7.2(hono@4.12.34)(zod@3.25.76)
+      hono: 4.12.34
       openapi3-ts: 4.5.0
       zod: 3.25.76
 
-  '@hono/zod-validator@0.2.2(hono@4.12.25)(zod@3.25.76)':
+  '@hono/zod-validator@0.2.2(hono@4.12.34)(zod@3.25.76)':
     dependencies:
-      hono: 4.12.25
+      hono: 4.12.34
       zod: 3.25.76
 
-  '@hono/zod-validator@0.7.2(hono@4.12.25)(zod@3.25.76)':
+  '@hono/zod-validator@0.7.2(hono@4.12.34)(zod@3.25.76)':
     dependencies:
-      hono: 4.12.25
+      hono: 4.12.34
       zod: 3.25.76
 
   '@humanfs/core@0.19.1': {}
@@ -6084,7 +6084,7 @@ snapshots:
 
   '@types/dompurify@3.2.0':
     dependencies:
-      dompurify: 3.4.11
+      dompurify: 3.4.13
 
   '@types/estree@1.0.8': {}
 
@@ -6463,14 +6463,14 @@ snapshots:
       '@babel/runtime': 7.27.6
       tslib: 2.8.1
 
-  autoprefixer@10.4.21(postcss@8.5.10):
+  autoprefixer@10.4.21(postcss@8.5.23):
     dependencies:
       browserslist: 4.25.1
       caniuse-lite: 1.0.30001727
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
-      postcss: 8.5.10
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
@@ -6762,7 +6762,7 @@ snapshots:
 
   dom-accessibility-api@0.6.3: {}
 
-  dompurify@3.4.11:
+  dompurify@3.4.13:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -7131,7 +7131,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.12.25: {}
+  hono@4.12.34: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:
@@ -7592,7 +7592,7 @@ snapshots:
 
   nano-spawn@1.0.2: {}
 
-  nanoid@3.3.11: {}
+  nanoid@3.3.18: {}
 
   nanoid@5.1.5: {}
 
@@ -7735,28 +7735,28 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss-import@15.1.0(postcss@8.5.10):
+  postcss-import@15.1.0(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.10
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.10
 
-  postcss-js@4.0.1(postcss@8.5.10):
+  postcss-js@4.0.1(postcss@8.5.23):
     dependencies:
       camelcase-css: 2.0.1
-      postcss: 8.5.10
+      postcss: 8.5.23
 
-  postcss-load-config@4.0.2(postcss@8.5.10):
+  postcss-load-config@4.0.2(postcss@8.5.23):
     dependencies:
       lilconfig: 3.1.3
       yaml: 2.8.3
     optionalDependencies:
-      postcss: 8.5.10
+      postcss: 8.5.23
 
-  postcss-nested@6.2.0(postcss@8.5.10):
+  postcss-nested@6.2.0(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.10
+      postcss: 8.5.23
       postcss-selector-parser: 6.1.2
 
   postcss-selector-parser@6.1.2:
@@ -7766,9 +7766,9 @@ snapshots:
 
   postcss-value-parser@4.2.0: {}
 
-  postcss@8.5.10:
+  postcss@8.5.23:
     dependencies:
-      nanoid: 3.3.11
+      nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
@@ -8241,11 +8241,11 @@ snapshots:
       normalize-path: 3.0.0
       object-hash: 3.0.0
       picocolors: 1.1.1
-      postcss: 8.5.10
-      postcss-import: 15.1.0(postcss@8.5.10)
-      postcss-js: 4.0.1(postcss@8.5.10)
-      postcss-load-config: 4.0.2(postcss@8.5.10)
-      postcss-nested: 6.2.0(postcss@8.5.10)
+      postcss: 8.5.23
+      postcss-import: 15.1.0(postcss@8.5.23)
+      postcss-js: 4.0.1(postcss@8.5.23)
+      postcss-load-config: 4.0.2(postcss@8.5.23)
+      postcss-nested: 6.2.0(postcss@8.5.23)
       postcss-selector-parser: 6.1.2
       resolve: 1.22.10
       sucrase: 3.35.0
@@ -8429,7 +8429,7 @@ snapshots:
       esbuild: 0.28.1
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
-      postcss: 8.5.10
+      postcss: 8.5.23
       rollup: 4.62.0
       tinyglobby: 0.2.17
     optionalDependencies:
@@ -8444,7 +8444,7 @@ snapshots:
       esbuild: 0.28.1
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
-      postcss: 8.5.10
+      postcss: 8.5.23
       rollup: 4.62.0
       tinyglobby: 0.2.17
     optionalDependencies:
@@ -8459,7 +8459,7 @@ snapshots:
       esbuild: 0.28.1
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
-      postcss: 8.5.10
+      postcss: 8.5.23
       rollup: 4.62.0
       tinyglobby: 0.2.17
     optionalDependencies:
@@ -8680,7 +8680,7 @@ snapshots:
 
   ws@8.18.0: {}
 
-  ws@8.18.3: {}
+  ws@8.21.0: {}
 
   xml-name-validator@5.0.0: {}
 
