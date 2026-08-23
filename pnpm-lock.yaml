@@ -67,8 +67,8 @@ importers:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250726.0)
       ws:
-        specifier: 8.21.0
-        version: 8.21.0
+        specifier: 8.21.1
+        version: 8.21.1
 
   api:
     dependencies:
@@ -91,8 +91,8 @@ importers:
         specifier: ^5.2.0
         version: 5.10.0
       nanoid:
-        specifier: ^5.0.0
-        version: 5.1.5
+        specifier: ^5.1.16
+        version: 5.1.16
       zod:
         specifier: ^3.22.0
         version: 3.25.76
@@ -179,8 +179,8 @@ importers:
         specifier: ^5.10.0
         version: 5.10.0
       nanoid:
-        specifier: ^5.1.5
-        version: 5.1.5
+        specifier: ^5.1.16
+        version: 5.1.16
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -276,8 +276,8 @@ importers:
         specifier: ^0.525.0
         version: 0.525.0(react@19.2.4)
       nanoid:
-        specifier: ^5.1.5
-        version: 5.1.5
+        specifier: ^5.1.16
+        version: 5.1.16
       pdfjs-dist:
         specifier: ^5.3.93
         version: 5.3.93
@@ -590,8 +590,8 @@ importers:
         specifier: ^5.2.0
         version: 5.10.0
       nanoid:
-        specifier: ^5.0.4
-        version: 5.1.5
+        specifier: ^5.1.16
+        version: 5.1.16
       pdfjs-dist:
         specifier: ^5.3.31
         version: 5.3.93
@@ -676,8 +676,8 @@ importers:
         specifier: ^12.9.4
         version: 12.9.4(@types/node@20.19.9)
       nanoid:
-        specifier: ^5.0.0
-        version: 5.1.5
+        specifier: ^5.1.16
+        version: 5.1.16
       ora:
         specifier: ^7.0.0
         version: 7.0.1
@@ -3072,6 +3072,7 @@ packages:
   eslint@9.31.0:
     resolution: {integrity: sha512-QldCVh/ztyKJJZLr4jXNUByx3gR+TDYZCRXEktiZoUR3PGy4qCmSbkxcIle8GEwGpb5JBZazlaJ/CxLidXdEbQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -3773,8 +3774,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@5.1.5:
-    resolution: {integrity: sha512-Ir/+ZpE9fDsNH0hQ3C68uyThDXzYcim2EqcZ8zn8Chtt1iylPT9xXJB0kPCnqzgcEGikO9RxSrh63MsmVCU7Fw==}
+  nanoid@5.1.16:
+    resolution: {integrity: sha512-kVrnsrJqMR8+oLJnGEmSWw9BivK5mt7H3FZatVRjrc5wGqFYuBxX1yG7+A7Gi5AefkX6t/oCkizcQgpu0cY1dQ==}
     engines: {node: ^18 || >=20}
     hasBin: true
 
@@ -4716,8 +4717,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.21.0:
-    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
+  ws@8.21.1:
+    resolution: {integrity: sha512-+0NTnW77fFN/DjQi6k/Sq/Yvk4Sgajw7urW8V+asjXnRgDs9gyGkdb7EzgfhA4goXsRIZKE28fzIXBHEzhuiWw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -7594,7 +7595,7 @@ snapshots:
 
   nanoid@3.3.18: {}
 
-  nanoid@5.1.5: {}
+  nanoid@5.1.16: {}
 
   natural-compare@1.4.0: {}
 
@@ -8680,7 +8681,7 @@ snapshots:
 
   ws@8.18.0: {}
 
-  ws@8.21.0: {}
+  ws@8.21.1: {}
 
   xml-name-validator@5.0.0: {}
 
