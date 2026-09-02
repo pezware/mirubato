@@ -67,8 +67,8 @@ importers:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250726.0)
       ws:
-        specifier: 8.21.1
-        version: 8.21.1
+        specifier: 8.21.2
+        version: 8.21.2
 
   api:
     dependencies:
@@ -91,8 +91,8 @@ importers:
         specifier: ^5.2.0
         version: 5.10.0
       nanoid:
-        specifier: ^5.1.16
-        version: 5.1.16
+        specifier: ^6.0.1
+        version: 6.0.1
       zod:
         specifier: ^3.22.0
         version: 3.25.76
@@ -179,8 +179,8 @@ importers:
         specifier: ^5.10.0
         version: 5.10.0
       nanoid:
-        specifier: ^5.1.16
-        version: 5.1.16
+        specifier: ^6.0.1
+        version: 6.0.1
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -276,8 +276,8 @@ importers:
         specifier: ^0.525.0
         version: 0.525.0(react@19.2.4)
       nanoid:
-        specifier: ^5.1.16
-        version: 5.1.16
+        specifier: ^6.0.1
+        version: 6.0.1
       pdfjs-dist:
         specifier: ^5.3.93
         version: 5.3.93
@@ -590,8 +590,8 @@ importers:
         specifier: ^5.2.0
         version: 5.10.0
       nanoid:
-        specifier: ^5.1.16
-        version: 5.1.16
+        specifier: ^6.0.1
+        version: 6.0.1
       pdfjs-dist:
         specifier: ^5.3.31
         version: 5.3.93
@@ -676,8 +676,8 @@ importers:
         specifier: ^12.9.4
         version: 12.9.4(@types/node@20.19.9)
       nanoid:
-        specifier: ^5.1.16
-        version: 5.1.16
+        specifier: ^6.0.1
+        version: 6.0.1
       ora:
         specifier: ^7.0.0
         version: 7.0.1
@@ -3774,9 +3774,9 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@5.1.16:
-    resolution: {integrity: sha512-kVrnsrJqMR8+oLJnGEmSWw9BivK5mt7H3FZatVRjrc5wGqFYuBxX1yG7+A7Gi5AefkX6t/oCkizcQgpu0cY1dQ==}
-    engines: {node: ^18 || >=20}
+  nanoid@6.0.1:
+    resolution: {integrity: sha512-3wVS3i51pE2pi1k5FFL/95BGfVS0kSsvDVuGXHOtxox/TywUmtgq+3qiTOTbs9J7KfHaXPiN171k/A6dBnaXFw==}
+    engines: {node: ^22 || ^24 || >=26}
     hasBin: true
 
   natural-compare@1.4.0:
@@ -4717,8 +4717,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.21.1:
-    resolution: {integrity: sha512-+0NTnW77fFN/DjQi6k/Sq/Yvk4Sgajw7urW8V+asjXnRgDs9gyGkdb7EzgfhA4goXsRIZKE28fzIXBHEzhuiWw==}
+  ws@8.21.2:
+    resolution: {integrity: sha512-54dMVAo4WIe6SKy3vBgN+9bJZqqQ8IMRevAkOLQALhi49qkkQDQfWdAZ8KQlXiEabw88ARXXdUrlvtbKQX+aKw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -7595,7 +7595,7 @@ snapshots:
 
   nanoid@3.3.18: {}
 
-  nanoid@5.1.16: {}
+  nanoid@6.0.1: {}
 
   natural-compare@1.4.0: {}
 
@@ -8681,7 +8681,7 @@ snapshots:
 
   ws@8.18.0: {}
 
-  ws@8.21.1: {}
+  ws@8.21.2: {}
 
   xml-name-validator@5.0.0: {}
 
