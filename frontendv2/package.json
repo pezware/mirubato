@@ -50,7 +50,7 @@
     "react-i18next": "^15.5.3",
     "react-image-crop": "^11.0.10",
     "react-pdf": "^10.0.1",
-    "react-router-dom": "7.15.0",
+    "react-router-dom": "7.18.3",
     "swr": "^2.2.0",
     "tone": "^14.7.77",
     "uuid": "^14.0.0",
