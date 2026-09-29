@@ -33,6 +33,8 @@ dictionary/.secrets
 # Cloudflare
 .wrangler/
 wrangler.toml.local
+# cf CLI generated Worker types
+.cloudflare/
 .dev.vars
 
 # Editor directories and files
