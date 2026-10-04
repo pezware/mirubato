@@ -18,7 +18,9 @@ const GOOGLE_CLIENT_ID =
 
 const base = {
   compatibilityDate: '2024-01-01',
-  compatibilityFlags: ['nodejs_compat'],
+  // The Cloudflare Vite plugin only supports Node.js compat v2, which this
+  // compatibility date doesn't imply. wrangler.toml still deploys with v1.
+  compatibilityFlags: ['nodejs_compat', 'nodejs_compat_v2'],
   entrypoint: 'src/index.ts',
 }
 
@@ -33,6 +35,9 @@ export default defineConfig(({ mode }) => {
       return {
         worker: {
           ...base,
+          // The Vite plugin's dev runner calls the Worker over RPC, which
+          // this compatibility date predates. Deployed modes don't need it.
+          compatibilityFlags: [...base.compatibilityFlags, 'rpc'],
           name: 'mirubato-api-local',
           observability: { logs: { enabled: false } },
           env: {
@@ -48,7 +53,10 @@ export default defineConfig(({ mode }) => {
             DICTIONARY_URL: bindings.text(
               'http://dictionary-mirubato.localhost:9799'
             ),
-            DB: bindings.d1({ name: 'mirubato-dev', id: 'local-db' }),
+            DB: bindings.d1({
+              name: 'mirubato-dev',
+              id: '00000000-0000-4000-8000-000000000001',
+            }),
             MUSIC_CATALOG: bindings.kv({ id: 'music-catalog-local' }),
             RATE_LIMITER,
           },

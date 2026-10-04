@@ -50,7 +50,10 @@ export default defineConfig(({ mode }) => {
             ),
             BROWSER: bindings.browser(),
             AI: bindings.ai(),
-            DB: bindings.d1({ name: 'mirubato-scores-local', id: 'local' }),
+            DB: bindings.d1({
+              name: 'mirubato-scores-local',
+              id: '00000000-0000-4000-8000-000000000002',
+            }),
             SCORES_BUCKET: bindings.r2({ name: 'mirubato-scores-local' }),
             CACHE: bindings.kv({ id: 'local' }),
           },

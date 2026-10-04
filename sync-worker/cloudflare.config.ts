@@ -46,7 +46,10 @@ export default defineConfig(({ mode }) => {
             API_URL: bindings.text('http://api-mirubato.localhost:9797'),
             FRONTEND_URL: bindings.text('http://www-mirubato.localhost:4000'),
             JWT_SECRET: bindings.text('local-jwt-secret-for-development-only'),
-            DB: bindings.d1({ name: 'mirubato-dev', id: 'local-db' }),
+            DB: bindings.d1({
+              name: 'mirubato-dev',
+              id: '00000000-0000-4000-8000-000000000001',
+            }),
             SYNC_COORDINATOR: syncCoordinator('mirubato-sync-worker-local'),
             RATE_LIMITER: rateLimiter(1000),
           },

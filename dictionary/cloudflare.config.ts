@@ -48,7 +48,10 @@ export default defineConfig(({ mode }) => {
             SEED_BATCH_SIZE: bindings.text('1'),
             QUALITY_MIN_THRESHOLD: bindings.text('90'),
             AI: bindings.ai(),
-            DB: bindings.d1({ name: 'mirubato-dictionary-local', id: 'local' }),
+            DB: bindings.d1({
+              name: 'mirubato-dictionary-local',
+              id: '00000000-0000-4000-8000-000000000003',
+            }),
             STORAGE: bindings.r2({ name: 'mirubato-dictionary-local' }),
             CACHE: bindings.kv({ id: 'local' }),
           },
