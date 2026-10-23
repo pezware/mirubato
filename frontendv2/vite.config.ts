@@ -53,9 +53,17 @@ const getBuildInfo = () => {
   }
 }
 
+// The cf CLI (cf dev / cf build / cf deploy) needs the Cloudflare Vite plugin.
+// It's opt-in so plain `vite` and `vite build` (what wrangler deploys) behave
+// exactly as before; the cf:* package scripts set MIRUBATO_CF=1.
+const cloudflarePlugins =
+  process.env.MIRUBATO_CF === '1'
+    ? [(await import('@cloudflare/vite-plugin')).cloudflare()]
+    : []
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), ...cloudflarePlugins],
   define: {
     __BUILD_INFO__: JSON.stringify(getBuildInfo()),
   },

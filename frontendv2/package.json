@@ -18,6 +18,10 @@
     "deploy": "wrangler deploy",
     "deploy:staging": "CLOUDFLARE_ENV=staging wrangler deploy --env staging",
     "deploy:production": "CLOUDFLARE_ENV=production wrangler deploy --env production",
+    "cf:dev": "MIRUBATO_CF=1 cf dev",
+    "cf:deploy:staging": "MIRUBATO_CF=1 CLOUDFLARE_ENV=staging cf deploy --mode staging",
+    "cf:deploy:staging:dry-run": "MIRUBATO_CF=1 CLOUDFLARE_ENV=staging cf deploy --mode staging --dry-run",
+    "cf:deploy:production": "MIRUBATO_CF=1 CLOUDFLARE_ENV=production cf deploy --mode prod",
     "validate:i18n": "node scripts/validate-translations.cjs",
     "sync:i18n": "node scripts/sync-translations.cjs",
     "i18n:check": "pnpm run validate:i18n",
@@ -58,6 +62,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "2.0.0-beta.sha-ad79608dd",
     "@eslint/js": "^9.25.0",
     "@eslint/plugin-kit": "^0.3.5",
     "@playwright/test": "^1.56.1",
@@ -72,6 +77,7 @@
     "@vitejs/plugin-react": "^4.4.1",
     "@vitest/coverage-v8": "^4.1.11",
     "autoprefixer": "^10.4.16",
+    "cf": "1.0.0-beta.5",
     "chalk": "^4.1.2",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
