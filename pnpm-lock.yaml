@@ -82,7 +82,7 @@ importers:
     dependencies:
       '@hono/zod-validator':
         specifier: ^0.2.0
-        version: 0.2.2(hono@4.13.9)(zod@3.25.76)
+        version: 0.2.2(hono@4.13.14)(zod@3.25.76)
       '@mirubato/utils':
         specifier: workspace:*
         version: link:../packages/utils
@@ -93,8 +93,8 @@ importers:
         specifier: ^8.1.0
         version: 8.1.5
       hono:
-        specifier: ^4.13.5
-        version: 4.13.9
+        specifier: ^4.13.11
+        version: 4.13.14
       jose:
         specifier: ^5.2.0
         version: 5.10.0
@@ -152,7 +152,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       wrangler:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250718.0)(@types/node@24.1.0)
@@ -161,19 +161,19 @@ importers:
     dependencies:
       '@hono/swagger-ui':
         specifier: ^0.5.2
-        version: 0.5.2(hono@4.13.9)
+        version: 0.5.2(hono@4.13.14)
       '@hono/zod-openapi':
         specifier: ^0.19.10
-        version: 0.19.10(hono@4.13.9)(zod@3.25.76)
+        version: 0.19.10(hono@4.13.14)(zod@3.25.76)
       '@hono/zod-validator':
         specifier: ^0.7.2
-        version: 0.7.2(hono@4.13.9)(zod@3.25.76)
+        version: 0.7.2(hono@4.13.14)(zod@3.25.76)
       '@mirubato/workers-utils':
         specifier: workspace:*
         version: link:../packages/workers-utils
       axios:
-        specifier: ^1.18.0
-        version: 1.18.1
+        specifier: ^1.20.0
+        version: 1.20.0
       drizzle-kit:
         specifier: ^0.31.4
         version: 0.31.4
@@ -181,8 +181,8 @@ importers:
         specifier: ^0.45.2
         version: 0.45.2(@cloudflare/workers-types@4.20250726.0)
       hono:
-        specifier: ^4.13.5
-        version: 4.13.9
+        specifier: ^4.13.11
+        version: 4.13.14
       jose:
         specifier: ^5.10.0
         version: 5.10.0
@@ -225,7 +225,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@20.19.9)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.1.11(@types/node@20.19.9)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       wrangler:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250726.0)(@types/node@20.19.9)
@@ -251,8 +251,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
       axios:
-        specifier: ^1.18.0
-        version: 1.18.1
+        specifier: ^1.20.0
+        version: 1.20.0
       chart.js:
         specifier: ^4.4.9
         version: 4.5.0
@@ -260,8 +260,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       dompurify:
-        specifier: ^3.4.13
-        version: 3.4.13
+        specifier: ^3.4.17
+        version: 3.4.17
       html-to-image:
         specifier: ^1.11.11
         version: 1.11.13
@@ -272,8 +272,8 @@ importers:
         specifier: ^8.2.0
         version: 8.2.0
       i18next-http-backend:
-        specifier: ^3.0.5
-        version: 3.0.5
+        specifier: ^4.0.2
+        version: 4.0.5
       immer:
         specifier: ^10.1.1
         version: 10.1.1
@@ -361,7 +361,7 @@ importers:
         version: 19.2.3(@types/react@19.2.10)
       '@vitejs/plugin-react':
         specifier: ^4.4.1
-        version: 4.7.0(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.7.0(vite@7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: ^4.1.11
         version: 4.1.11(vitest@4.1.11)
@@ -429,14 +429,14 @@ importers:
         specifier: ^1.5.10
         version: 1.5.10
       vite:
-        specifier: ^7.3.5
-        version: 7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+        specifier: ^7.3.7
+        version: 7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       vite-node:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@20.19.8)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.1.11(@types/node@20.19.8)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       wrangler:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250718.0)(@types/node@20.19.8)
@@ -485,7 +485,7 @@ importers:
         version: 19.2.3(@types/react@19.2.10)
       '@vitejs/plugin-react':
         specifier: ^4.4.1
-        version: 4.7.0(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.7.0(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: ^4.1.11
         version: 4.1.11(vitest@4.1.11)
@@ -521,7 +521,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       zod:
         specifier: ^4.0.0
         version: 4.0.17
@@ -545,7 +545,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
 
   packages/workers-utils:
     devDependencies:
@@ -562,8 +562,8 @@ importers:
         specifier: ^16.0.0
         version: 16.3.0
       hono:
-        specifier: ^4.13.5
-        version: 4.13.9
+        specifier: ^4.13.11
+        version: 4.13.14
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
@@ -572,7 +572,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
 
   scores:
     dependencies:
@@ -592,8 +592,8 @@ importers:
         specifier: ^1.0.20
         version: 1.0.20
       hono:
-        specifier: ^4.13.5
-        version: 4.13.9
+        specifier: ^4.13.11
+        version: 4.13.14
       jose:
         specifier: ^5.2.0
         version: 5.10.0
@@ -639,7 +639,7 @@ importers:
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@20.19.8)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+        version: 4.1.11(@types/node@20.19.8)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       wrangler:
         specifier: ^4.61.1
         version: 4.61.1(@cloudflare/workers-types@4.20250718.0)(@types/node@20.19.8)
@@ -2433,8 +2433,8 @@ packages:
   aws4fetch@1.0.20:
     resolution: {integrity: sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g==}
 
-  axios@1.18.1:
-    resolution: {integrity: sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==}
+  axios@1.20.0:
+    resolution: {integrity: sha512-r8aOh8j9cGKpgQAqpzrUHnSIc6a59Y3Xf/cv8sy1DrHCkZHzQGEuoq1tARk6qSyDdtQGSDgpb9kFlruzPvrgwg==}
 
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
@@ -2634,9 +2634,6 @@ packages:
       typescript:
         optional: true
 
-  cross-fetch@4.1.0:
-    resolution: {integrity: sha512-uKm5PU+MHTootlWEY+mZ4vvXoCn4fLQxT9dSc1sXVMSFkINTJVN8cAQROpwcKm8bJ/c7rgZVIBWzH5T78sNZZw==}
-
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -2743,8 +2740,8 @@ packages:
   dom-accessibility-api@0.6.3:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
 
-  dompurify@3.4.13:
-    resolution: {integrity: sha512-2vmYIoqjze2d+kakP8S/nS5shfsl587kzwEjcGlTdiksUVgFHnFCsLYDVj/JNqJVOQZGSYBTmuycv0PodwmnMQ==}
+  dompurify@3.4.17:
+    resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
 
   dot-prop@5.3.0:
     resolution: {integrity: sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==}
@@ -3184,8 +3181,8 @@ packages:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
 
-  hono@4.13.9:
-    resolution: {integrity: sha512-7dMkQmZoC4E6F7AtaQSPhlWAdnBti+j7rreMZl8QB4jFiEhP9TWbGWUMi8WYzBCgmgulxuvLQupKqo+Co6Omyg==}
+  hono@4.13.14:
+    resolution: {integrity: sha512-yhRLQ21U6qa9Hsu2N7Qcbh8tE+WKEcoErjIo56LeSGiGXGp9sA7UpE86Ui9uexb61KakiGwuHMn2QdV7w6i6kQ==}
     engines: {node: '>=16.9.0'}
 
   html-encoding-sniffer@4.0.0:
@@ -3221,8 +3218,9 @@ packages:
   i18next-browser-languagedetector@8.2.0:
     resolution: {integrity: sha512-P+3zEKLnOF0qmiesW383vsLdtQVyKtCNA9cjSoKCppTKPQVfKd2W8hbVo5ZhNJKDqeM7BOcvNoKJOjpHh4Js9g==}
 
-  i18next-http-backend@3.0.5:
-    resolution: {integrity: sha512-QaWHnsxieEDcqKe+vo/RFqpiIFRi/KBqlOSPcUlvinBaISCeiTRCbtrazHAjtHtsLC66oDsROAH8frWkQzfMMQ==}
+  i18next-http-backend@4.0.5:
+    resolution: {integrity: sha512-0uXq24ZAVFwbA0MGija0AZYBcs8iA+wbC//UiDyZwPC3/wZfyD20LgGxvjMOqf9o3/pDJ05ZLIlB4U3+AdA9AQ==}
+    engines: {node: '>=18'}
 
   i18next@25.3.2:
     resolution: {integrity: sha512-JSnbZDxRVbphc5jiptxr3o2zocy5dEqpVm9qCGdJwRNO+9saUJS0/u4LnM/13C23fUEWxAylPqKU/NpMV/IjqA==}
@@ -3662,15 +3660,6 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
-
-  node-fetch@2.7.0:
-    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
-    engines: {node: 4.x || >=6.0.0}
-    peerDependencies:
-      encoding: ^0.1.0
-    peerDependenciesMeta:
-      encoding:
-        optional: true
 
   node-releases@2.0.54:
     resolution: {integrity: sha512-YHs7BmmcsdAI5Ozuf8JZo6PT0mv2GIWC9vMfvUC3dp65M8hn7Ux8CPL+2oBI7juNuj9d0ndhTcznq2ODBps9cQ==}
@@ -4305,9 +4294,6 @@ packages:
     resolution: {integrity: sha512-FVDYdxtnj0G6Qm/DhNPSb8Ju59ULcup3tuJxkFb5K8Bv2pUXILbf0xZWU8PX8Ov19OXljbUyveOFwRMwkXzO+A==}
     engines: {node: '>=16'}
 
-  tr46@0.0.3:
-    resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
-
   tr46@5.1.1:
     resolution: {integrity: sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw==}
     engines: {node: '>=18'}
@@ -4415,8 +4401,8 @@ packages:
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
-  vite@7.3.5:
-    resolution: {integrity: sha512-KuOaNhcnGFN2zIPGA7wRmzF+lJA1sea7rHq17aiJ++9lzY1WWG6Jpwqwe1KNbRVPIqHmr8GLYx7jbrQcN/7/ww==}
+  vite@7.3.7:
+    resolution: {integrity: sha512-AHEzTORMbi7/7aXp7w7KZ5+DCUdSeLsJz0grY8xHpc9DHdYb0vQu6DqJfm2tOw3gDExNgPgnJTXxM6syYFHaCA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -4507,9 +4493,6 @@ packages:
   warning@4.0.3:
     resolution: {integrity: sha512-rpJyN222KWIvHJ/F53XSZv0Zl/accqHR8et1kpaMTD/fLCRxtV8iX8czMzY7sVZupTI3zcUTg8eycS2kNF9l6w==}
 
-  webidl-conversions@3.0.1:
-    resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
-
   webidl-conversions@7.0.0:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
@@ -4526,9 +4509,6 @@ packages:
   whatwg-url@14.2.0:
     resolution: {integrity: sha512-De72GdQZzNTUBBChsXueQUnPKDkg/5A5zp7pFDuQAj5UFoENpiACU0wlCvzpAGnTkj++ihpKwKyYewn/XNUbKw==}
     engines: {node: '>=18'}
-
-  whatwg-url@5.0.0:
-    resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
 
   which-typed-array@1.1.19:
     resolution: {integrity: sha512-rEvr90Bck4WZt9HHFC4DJMsjvu7x+r6bImz0/BrbWb7A2djJ8hnZMrWnHo9F8ssv0OMErasDhftrfROTyqSDrw==}
@@ -5195,26 +5175,26 @@ snapshots:
       react-dom: 19.2.4(react@19.2.4)
       use-sync-external-store: 1.5.0(react@19.2.4)
 
-  '@hono/swagger-ui@0.5.2(hono@4.13.9)':
+  '@hono/swagger-ui@0.5.2(hono@4.13.14)':
     dependencies:
-      hono: 4.13.9
+      hono: 4.13.14
 
-  '@hono/zod-openapi@0.19.10(hono@4.13.9)(zod@3.25.76)':
+  '@hono/zod-openapi@0.19.10(hono@4.13.14)(zod@3.25.76)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.76)
-      '@hono/zod-validator': 0.7.2(hono@4.13.9)(zod@3.25.76)
-      hono: 4.13.9
+      '@hono/zod-validator': 0.7.2(hono@4.13.14)(zod@3.25.76)
+      hono: 4.13.14
       openapi3-ts: 4.5.0
       zod: 3.25.76
 
-  '@hono/zod-validator@0.2.2(hono@4.13.9)(zod@3.25.76)':
+  '@hono/zod-validator@0.2.2(hono@4.13.14)(zod@3.25.76)':
     dependencies:
-      hono: 4.13.9
+      hono: 4.13.14
       zod: 3.25.76
 
-  '@hono/zod-validator@0.7.2(hono@4.13.9)(zod@3.25.76)':
+  '@hono/zod-validator@0.7.2(hono@4.13.14)(zod@3.25.76)':
     dependencies:
-      hono: 4.13.9
+      hono: 4.13.14
       zod: 3.25.76
 
   '@humanfs/core@0.19.2':
@@ -5773,7 +5753,7 @@ snapshots:
   '@sendgrid/client@8.1.5':
     dependencies:
       '@sendgrid/helpers': 8.0.0
-      axios: 1.18.1
+      axios: 1.20.0
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -5886,7 +5866,7 @@ snapshots:
 
   '@types/dompurify@3.2.0':
     dependencies:
-      dompurify: 3.4.13
+      dompurify: 3.4.17
 
   '@types/estree@1.0.8': {}
 
@@ -6040,7 +6020,7 @@ snapshots:
       '@typescript-eslint/types': 8.37.0
       eslint-visitor-keys: 4.2.1
 
-  '@vitejs/plugin-react@4.7.0(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
+  '@vitejs/plugin-react@4.7.0(vite@7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.7)
@@ -6048,11 +6028,11 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-react@4.7.0(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
+  '@vitejs/plugin-react@4.7.0(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.7)
@@ -6060,7 +6040,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -6076,7 +6056,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+      vitest: 4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
 
   '@vitest/expect@4.1.11':
     dependencies:
@@ -6087,29 +6067,29 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.0
 
-  '@vitest/mocker@4.1.11(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
+  '@vitest/mocker@4.1.11(vite@7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@vitest/spy': 4.1.11
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
 
-  '@vitest/mocker@4.1.11(vite@7.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
+  '@vitest/mocker@4.1.11(vite@7.3.7(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@vitest/spy': 4.1.11
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
 
-  '@vitest/mocker@4.1.11(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
+  '@vitest/mocker@4.1.11(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))':
     dependencies:
       '@vitest/spy': 4.1.11
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
 
   '@vitest/pretty-format@4.1.11':
     dependencies:
@@ -6252,7 +6232,7 @@ snapshots:
 
   aws4fetch@1.0.20: {}
 
-  axios@1.18.1:
+  axios@1.20.0:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.6
@@ -6449,12 +6429,6 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  cross-fetch@4.1.0:
-    dependencies:
-      node-fetch: 2.7.0
-    transitivePeerDependencies:
-      - encoding
-
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -6528,7 +6502,7 @@ snapshots:
 
   dom-accessibility-api@0.6.3: {}
 
-  dompurify@3.4.13:
+  dompurify@3.4.17:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -6897,7 +6871,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.13.9: {}
+  hono@4.13.14: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:
@@ -6938,11 +6912,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.27.6
 
-  i18next-http-backend@3.0.5:
-    dependencies:
-      cross-fetch: 4.1.0
-    transitivePeerDependencies:
-      - encoding
+  i18next-http-backend@4.0.5: {}
 
   i18next@25.3.2(typescript@5.8.3):
     dependencies:
@@ -7381,10 +7351,6 @@ snapshots:
   nanoid@6.0.1: {}
 
   natural-compare@1.4.0: {}
-
-  node-fetch@2.7.0:
-    dependencies:
-      whatwg-url: 5.0.0
 
   node-releases@2.0.54: {}
 
@@ -8125,8 +8091,6 @@ snapshots:
     dependencies:
       tldts: 6.1.86
 
-  tr46@0.0.3: {}
-
   tr46@5.1.1:
     dependencies:
       punycode: 2.3.1
@@ -8227,7 +8191,7 @@ snapshots:
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -8242,7 +8206,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
+  vite@7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       esbuild: 0.28.1
       fdir: 6.5.0(picomatch@4.0.4)
@@ -8257,7 +8221,7 @@ snapshots:
       tsx: 4.20.3
       yaml: 2.8.3
 
-  vite@7.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
+  vite@7.3.7(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       esbuild: 0.28.1
       fdir: 6.5.0(picomatch@4.0.4)
@@ -8272,7 +8236,7 @@ snapshots:
       tsx: 4.20.3
       yaml: 2.8.3
 
-  vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
+  vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3):
     dependencies:
       esbuild: 0.28.1
       fdir: 6.5.0(picomatch@4.0.4)
@@ -8287,10 +8251,10 @@ snapshots:
       tsx: 4.20.3
       yaml: 2.8.3
 
-  vitest@4.1.11(@types/node@20.19.8)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)):
+  vitest@4.1.11(@types/node@20.19.8)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.11
-      '@vitest/mocker': 4.1.11(vite@7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+      '@vitest/mocker': 4.1.11(vite@7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/pretty-format': 4.1.11
       '@vitest/runner': 4.1.11
       '@vitest/snapshot': 4.1.11
@@ -8307,7 +8271,7 @@ snapshots:
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vite: 7.3.5(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@20.19.8)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.8
@@ -8316,10 +8280,10 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  vitest@4.1.11(@types/node@20.19.9)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)):
+  vitest@4.1.11(@types/node@20.19.9)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.11
-      '@vitest/mocker': 4.1.11(vite@7.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+      '@vitest/mocker': 4.1.11(vite@7.3.7(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/pretty-format': 4.1.11
       '@vitest/runner': 4.1.11
       '@vitest/snapshot': 4.1.11
@@ -8336,7 +8300,7 @@ snapshots:
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vite: 7.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.9
@@ -8345,10 +8309,10 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  vitest@4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)):
+  vitest@4.1.11(@types/node@24.1.0)(@vitest/coverage-v8@4.1.11)(jsdom@23.2.0)(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.11
-      '@vitest/mocker': 4.1.11(vite@7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
+      '@vitest/mocker': 4.1.11(vite@7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3))
       '@vitest/pretty-format': 4.1.11
       '@vitest/runner': 4.1.11
       '@vitest/snapshot': 4.1.11
@@ -8365,7 +8329,7 @@ snapshots:
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vite: 7.3.5(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
+      vite: 7.3.7(@types/node@24.1.0)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.1.0
@@ -8384,8 +8348,6 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  webidl-conversions@3.0.1: {}
-
   webidl-conversions@7.0.0: {}
 
   whatwg-encoding@3.1.1:
@@ -8398,11 +8360,6 @@ snapshots:
     dependencies:
       tr46: 5.1.1
       webidl-conversions: 7.0.0
-
-  whatwg-url@5.0.0:
-    dependencies:
-      tr46: 0.0.3
-      webidl-conversions: 3.0.1
 
   which-typed-array@1.1.19:
     dependencies:
