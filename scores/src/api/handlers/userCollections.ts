@@ -299,7 +299,7 @@ userCollectionsHandler.post('/', async c => {
       throw new HTTPException(400, {
         message: 'Invalid request data',
         // @ts-expect-error - zod error has errors property
-        errors: error.errors,
+        errors: error.issues,
       })
     }
     if (error instanceof HTTPException) throw error
@@ -419,7 +419,7 @@ userCollectionsHandler.put('/:id', async c => {
       throw new HTTPException(400, {
         message: 'Invalid request data',
         // @ts-expect-error - zod error has errors property
-        errors: error.errors,
+        errors: error.issues,
       })
     }
     if (error instanceof HTTPException) throw error

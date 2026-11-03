@@ -135,7 +135,7 @@ piecesHandler.put('/update-name', authMiddleware, async c => {
 
     if (error instanceof z.ZodError) {
       return c.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: error.issues },
         400
       )
     }

@@ -3,7 +3,7 @@ import type { Env } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { createApiResponse } from '@mirubato/workers-utils'
 import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
+import { zValidator } from '../../middleware/zod-validator'
 
 export const analyticsHandler = new Hono<{ Bindings: Env }>()
 

@@ -4,7 +4,7 @@ import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { createApiResponse } from '@mirubato/workers-utils'
 import type { DictionaryEntry } from '../../types/dictionary'
 import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
+import { zValidator } from '../../middleware/zod-validator'
 
 export const exportHandler = new Hono<{ Bindings: Env }>()
 

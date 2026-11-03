@@ -67,7 +67,7 @@ export const LogbookEntrySchema = z.object({
   mood: MoodType.nullable().optional(),
   tags: z.array(z.string()).default([]),
   session_id: z.string().nullable().optional(),
-  metadata: z.record(z.unknown()).nullable().optional(),
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
   created_at: TimestampSchema.optional(),
   createdAt: z.string().datetime().optional(),
   updated_at: TimestampSchema.optional(),
@@ -142,24 +142,30 @@ export const PlanSegmentSchema = z.object({
   techniques: z.array(z.string()).optional(),
   instructions: z.string().optional(),
   tempoTargets: z
-    .record(z.union([z.number(), z.string(), z.null()]))
+    .record(z.string(), z.union([z.number(), z.string(), z.null()]))
     .optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const PlanTargetsSchema = z
-  .record(z.union([z.number(), z.string(), z.null(), z.array(z.number())]))
+  .record(
+    z.string(),
+    z.union([z.number(), z.string(), z.null(), z.array(z.number())])
+  )
   .optional()
 
 export const PlanCheckInSchema = z
   .object({
     recordedAt: z.string().optional(),
-    responses: z.record(z.unknown()).optional(),
+    responses: z.record(z.string(), z.unknown()).optional(),
   })
   .optional()
 
 export const PlanMetricsSchema = z
-  .record(z.union([z.number(), z.string(), z.null(), z.array(z.unknown())]))
+  .record(
+    z.string(),
+    z.union([z.number(), z.string(), z.null(), z.array(z.unknown())])
+  )
   .optional()
 
 export const PracticePlanScheduleSchema = z.object({
@@ -171,7 +177,7 @@ export const PracticePlanScheduleSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional().nullable(),
   target: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const PracticePlanSchema = z.object({
@@ -190,7 +196,7 @@ export const PracticePlanSchema = z.object({
   templateVersion: z.number().int().optional(),
   sourceTemplateId: z.string().nullable().optional(),
   tags: z.array(z.string()).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
   archivedAt: z.string().nullable().optional(),
@@ -219,7 +225,7 @@ export const PlanOccurrenceSchema = z.object({
   logEntryId: z.string().nullable().optional(),
   checkIn: PlanCheckInSchema,
   notes: z.string().nullable().optional(),
-  reminderState: z.record(z.unknown()).optional(),
+  reminderState: z.record(z.string(), z.unknown()).optional(),
   metrics: PlanMetricsSchema,
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
@@ -254,7 +260,7 @@ export const PlanTemplateSchema = z.object({
   templateVersion: z.number().int().default(1),
   visibility: TemplateVisibility.default('private'),
   adoptionCount: z.number().int().default(0).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   publishedAt: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),

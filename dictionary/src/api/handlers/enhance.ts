@@ -7,7 +7,7 @@ import { CacheService } from '../../services/storage/cache-service'
 import { createApiResponse, ValidationError } from '@mirubato/workers-utils'
 import { auth } from '../../middleware/auth'
 import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
+import { zValidator } from '../../middleware/zod-validator'
 
 interface EnhancementJob {
   job_id: string

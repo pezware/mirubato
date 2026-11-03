@@ -6,7 +6,7 @@ import { SeedProcessor } from '../../services/seed-processor'
 import { TokenBudgetManager } from '../../services/token-budget-manager'
 import { createApiResponse, ValidationError } from '@mirubato/workers-utils'
 import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
+import { zValidator } from '../../middleware/zod-validator'
 import type { DictionaryEntry, TermType } from '../../types/dictionary'
 import {
   SEED_TERMS,

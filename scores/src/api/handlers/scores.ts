@@ -364,7 +364,7 @@ scoresHandler.post('/', authMiddleware, async c => {
     if (error instanceof z.ZodError) {
       throw new HTTPException(400, {
         message: 'Invalid input',
-        cause: error.errors,
+        cause: error.issues,
       })
     }
     console.error('Error creating score:', error)
@@ -443,7 +443,7 @@ scoresHandler.put('/:id', authMiddleware, async c => {
     if (error instanceof z.ZodError) {
       throw new HTTPException(400, {
         message: 'Invalid input',
-        cause: error.errors,
+        cause: error.issues,
       })
     }
     console.error('Error updating score:', error)
@@ -620,7 +620,7 @@ scoresHandler.post('/batch/delete', authMiddleware, async c => {
     if (error instanceof z.ZodError) {
       throw new HTTPException(400, {
         message: 'Invalid input',
-        cause: error.errors,
+        cause: error.issues,
       })
     }
     console.error('Error batch deleting scores:', error)

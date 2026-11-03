@@ -28,7 +28,7 @@
     "hono": "^4.13.11",
     "jose": "^5.2.0",
     "nanoid": "^6.0.1",
-    "zod": "^3.22.0"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240617.0",
