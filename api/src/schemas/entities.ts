@@ -148,7 +148,10 @@ export const PlanSegmentSchema = z.object({
 })
 
 export const PlanTargetsSchema = z
-  .record(z.string(), z.union([z.number(), z.string(), z.null(), z.array(z.number())]))
+  .record(
+    z.string(),
+    z.union([z.number(), z.string(), z.null(), z.array(z.number())])
+  )
   .optional()
 
 export const PlanCheckInSchema = z
@@ -159,7 +162,10 @@ export const PlanCheckInSchema = z
   .optional()
 
 export const PlanMetricsSchema = z
-  .record(z.string(), z.union([z.number(), z.string(), z.null(), z.array(z.unknown())]))
+  .record(
+    z.string(),
+    z.union([z.number(), z.string(), z.null(), z.array(z.unknown())])
+  )
   .optional()
 
 export const PracticePlanScheduleSchema = z.object({
