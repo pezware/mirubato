@@ -30,7 +30,7 @@ exampleRoutes.use('*', standardRateLimiter)
 const createItemSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   status: z.enum(['active', 'inactive', 'archived']).default('active'),
 })
 

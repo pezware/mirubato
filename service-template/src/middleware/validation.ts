@@ -12,15 +12,15 @@ export const validateBody = <T extends z.ZodType>(schema: T) => {
       const body = await c.req.json()
       const validated = schema.parse(body)
 
-      // Replace request body with validated data
-      c.req.bodyCache = validated
+      // Store validated body, the key that the route handlers read
+      c.set('validatedBody', validated)
 
       await next()
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new HTTPException(400, {
           message: 'Validation failed',
-          cause: error.errors,
+          cause: error.issues,
         })
       }
       throw error
@@ -45,7 +45,7 @@ export const validateQuery = <T extends z.ZodType>(schema: T) => {
       if (error instanceof z.ZodError) {
         throw new HTTPException(400, {
           message: 'Invalid query parameters',
-          cause: error.errors,
+          cause: error.issues,
         })
       }
       throw error
@@ -70,7 +70,7 @@ export const validateParams = <T extends z.ZodType>(schema: T) => {
       if (error instanceof z.ZodError) {
         throw new HTTPException(400, {
           message: 'Invalid route parameters',
-          cause: error.errors,
+          cause: error.issues,
         })
       }
       throw error
