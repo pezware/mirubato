@@ -6,10 +6,13 @@
  * and requeues them for processing.
  */
 
-import { config } from 'dotenv'
+import { fileURLToPath } from 'node:url'
 import { Miniflare } from 'miniflare'
 
-config()
+// The state directory that `wrangler dev --env local` persists to
+const LOCAL_STATE = fileURLToPath(
+  new URL('../.wrangler/state/v3', import.meta.url)
+)
 
 interface Score {
   id: string
@@ -26,22 +29,30 @@ async function main() {
   const env = process.argv[2] || 'local'
   console.log(`🔄 Reprocessing imported PDFs for environment: ${env}`)
 
-  // Setup Miniflare for local testing
+  // Open the local state that `wrangler dev --env local` uses
   let mf: Miniflare | undefined
   let db: D1Database
-  let queue: Queue
+  let queue: Queue | undefined
   let bucket: R2Bucket
 
   if (env === 'local') {
+    // The binding IDs match [env.local] in wrangler.toml, which declares no queue
     mf = new Miniflare({
-      script: '',
-      d1Databases: ['DB'],
-      r2Buckets: ['SCORES_BUCKET'],
-      queues: ['PDF_QUEUE'],
+      modules: true,
+      script: 'export default {}',
+      d1Databases: { DB: 'local' },
+      d1Persist: `${LOCAL_STATE}/d1`,
+      r2Buckets: { SCORES_BUCKET: 'mirubato-scores-local' },
+      r2Persist: `${LOCAL_STATE}/r2`,
     })
-    db = await mf.getD1Database('DB')
-    queue = await mf.getQueue('PDF_QUEUE')
-    bucket = await mf.getR2Bucket('SCORES_BUCKET')
+    const bindings = await mf.getBindings<{
+      DB: D1Database
+      SCORES_BUCKET: R2Bucket
+      PDF_QUEUE?: Queue
+    }>()
+    db = bindings.DB
+    queue = bindings.PDF_QUEUE
+    bucket = bindings.SCORES_BUCKET
   } else {
     console.error('❌ This script currently only supports local environment')
     console.log('For production/staging, use the admin API endpoint instead')
@@ -97,6 +108,17 @@ async function main() {
 
     if (scoresToReprocess.length === 0) {
       console.log('✅ All imported scores have rendered pages')
+      return
+    }
+
+    // Without a queue nothing renders the pages, and a pending status would never clear
+    if (!queue) {
+      console.log(
+        '\n⚠️  [env.local] declares no PDF_QUEUE, so this script changes nothing.'
+      )
+      console.log(
+        'Use POST /api/admin/reprocess-imports on staging or production instead.'
+      )
       return
     }
 

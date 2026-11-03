@@ -29,6 +29,7 @@
     "test:coverage": "pnpm -r run test:coverage",
     "docs:generate": "echo 'Documentation generation not implemented yet'",
     "format": "prettier --write .",
+    "hooks:install": "husky install",
     "prepare": "node -e \"try { require.resolve('husky'); require('child_process').execSync('husky install', {stdio: 'inherit'}); } catch (e) { console.log('Skipping husky install'); }\""
   },
   "devDependencies": {
@@ -62,7 +63,7 @@
       ]
     },
     "overrides": {
-      "glob": "^11.1.0",
+      "glob": "^14.0.2",
       "esbuild@0.18.20": "^0.25.0",
       "esbuild": ">=0.28.1",
       "js-yaml": "^4.3.1",
@@ -71,7 +72,7 @@
       "ajv@6": "6.14.0",
       "ajv@8": "8.18.0",
       "rollup": ">=4.59.0",
-      "minimatch": ">=10.2.3",
+      "minimatch": "^11.0.1",
       "follow-redirects": ">=1.16.2",
       "fast-uri": "^3.1.9",
       "form-data": ">=4.0.6",

@@ -2,7 +2,12 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import type { Env } from '../../types'
 import { authMiddleware, requireAuth } from '../../middleware/auth'
-import { validateBody, validateQuery, commonSchemas } from '../../middleware/validation'
+import {
+  validateBody,
+  validateQuery,
+  validateParams,
+  commonSchemas,
+} from '../../middleware/validation'
 import { standardRateLimiter } from '../../middleware/rate-limit'
 import { cachePresets } from '../../middleware/cache'
 import { ExampleService } from '../../services/example.service'
@@ -30,7 +35,7 @@ exampleRoutes.use('*', standardRateLimiter)
 const createItemSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   status: z.enum(['active', 'inactive', 'archived']).default('active'),
 })
 

@@ -3,24 +3,30 @@ import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import type { Env } from '../types'
 
+// Types the key that each middleware sets, so route handlers get the schema output from c.get()
+type ValidatedEnv<K extends string, T extends z.ZodType> = {
+  Bindings: Env
+  Variables: Record<K, z.output<T>>
+}
+
 /**
  * Validate request body against a Zod schema
  */
 export const validateBody = <T extends z.ZodType>(schema: T) => {
-  return createMiddleware<{ Bindings: Env }>(async (c, next) => {
+  return createMiddleware<ValidatedEnv<'validatedBody', T>>(async (c, next) => {
     try {
       const body = await c.req.json()
       const validated = schema.parse(body)
 
-      // Replace request body with validated data
-      c.req.bodyCache = validated
+      // Store validated body, the key that the route handlers read
+      c.set('validatedBody', validated)
 
       await next()
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new HTTPException(400, {
           message: 'Validation failed',
-          cause: error.errors,
+          cause: error.issues,
         })
       }
       throw error
@@ -32,7 +38,7 @@ export const validateBody = <T extends z.ZodType>(schema: T) => {
  * Validate query parameters against a Zod schema
  */
 export const validateQuery = <T extends z.ZodType>(schema: T) => {
-  return createMiddleware<{ Bindings: Env }>(async (c, next) => {
+  return createMiddleware<ValidatedEnv<'validatedQuery', T>>(async (c, next) => {
     try {
       const query = c.req.query()
       const validated = schema.parse(query)
@@ -45,7 +51,7 @@ export const validateQuery = <T extends z.ZodType>(schema: T) => {
       if (error instanceof z.ZodError) {
         throw new HTTPException(400, {
           message: 'Invalid query parameters',
-          cause: error.errors,
+          cause: error.issues,
         })
       }
       throw error
@@ -57,7 +63,7 @@ export const validateQuery = <T extends z.ZodType>(schema: T) => {
  * Validate route parameters against a Zod schema
  */
 export const validateParams = <T extends z.ZodType>(schema: T) => {
-  return createMiddleware<{ Bindings: Env }>(async (c, next) => {
+  return createMiddleware<ValidatedEnv<'validatedParams', T>>(async (c, next) => {
     try {
       const params = c.req.param()
       const validated = schema.parse(params)
@@ -70,7 +76,7 @@ export const validateParams = <T extends z.ZodType>(schema: T) => {
       if (error instanceof z.ZodError) {
         throw new HTTPException(400, {
           message: 'Invalid route parameters',
-          cause: error.errors,
+          cause: error.issues,
         })
       }
       throw error
@@ -107,7 +113,7 @@ export const commonSchemas = {
  * Get validated body from request
  */
 export function getValidatedBody<T>(c: any): T {
-  return c.req.bodyCache as T
+  return c.get('validatedBody') as T
 }
 
 /**

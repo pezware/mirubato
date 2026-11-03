@@ -33,6 +33,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 git clone https://github.com/pezware/mirubato.git
 cd mirubato
 pnpm install
+pnpm run hooks:install   # Git hooks; pnpm install skips them (.npmrc sets ignore-scripts=true)
 
 # Access the app
 # Frontend: http://www-mirubato.localhost:4000
@@ -83,7 +84,7 @@ cd [service] && wrangler deploy                # Deploy to production
 1. **Test First**: Write tests before implementation
 2. **Use Component Library**: Never use native HTML elements - always import from `@/components/ui`
 3. **Check Branch**: Never edit on main branch - create feature branches
-4. **Run Hooks**: Never skip pre-commit hooks with `--no-verify` - they run linting and tests
+4. **Run Hooks**: Never skip pre-commit hooks with `--no-verify` - they run linting and tests. Install them with `pnpm run hooks:install` in each clone and each worktree
 5. **Use ast-grep**: For syntax-aware code searches
 6. **Monorepo Structure**: Use workspace commands (`pnpm -r`) for cross-workspace operations
 7. **TypeScript Strict**: No `any` types, always use proper typing
@@ -139,8 +140,24 @@ For detailed architecture documentation, see:
 - [ ] Pull latest from main: `git pull origin main`
 - [ ] Create feature branch: `git checkout -b feature/your-feature`
 - [ ] Install dependencies: `pnpm install`
+- [ ] Install Git hooks, once per clone and per worktree: `pnpm run hooks:install`
+- [ ] Confirm the GitHub account is `achtungandy` (see [GitHub Account](#github-account))
 - [ ] Start services: `pnpm run dev:scorebook`
 - [ ] Check health endpoints
+
+### GitHub Account
+
+Mirubato uses the `achtungandy` GitHub account. Push, open pull requests and post comments as that account.
+
+- **Commits**: author and sign them with the `achtungandy` identity. The repo requires verified signatures.
+- **`git push`**: use an SSH remote whose key belongs to `achtungandy`.
+- **`gh`**: `gh auth status` shows the active account. If another account is active, run each command as `achtungandy`:
+
+```bash
+GH_TOKEN=$(gh auth token --user achtungandy) gh pr create ...
+```
+
+`gh auth switch --user achtungandy` also works, but it changes the active account for every repo on the machine.
 
 ### Development Flow
 

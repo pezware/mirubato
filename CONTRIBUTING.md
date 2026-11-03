@@ -5,6 +5,7 @@ Thanks for your interest in contributing! This guide explains how to propose cha
 ## Getting Started
 
 - Use `pnpm` and Node LTS. Run `pnpm install` in the repo root.
+- Run `pnpm run hooks:install` once in each clone and each worktree. `.npmrc` sets `ignore-scripts=true`, so `pnpm install` does not install the Git hooks.
 - Prefer small, focused PRs with clear motivation and scope.
 - Link related issues and include screenshots/logs for UX or operational changes.
 
