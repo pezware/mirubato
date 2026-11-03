@@ -29,6 +29,6 @@
   "dependencies": {
     "@mirubato/utils": "workspace:*",
     "jose": "6.0.12",
-    "zod": "4.0.17"
+    "zod": "4.6.6"
   }
 }
