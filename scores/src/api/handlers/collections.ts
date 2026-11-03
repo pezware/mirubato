@@ -212,7 +212,7 @@ collectionsHandler.post('/', async c => {
     if (error instanceof z.ZodError) {
       throw new HTTPException(400, {
         message: 'Invalid input',
-        cause: error.errors,
+        cause: error.issues,
       })
     }
     console.error('Error creating collection:', error)

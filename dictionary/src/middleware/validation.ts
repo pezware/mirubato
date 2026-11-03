@@ -19,14 +19,14 @@ export const validateBody = <T extends z.ZodType>(schema: T) => {
         const validated = schema.parse(body)
 
         // Replace request body with validated data
-        c.req.bodyCache = validated
+        ;(c.req as unknown as { bodyCache: unknown }).bodyCache = validated
 
         await next()
       } catch (error) {
         if (error instanceof z.ZodError) {
           throw new HTTPException(400, {
             message: 'Validation failed',
-            cause: error.errors,
+            cause: error.issues,
           })
         }
         throw error
@@ -46,14 +46,14 @@ export const validateQuery = <T extends z.ZodType>(schema: T) => {
         const validated = schema.parse(query)
 
         // Store validated query params
-        c.set('validatedQuery', validated)
+        c.set('validatedQuery', validated as Record<string, unknown>)
 
         await next()
       } catch (error) {
         if (error instanceof z.ZodError) {
           throw new HTTPException(400, {
             message: 'Invalid query parameters',
-            cause: error.errors,
+            cause: error.issues,
           })
         }
         throw error
@@ -73,14 +73,14 @@ export const validateParams = <T extends z.ZodType>(schema: T) => {
         const validated = schema.parse(params)
 
         // Store validated params
-        c.set('validatedParams', validated)
+        c.set('validatedParams', validated as Record<string, unknown>)
 
         await next()
       } catch (error) {
         if (error instanceof z.ZodError) {
           throw new HTTPException(400, {
             message: 'Invalid route parameters',
-            cause: error.errors,
+            cause: error.issues,
           })
         }
         throw error

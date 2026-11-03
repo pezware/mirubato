@@ -11,7 +11,7 @@ import {
   InternalError,
 } from '@mirubato/workers-utils'
 import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
+import { zValidator } from '../middleware/zod-validator'
 import { EmailService } from '../services/email'
 import {
   generateMagicLinkToken,

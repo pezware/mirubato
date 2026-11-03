@@ -575,7 +575,7 @@ pdfRendererHandler.get(
       if (error instanceof z.ZodError) {
         throw new HTTPException(400, {
           message: 'Invalid parameters',
-          cause: error.errors,
+          cause: error.issues,
         })
       }
 

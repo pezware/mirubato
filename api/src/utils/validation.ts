@@ -307,7 +307,7 @@ export async function validateBody<T>(
     return schema.parse(body)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const firstError = error.errors[0]
+      const firstError = error.issues[0]
       throw new Error(`${firstError.path.join('.')}: ${firstError.message}`)
     }
     throw error
