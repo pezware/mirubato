@@ -2,7 +2,12 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import type { Env } from '../../types'
 import { authMiddleware, requireAuth } from '../../middleware/auth'
-import { validateBody, validateQuery, commonSchemas } from '../../middleware/validation'
+import {
+  validateBody,
+  validateQuery,
+  validateParams,
+  commonSchemas,
+} from '../../middleware/validation'
 import { standardRateLimiter } from '../../middleware/rate-limit'
 import { cachePresets } from '../../middleware/cache'
 import { ExampleService } from '../../services/example.service'

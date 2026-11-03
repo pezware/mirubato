@@ -29,6 +29,7 @@
     "test:coverage": "pnpm -r run test:coverage",
     "docs:generate": "echo 'Documentation generation not implemented yet'",
     "format": "prettier --write .",
+    "hooks:install": "husky install",
     "prepare": "node -e \"try { require.resolve('husky'); require('child_process').execSync('husky install', {stdio: 'inherit'}); } catch (e) { console.log('Skipping husky install'); }\""
   },
   "devDependencies": {
