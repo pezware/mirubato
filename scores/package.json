@@ -57,7 +57,7 @@
     "@mirubato/utils": "workspace:*",
     "@mirubato/workers-utils": "workspace:*",
     "aws4fetch": "^1.0.20",
-    "hono": "^4.13.11",
+    "hono": "^4.13.16",
     "jose": "^5.2.0",
     "nanoid": "^6.0.1",
     "pdfjs-dist": "^5.3.31",
